@@ -1,12 +1,19 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# AI Interview Coach
 
-# Run and deploy your AI Studio app
+AI Interview Coach is a practice platform built to feel like a real interview, not a polite chatbot conversation.
+Most AI interview tools are overly nice and generic. This product is intentionally more direct, structured, and honest so candidates can improve faster under realistic pressure.
 
-This contains everything you need to run your app locally.
+Core interview modes:
+- Normal mode: Simulates a standard professional interview flow with clear, relevant questions.
+- Harsh mode: Simulates a demanding interviewer who challenges weak logic, asks follow-up pressure questions, and pushes for evidence-based answers.
 
-View your app in AI Studio: https://ai.studio/apps/7c743ee1-5528-410e-bc58-99d8a5f47136
+What makes it different:
+- Context-aware interview setup using CV + Job Description.
+- Rubric-based scoring (relevance, structure, specificity, clarity, confidence).
+- STAR/PAR-oriented feedback with concrete weaknesses and a better answer version.
+- Session history for tracking progress across practice rounds.
+
+Live demo (Vercel): https://ai-interview-coach-nine-gamma.vercel.app/
 
 ## Run Locally
 
