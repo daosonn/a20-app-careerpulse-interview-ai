@@ -1,0 +1,93 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the AI Interview Coach application.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "createdAt"]
+    },
+    "InterviewSession": {
+      "title": "Interview Session",
+      "description": "A mock interview session setup by the user.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string", "description": "ID of the user who owns this session" },
+        "jobDescription": { "type": "string" },
+        "cvText": { "type": "string" },
+        "interviewType": { "type": "string", "enum": ["HR", "Technical", "Behavioral"] },
+        "language": { "type": "string", "enum": ["vi", "en"] },
+        "status": { "type": "string", "enum": ["setup", "in_progress", "completed"] },
+        "isStressTest": { "type": "boolean" },
+        "predictedQuestions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "jobDescription", "cvText", "interviewType", "language", "status", "createdAt"]
+    },
+    "InterviewTurn": {
+      "title": "Interview Turn",
+      "description": "A single Q&A turn in an interview session, including AI evaluation.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "sessionId": { "type": "string" },
+        "userId": { "type": "string" },
+        "turnOrder": { "type": "number" },
+        "question": { "type": "string" },
+        "answer": { "type": "string" },
+        "evaluation": {
+          "type": "object",
+          "properties": {
+            "scores": {
+              "type": "object",
+              "properties": {
+                "relevance": { "type": "number" },
+                "structure": { "type": "number" },
+                "specificity": { "type": "number" },
+                "clarity": { "type": "number" },
+                "confidence": { "type": "number" }
+              }
+            },
+            "starAnalysis": {
+              "type": "object",
+              "properties": {
+                "situation": { "type": "string" },
+                "task": { "type": "string" },
+                "action": { "type": "string" },
+                "result": { "type": "string" }
+              }
+            },
+            "feedback": { "type": "string" },
+            "betterVersion": { "type": "string" }
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "sessionId", "userId", "turnOrder", "question", "answer", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Stores user profiles."
+    },
+    "/interview_sessions/{sessionId}": {
+      "schema": { "$ref": "#/entities/InterviewSession" },
+      "description": "Stores interview sessions created by users."
+    },
+    "/interview_turns/{turnId}": {
+      "schema": { "$ref": "#/entities/InterviewTurn" },
+      "description": "Stores individual Q&A turns and evaluations."
+    }
+  }
+}

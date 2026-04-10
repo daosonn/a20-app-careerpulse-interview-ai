@@ -1,0 +1,96 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.userId;
+    }
+    
+    function uidUnchanged() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == request.auth.uid;
+    }
+    
+    function userIdUnchanged() {
+      return !('userId' in request.resource.data) || request.resource.data.userId == request.auth.uid;
+    }
+    
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+    
+    function isValidUser(data) {
+      return hasRequiredFields(['uid', 'email', 'createdAt']) &&
+             data.uid is string &&
+             data.email is string &&
+             data.createdAt is string;
+    }
+
+    function isValidInterviewSession(data) {
+      return hasRequiredFields(['id', 'userId', 'jobDescription', 'cvText', 'interviewType', 'language', 'status', 'createdAt']) &&
+             data.id is string &&
+             data.userId is string &&
+             data.jobDescription is string && data.jobDescription.size() <= 20000 &&
+             data.cvText is string && data.cvText.size() <= 20000 &&
+             data.interviewType in ['HR', 'Technical', 'Behavioral'] &&
+             data.language in ['vi', 'en'] &&
+             data.status in ['setup', 'in_progress', 'completed'] &&
+             data.createdAt is string &&
+             (!('isStressTest' in data) || data.isStressTest is bool) &&
+             (!('predictedQuestions' in data) || (data.predictedQuestions is list && data.predictedQuestions.size() <= 20));
+    }
+
+    function isValidInterviewTurn(data) {
+      return hasRequiredFields(['id', 'sessionId', 'userId', 'turnOrder', 'question', 'answer', 'createdAt']) &&
+             data.id is string &&
+             data.sessionId is string &&
+             data.userId is string &&
+             data.turnOrder is number &&
+             data.question is string && data.question.size() <= 5000 &&
+             data.answer is string && data.answer.size() <= 10000 &&
+             data.createdAt is string &&
+             (!('evaluation' in data) || data.evaluation is map);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && uidUnchanged();
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && uidUnchanged() && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if false; // Users cannot delete their profile directly for now
+    }
+
+    match /interview_sessions/{sessionId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && isValidInterviewSession(request.resource.data) && userIdUnchanged();
+      allow update: if isDocOwner() && isValidInterviewSession(request.resource.data) && userIdUnchanged() && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isDocOwner();
+    }
+
+    match /interview_turns/{turnId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && isValidInterviewTurn(request.resource.data) && userIdUnchanged();
+      allow update: if isDocOwner() && isValidInterviewTurn(request.resource.data) && userIdUnchanged() && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isDocOwner();
+    }
+  }
+}
