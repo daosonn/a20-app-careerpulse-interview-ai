@@ -1,81 +1,20 @@
-# Starter Code App
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+</div>
 
-A template for building AI Agents in Python.
+# Run and deploy your AI Studio app
 
-## Structure
+This contains everything you need to run your app locally.
 
-```
-├── src/
-│   ├── agent.py        # Main agent loop
-│   ├── tools.py        # Tool definitions
-│   └── config.py       # Configuration
-├── scripts/
-│   ├── setup_hooks.sh  # One-time hook installer
-│   ├── log_hook.py     # AI tool hook handler
-│   └── submit_log.py   # Submits logs on git push
-├── requirements.txt
-├── .env.example
-├── AGENTS.md           # Rules for using AI coding agents
-├── JOURNAL.md          # Weekly journal — product journey & learnings
-└── WORKLOG.md          # Technical decisions, task assignments, brainstorming
-```
+View your app in AI Studio: https://ai.studio/apps/7c743ee1-5528-410e-bc58-99d8a5f47136
 
-## Getting Started
+## Run Locally
 
-### 1. Clone and setup
+**Prerequisites:**  Node.js
 
-```bash
-git clone <repo-url>
-cd <repo>
 
-# Install git pre-push hook (required, run once)
-bash scripts/setup_hooks.sh
-```
-
-### 2. Configure environment
-
-```bash
-cp .env.example .env
-```
-
-Open `.env` and fill in your `ANTHROPIC_API_KEY`. The `AI_LOG_*` variables are pre-filled.
-
-### 3. Run
-
-```bash
-python -m venv venv
-source venv/bin/activate       # Linux/Mac
-# or: venv\Scripts\activate    # Windows
-
-pip install -r requirements.txt
-python -m src.agent
-```
-
-## Weekly Journal
-
-Update **[JOURNAL.md](./JOURNAL.md)** at the end of every week to document your product-building journey:
-
-- Features shipped
-- AI tools used and how they helped
-- Hardest problem of the week and how you solved it
-- What you'd do differently
-- Plan for next week
-
-> JOURNAL.md **must be updated** before each PR. It is your learning record for the course.
-
-## Worklog
-
-Update **[WORKLOG.md](./WORKLOG.md)** whenever your team makes a technical decision or changes direction:
-
-- **Technical decisions** — why did you choose this approach over alternatives?
-- **Task assignments** — who does what, by when
-- **Brainstorming** — options considered, pros/cons, conclusion
-- **Important bugs** — root cause and fix
-
-See each file for the format and examples.
-
-## AI Logging
-
-Prompts and tool calls are **automatically logged** when you use any supported AI tool (Claude Code, Cursor, Codex, Gemini, Copilot). No manual steps needed after running `setup_hooks.sh`.
-
-See [AGENTS.md](./AGENTS.md) for details.
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`
