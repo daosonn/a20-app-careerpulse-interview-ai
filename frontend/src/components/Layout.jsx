@@ -1,73 +1,77 @@
-import React from 'react';
-import { LogIn, User as UserIcon } from 'lucide-react';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { Rocket, LayoutDashboard, Plus, LogOut, User } from 'lucide-react';
 
-const Layout = ({ children, sidebar, user, onLogin }) => {
+export default function Layout() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
+
+  const navItems = [
+    { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/setup', icon: Plus, label: 'Phỏng vấn mới' },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col h-screen overflow-hidden">
-      <header className="bg-white border-b border-gray-200 h-16 flex-shrink-0 z-20 shadow-sm">
-        <div className="max-w-[1920px] mx-auto px-6 h-full flex items-center justify-between">
-          <div className="flex items-center gap-3 group cursor-pointer" onClick={() => window.location.reload()}>
-            <div className="w-10 h-10 bg-slate-900 rounded-2xl flex items-center justify-center text-white font-black shadow-lg group-hover:scale-110 transition-transform">
-              AI
-            </div>
-            <div>
-              <span className="text-xl font-black text-slate-900 tracking-tight">Coach.ai</span>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 -mt-1">Interview Prep</p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-[#f8f9fa] flex flex-col">
+      {/* Top Navbar */}
+      <header className="sticky top-0 z-50 bg-white border-b border-[#c3c5d7]/20 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          {/* Logo */}
+          <Link to="/dashboard" className="flex items-center gap-2">
+            <Rocket className="text-[#003fb1] w-6 h-6" />
+            <span className="font-extrabold tracking-tight text-[#003fb1] text-xl">CareerPulse</span>
+          </Link>
 
-          <div className="flex items-center gap-6">
-            <span className="text-xs font-bold text-slate-400 hidden lg:inline-block uppercase tracking-widest italic opacity-60">
-              Mock the future, land the job
-            </span>
-            
-            <div className="h-8 w-[1px] bg-slate-100 mx-2" />
-
-            {user ? (
-              <div className="flex items-center gap-3 p-1 pr-3 bg-slate-50 rounded-full border border-slate-100 hover:shadow-md transition-shadow cursor-default">
-                 <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-black text-xs ring-2 ring-white overflow-hidden shadow-sm">
-                   {user.picture ? <img src={user.picture} alt="P" className="w-full h-full object-cover" /> : user.name[0]}
-                 </div>
-                 <div className="flex flex-col -gap-1">
-                   <span className="text-xs font-black text-slate-900">{user.name}</span>
-                   <span className="text-[10px] font-bold text-slate-400">Pro Member</span>
-                 </div>
-              </div>
-            ) : (
-              <button 
-                onClick={onLogin}
-                className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-full font-black text-sm shadow-xl hover:scale-105 active:scale-95 transition-all"
+          {/* Nav */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navItems.map(({ to, icon: Icon, label }) => (
+              <Link
+                key={to}
+                to={to}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                  location.pathname === to
+                    ? 'bg-[#003fb1]/10 text-[#003fb1]'
+                    : 'text-[#434654] hover:bg-[#f3f4f5] hover:text-[#191c1d]'
+                }`}
               >
-                <LogIn size={16} strokeWidth={3} />
-                <span>SIGN IN</span>
-              </button>
+                <Icon className="w-4 h-4" />
+                {label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* User */}
+          <div className="flex items-center gap-3">
+            {user?.photoURL ? (
+              <img src={user.photoURL} alt={user.displayName} className="w-8 h-8 rounded-full border-2 border-[#003fb1]/20" />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-[#003fb1]/10 flex items-center justify-center">
+                <User className="w-4 h-4 text-[#003fb1]" />
+              </div>
             )}
+            <span className="text-sm font-semibold text-[#191c1d] hidden sm:block">{user?.displayName || user?.email}</span>
+            <button
+              id="btn-logout"
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 text-sm text-[#737686] hover:text-[#ba1a1a] transition-colors"
+              title="Đăng xuất"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </header>
-      
-      <div className="flex flex-1 overflow-hidden relative">
-        {sidebar && (
-          <div className="flex-shrink-0 border-r border-slate-200">
-             {sidebar}
-          </div>
-        )}
-        <main className="flex-1 overflow-y-auto bg-slate-50/50 custom-scrollbar">
-          <div className="h-full">
-            {children}
-          </div>
-        </main>
-      </div>
-      
-      <footer className="bg-white border-t border-slate-200 py-3 flex-shrink-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 text-center text-slate-400 text-[10px] font-bold uppercase tracking-widest">
-          &copy; {new Date().getFullYear()} AI INTERVIEW COACH • BUILT FOR EXCELLENCE
-        </div>
-      </footer>
+
+      {/* Page Content */}
+      <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
+        <Outlet />
+      </main>
     </div>
   );
-};
-
-export default Layout;
-
-export default Layout;
+}
