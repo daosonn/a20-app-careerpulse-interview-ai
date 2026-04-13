@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, JSON, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, JSON, ForeignKey, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 import datetime
@@ -18,6 +18,12 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     name = Column(String)
     avatar = Column(String)
+    cv_text = Column(Text)
+    skills = Column(JSON)
+    is_onboarded = Column(Boolean, default=False)
+    full_name = Column(String)
+    dob = Column(String)
+    current_position = Column(String)
     interviews = relationship("Interview", back_populates="owner")
 
 class Interview(Base):
@@ -37,6 +43,10 @@ class Interview(Base):
     owner = relationship("User", back_populates="interviews")
 
 def init_db():
+    # Ensure data directory exists
+    data_dir = os.path.join(BASE_DIR, 'data')
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
     Base.metadata.create_all(bind=engine)
 
 def get_db():

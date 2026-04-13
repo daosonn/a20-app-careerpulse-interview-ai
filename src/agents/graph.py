@@ -1,6 +1,5 @@
 from langgraph.graph import StateGraph, END, START
 from langgraph.checkpoint.memory import MemorySaver
-from langgraph.prebuilt import RetryPolicy
 import httpx
 import os
 import sys
@@ -16,7 +15,7 @@ INTERVIEWER_URL = os.getenv("INTERVIEWER_URL", "http://127.0.0.1:8002")
 EVALUATOR_URL = os.getenv("EVALUATOR_URL", "http://127.0.0.1:8003")
 
 # Common retry policy
-retry_policy = RetryPolicy(max_attempts=3)
+retry_policy = {"max_attempts": 3}
 
 async def profiler_node(state: InterviewState):
     """Calls Profiler Microservice to extract skills and question bank."""

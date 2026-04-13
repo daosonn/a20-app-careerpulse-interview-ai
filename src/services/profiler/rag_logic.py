@@ -9,17 +9,41 @@ from src.core.config import interviewer_llm
 
 CHROMA_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "data", "chroma_data"))
 
-def extract_skills_logic(cv_text: str) -> list[str]:
+import json
+
+def extract_cv_info_logic(cv_text: str) -> dict:
     prompt = f"""
-    Đọc đoạn CV sau và trích xuất đúng 3 kỹ năng công nghệ/chuyên môn nổi bật nhất (Ví dụ: Python, React, SQL).
-    Chỉ trả về 3 từ khóa, cách nhau bằng dấu phẩy. Không viết thêm gì khác.
-    CV: {cv_text[:2000]}...
+    Bạn là một chuyên gia phân tích CV. Hãy đọc đoạn CV sau và trích xuất đúng các thông tin được yêu cầu dưới định dạng JSON sau:
+    {{
+      "full_name": "Họ và tên của ứng viên",
+      "dob": "Ngày tháng năm sinh (ví dụ: dd/mm/yyyy), nếu không có để null",
+      "current_position": "Vị trí công việc hiện tại hoặc gần nhất (ví dụ: Senior Java Developer)",
+      "skills": ["Kỹ năng 1", "Kỹ năng 2", "Kỹ năng 3"]
+    }}
+
+    Lưu ý: Chỉ trả về JSON, không viết thêm bất kỳ lời dẫn nào. Nếu không tìm thấy thông tin nào đó, hãy để giá trị là null cho field đó.
+    
+    CV CONTENT:
+    {cv_text[:3000]}
     """
     try:
         response = interviewer_llm.invoke(prompt)
-        return [s.strip() for s in response.content.split(',')]
-    except:
-        return ["Kỹ năng chung"]
+        content = response.content.strip()
+        # Clean up in case AI wraps JSON in backticks
+        if content.startswith("```json"):
+            content = content[7:-3].strip()
+        elif content.startswith("```"):
+            content = content[3:-3].strip()
+        
+        return json.loads(content)
+    except Exception as e:
+        print(f"[ERROR] CV Extraction failed: {e}")
+        return {
+            "full_name": None,
+            "dob": None,
+            "current_position": "Chưa xác định",
+            "skills": ["Kỹ năng chung"]
+        }
 
 def search_questions_logic(skills: list[str]) -> str:
     if not skills:

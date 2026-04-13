@@ -20,8 +20,8 @@ export function Login() {
           {/* Branding/Visual Side */}
           <div className="hidden md:flex md:w-1/2 p-12 bg-[#f3f4f5] flex-col justify-between relative overflow-hidden">
             <div className="z-10">
-              <div className="flex items-center gap-2 mb-8">
-                <Rocket className="text-[#003fb1] w-8 h-8" />
+              <div className="flex items-center gap-3 mb-8">
+                <img src="/logo.png" alt="CareerPulse Logo" className="w-10 h-10 object-contain" />
                 <span className="text-2xl font-extrabold tracking-tight text-[#003fb1]">CareerPulse</span>
               </div>
               <h1 className="text-4xl lg:text-5xl font-extrabold text-[#191c1d] tracking-tight leading-tight mb-6">
