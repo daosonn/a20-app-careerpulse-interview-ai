@@ -5,10 +5,14 @@ import OpenAI from 'openai';
 // AI Provider Setup: Gemini (primary) → OpenAI (fallback)
 // ============================================================
 
-const geminiClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const getEnv = (key: string) => (import.meta as any).env?.[key] || (process as any).env?.[key] || '';
 
+const geminiApiKey = getEnv('VITE_GEMINI_API_KEY');
+const geminiClient = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null;
+
+const openaiApiKey = getEnv('VITE_OPENAI_API_KEY');
 const openaiClient = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: openaiApiKey || 'missing-key',
   dangerouslyAllowBrowser: true,
 });
 
@@ -17,6 +21,7 @@ const openaiClient = new OpenAI({
 // ============================================================
 
 async function callGemini(prompt: string, temperature: number): Promise<string> {
+  if (!geminiClient) throw new Error('[Gemini] Client not initialized. Check your VITE_GEMINI_API_KEY.');
   const response = await geminiClient.models.generateContent({
     model: 'gemini-2.5-flash',
     contents: prompt,
@@ -31,6 +36,7 @@ async function callGemini(prompt: string, temperature: number): Promise<string> 
 }
 
 async function callGeminiText(prompt: string, temperature: number): Promise<string> {
+  if (!geminiClient) throw new Error('[Gemini] Client not initialized. Check your VITE_GEMINI_API_KEY.');
   const response = await geminiClient.models.generateContent({
     model: 'gemini-2.5-flash',
     contents: prompt,
@@ -111,7 +117,7 @@ export async function transcribeAudio(audioBlob: Blob, language: string): Promis
   const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+      'Authorization': `Bearer ${getEnv('VITE_OPENAI_API_KEY')}`,
     },
     body: formData,
   });
