@@ -40,8 +40,9 @@ def detect_tool(data: dict) -> str:
         return "claude"
     return "unknown"
 
+from typing import Optional, Union
 
-def normalize(data: dict, tool: str) -> dict | None:
+def normalize(data: dict, tool: str) -> Optional[dict]:
     """Normalize tool-specific payload to common log entry."""
     event = data.get("hook_event_name") or data.get("event", "")
     ts = datetime.now(VN_TZ).isoformat()
