@@ -8,6 +8,8 @@ import { Dashboard } from './pages/Dashboard';
 import { SetupSession } from './pages/SetupSession';
 import { SessionDetail } from './pages/SessionDetail';
 import { InterviewRoom } from './pages/InterviewRoom';
+import { Onboarding } from './pages/Onboarding';
+import { Profile } from './pages/Profile';
 
 export default function App() {
   return (
@@ -17,11 +19,13 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/" element={<Layout />}>
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="setup" element={<SetupSession />} />
               <Route path="session/:id" element={<InterviewRoom />} />
               <Route path="session/:id/summary" element={<SessionDetail />} />
+              <Route path="profile" element={<Profile />} />
             </Route>
           </Routes>
         </BrowserRouter>

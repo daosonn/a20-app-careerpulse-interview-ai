@@ -3,18 +3,55 @@ import { User, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/aut
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db, googleProvider, handleFirestoreError, OperationType } from '../lib/firebase';
 
+interface UserProfile {
+  isOnboarded: boolean;
+  cvText?: string;
+  skills?: string[];
+  fullName?: string;
+  dob?: string;
+  currentPosition?: string;
+}
+
 interface AuthContextType {
   user: User | null;
+  profile: UserProfile | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const fetchProfile = async (email: string) => {
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/api/v1/user/profile/${email}`);
+      if (response.ok) {
+        const data = await response.json();
+        setProfile({
+          isOnboarded: data.onboarded,
+          cvText: data.cv_text,
+          skills: data.skills,
+          fullName: data.full_name,
+          dob: data.dob,
+          currentPosition: data.current_position
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching user profile", error);
+    }
+  };
+
+  const refreshProfile = async () => {
+    if (user?.email) {
+      await fetchProfile(user.email);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -35,9 +72,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
           handleFirestoreError(error, OperationType.GET, `users/${currentUser.uid}`);
         }
+
+        if (currentUser.email) {
+          await fetchProfile(currentUser.email);
+        }
+      } else {
+        setProfile(null);
       }
       setUser(currentUser);
-      setLoading(false);
+      setLoading(false); // Move this to AFTER profile is fetched
     });
 
     return () => unsubscribe();
@@ -62,7 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, profile, loading, signInWithGoogle, logout, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

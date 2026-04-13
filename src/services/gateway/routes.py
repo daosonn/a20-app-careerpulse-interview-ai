@@ -5,8 +5,8 @@ import os
 import sys
 
 # Import local modules
-from .models import SetupReq, ChatReq
-from .logic import generate_speech_base64, transcribe_logic
+from .models import SetupReq, ChatReq, OnboardReq
+from .logic import generate_speech_base64, transcribe_logic, onboard_user_logic
 
 # Project relative imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
@@ -18,6 +18,18 @@ router = APIRouter()
 
 @router.post("/interview/start")
 async def start_interview(req: SetupReq):
+    # 0. Enforcement: Ensure user is onboarded
+    from src.core.database import User as DbUser
+    db = next(get_db())
+    # Note: We should ideally have the user's email in the request or from a token.
+    # For this lab, we use a simple check based on the session_id or name if provided.
+    # In a real app, we'd use JWT tokens.
+    user_email = req.session_id # Let's assume session_id is email for this routing
+    db_user = db.query(DbUser).filter(DbUser.email == user_email).first()
+    
+    if not db_user or not db_user.is_onboarded:
+         raise HTTPException(status_code=403, detail="Tài khoản chưa hoàn thành Onboarding. Vui lòng upload CV.")
+
     # Initial state
     config = {"configurable": {"thread_id": req.session_id or "default_user"}}
 
@@ -87,8 +99,13 @@ async def end_interview(req: ChatReq, db: Session = Depends(get_db)):
     return {"feedback": feedback_text, "audio_base64": generate_speech_base64(feedback_text)}
 
 @router.get("/history")
-async def get_history(user_id: int = 1, db: Session = Depends(get_db)):
-    interviews = db.query(Interview).filter(Interview.user_id == user_id).order_by(Interview.created_at.desc()).all()
+async def get_history(user_email: str, db: Session = Depends(get_db)):
+    from src.core.database import User as DbUser
+    db_user = db.query(DbUser).filter(DbUser.email == user_email).first()
+    if not db_user or not db_user.is_onboarded:
+        raise HTTPException(status_code=403, detail="Onboarding required")
+        
+    interviews = db.query(Interview).filter(Interview.user_id == db_user.id).order_by(Interview.created_at.desc()).all()
     return [{"id": i.id, "interview_type": i.interview_type, "created_at": i.created_at.isoformat(), "score": i.score, "language": i.language} for i in interviews]
 
 @router.get("/history/{interview_id}")
@@ -99,4 +116,23 @@ async def get_interview_detail(interview_id: int, user_id: int = 1, db: Session 
         "id": hist.id, "cv_text": hist.cv_text, "jd_text": hist.jd_text, "interview_type": hist.interview_type,
         "language": hist.language, "transcript": hist.transcript, "evaluations": hist.evaluations,
         "final_report": hist.final_report, "created_at": hist.created_at.isoformat()
+    }
+@router.post("/user/onboard")
+async def onboard_user(req: OnboardReq, db: Session = Depends(get_db)):
+    return await onboard_user_logic(req, db)
+
+@router.get("/user/profile/{email}")
+async def get_user_profile(email: str, db: Session = Depends(get_db)):
+    from src.core.database import User as DbUser
+    user = db.query(DbUser).filter(DbUser.email == email).first()
+    if not user:
+        return {"onboarded": False}
+    return {
+        "onboarded": user.is_onboarded,
+        "cv_text": user.cv_text,
+        "skills": user.skills,
+        "name": user.name,
+        "full_name": user.full_name,
+        "dob": user.dob,
+        "current_position": user.current_position
     }

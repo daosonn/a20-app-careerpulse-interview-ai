@@ -7,3 +7,6 @@ class ProfilerRequest(BaseModel):
 class ProfilerResponse(BaseModel):
     skills_extracted: List[str]
     question_bank: str
+    full_name: str = None
+    dob: str = None
+    current_position: str = None

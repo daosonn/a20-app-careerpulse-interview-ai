@@ -38,3 +38,9 @@ class HistoryBrief(BaseModel):
     language: str
     class Config:
         from_attributes = True
+class OnboardReq(BaseModel):
+    uid: str
+    email: str
+    name: str
+    avatar: Optional[str] = None
+    cv_text: str
