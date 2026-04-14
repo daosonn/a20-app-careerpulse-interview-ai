@@ -66,10 +66,17 @@ async def get_current_user(
                 # Another request might have created the user simultaneously
                 db_user = db.query(User).filter(User.email == email).first()
                 if not db_user:
-                    raise
+                    # If still not found, it's a different integrity issue
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail="Database integrity error during user creation"
+                    )
             
         return db_user
 
+    except HTTPException:
+        # Re-raise HTTPExceptions as-is to preserve status code and detail
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

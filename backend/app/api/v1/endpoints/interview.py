@@ -64,8 +64,8 @@ async def transcribe_audio(file: UploadFile = File(...), current_user: CurrentUs
     tmp_path = None
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
+            tmp_path = tmp.name  # Assign immediately
             tmp.write(await file.read())
-            tmp_path = tmp.name
         
         with open(tmp_path, "rb") as audio_file:
             transcript = client.audio.transcriptions.create(
