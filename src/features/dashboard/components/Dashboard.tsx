@@ -1,101 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { collection, query, where, getDocs, doc, deleteDoc } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from '../lib/firebase';
-import { useAuth } from '../contexts/AuthContext';
-import { Plus, Clock, FileText, TrendingUp, ChevronRight, Trash2 } from 'lucide-react';
+import { Plus, FileText, TrendingUp, ChevronRight, Trash2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-interface Session {
-  id: string;
-  jobDescription: string;
-  interviewType: string;
-  status: string;
-  createdAt: string;
-  avgScore?: number;
-}
+import { useDashboardData } from '../hooks/useDashboardData';
 
 export function Dashboard() {
-  const { user } = useAuth();
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { sessions, loading, chartData, removeSession, user } = useDashboardData();
 
-  useEffect(() => {
-    async function fetchData() {
-      if (!user) return;
-      try {
-        // Fetch sessions
-        const qSessions = query(
-          collection(db, 'interview_sessions'),
-          where('userId', '==', user.uid)
-        );
-        const sessionSnap = await getDocs(qSessions);
-        const fetchedSessions = sessionSnap.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as Session[];
-        // Sort client-side to avoid needing a Firestore composite index
-        fetchedSessions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-        // Fetch turns to calculate scores
-        const qTurns = query(
-          collection(db, 'interview_turns'),
-          where('userId', '==', user.uid)
-        );
-        const turnsSnap = await getDocs(qTurns);
-        const turns = turnsSnap.docs.map(d => d.data());
-
-        // Calculate avg score per session
-        const sessionsWithScores = fetchedSessions.map(session => {
-          const sessionTurns = turns.filter(t => t.sessionId === session.id && t.evaluation);
-          if (sessionTurns.length === 0) return session;
-
-          const totalScore = sessionTurns.reduce((acc, turn) => {
-            const s = turn.evaluation.scores;
-            return acc + (s.relevance + s.structure + s.specificity + s.clarity + s.confidence) / 5;
-          }, 0);
-          
-          return {
-            ...session,
-            avgScore: totalScore / sessionTurns.length
-          };
-        });
-
-        setSessions(sessionsWithScores);
-      } catch (error) {
-        handleFirestoreError(error, OperationType.LIST, 'interview_sessions');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [user]);
-
-  const handleDeleteSession = async (e: React.MouseEvent, sessionId: string) => {
+  const handleDeleteSession = (e: React.MouseEvent, sessionId: string) => {
     e.preventDefault();
-    if (!window.confirm('Bạn có chắc chắn muốn xóa phiên phỏng vấn này không? Hành động này không thể hoàn tác.')) {
-      return;
-    }
-    
-    try {
-      await deleteDoc(doc(db, 'interview_sessions', sessionId));
-      setSessions(prev => prev.filter(s => s.id !== sessionId));
-    } catch (error) {
-      console.error("Error deleting session:", error);
-      alert('Đã có lỗi xảy ra khi xóa phiên phỏng vấn. Vui lòng thử lại.');
-    }
+    removeSession(sessionId);
   };
-
-  // Prepare chart data (reverse to show chronological order)
-  const chartData = [...sessions]
-    .filter(s => s.avgScore !== undefined)
-    .reverse()
-    .map((s, index) => ({
-      name: `Phiên ${index + 1}`,
-      score: Number(s.avgScore?.toFixed(1)),
-      date: new Date(s.createdAt).toLocaleDateString('vi-VN')
-    }));
 
   return (
     <div className="space-y-8">
@@ -227,4 +142,3 @@ export function Dashboard() {
     </div>
   );
 }
-

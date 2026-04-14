@@ -4,7 +4,6 @@ import { Rocket, MessageSquare, Frown, XCircle, Zap, Mic, BarChart3, ArrowRight 
 export function Landing() {
   return (
     <div className="bg-[#f8f9fa] text-[#191c1d] font-sans antialiased min-h-screen flex flex-col">
-      {/* TopAppBar */}
       <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl shadow-sm">
         <div className="flex justify-between items-center px-6 h-16 w-full max-w-7xl mx-auto">
           <div className="flex items-center gap-2">
@@ -23,7 +22,6 @@ export function Landing() {
       </nav>
 
       <main className="pt-16 pb-24 flex-grow">
-        {/* Hero Section */}
         <section className="relative overflow-hidden px-6 pt-20 pb-24 md:pt-32 md:pb-40">
           <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
             <div className="relative z-10">
@@ -44,7 +42,6 @@ export function Landing() {
               <div className="bg-white p-4 rounded-[2rem] shadow-2xl shadow-blue-900/5">
                 <img alt="AI Interview Interface" className="w-full h-auto rounded-2xl" src="https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&q=80&w=1000" />
               </div>
-              {/* Floating Pulse Progress Ring */}
               <div className="absolute -bottom-6 -left-6 bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-xl flex items-center gap-4">
                 <div className="w-16 h-16 rounded-full border-4 border-[#7127e5] flex items-center justify-center font-bold text-[#7127e5] text-xl">85%</div>
                 <div>
@@ -56,7 +53,6 @@ export function Landing() {
           </div>
         </section>
 
-        {/* Problem Section */}
         <section className="bg-[#f3f4f5] py-24 px-6">
           <div className="max-w-7xl mx-auto">
             <div className="mb-16 max-w-2xl">
@@ -89,7 +85,6 @@ export function Landing() {
           </div>
         </section>
 
-        {/* Features Section */}
         <section className="py-24 px-6 bg-[#f8f9fa]">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
@@ -138,7 +133,6 @@ export function Landing() {
           </div>
         </section>
 
-        {/* CTA Section */}
         <section className="py-24 px-6">
           <div className="max-w-5xl mx-auto bg-gradient-to-br from-[#003fb1] to-[#1a56db] rounded-[2.5rem] p-12 md:p-20 text-center relative overflow-hidden shadow-2xl">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
@@ -156,7 +150,6 @@ export function Landing() {
         </section>
       </main>
 
-      {/* Footer */}
       <footer className="bg-[#f3f4f5] py-12 px-6 border-t border-gray-200">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex items-center gap-2">

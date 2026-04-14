@@ -1,11 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { doc, setDoc } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from '../lib/firebase';
-import { useAuth } from '../contexts/AuthContext';
-import { generatePredictedQuestions } from '../lib/gemini';
-import { extractTextFromFile } from '../lib/fileParser';
-import { Loader2, Flame, Upload, FileText, X, Sparkles, Brain, Code, Users, Smile, Zap, ArrowRight } from 'lucide-react';
+import { db, handleFirestoreError, OperationType } from '../../../lib/firebase';
+import { useAuth } from '../../auth';
+import { generatePredictedQuestions } from '../../../lib/gemini';
+import { extractTextFromFile } from '../../../lib/fileParser';
+import { Loader2, Upload, FileText, X, Sparkles, Brain, Code, Users, Smile, Zap, ArrowRight } from 'lucide-react';
 
 export function SetupSession() {
   const { user } = useAuth();
@@ -272,4 +272,3 @@ export function SetupSession() {
     </div>
   );
 }
-
