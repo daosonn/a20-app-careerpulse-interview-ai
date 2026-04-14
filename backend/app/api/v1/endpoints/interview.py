@@ -4,10 +4,13 @@ from app.schemas.interview import SetupReq, ChatReq
 from app.services.graph import app_graph
 from app.services.reporter import generate_report_logic
 from app.core.database import SessionDep
+from app.core.auth import CurrentUser
 from app.models.models import Interview, User
 import base64
 from openai import OpenAI
 import os
+from fastapi import UploadFile, File
+import tempfile
 
 router = APIRouter()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -25,23 +28,80 @@ def generate_speech_base64(text: str) -> str:
         print("Error generating speech:", e)
         return ""
 
+@router.post("/setup")
+async def setup_interview(req: SetupReq, db: SessionDep, current_user: CurrentUser):
+    """Initial analysis: generate predicted questions and save session context."""
+    try:
+        # 1. Generate predicted questions using LLM (Simulated for now, can use a service function)
+        prompt = f"Analyze this CV and JD for a {req.interview_type} interview in {req.language}. CV: {req.cv_text[:500]} JD: {req.jd_text[:500]}. Provide 5 predicted interview questions."
+        llm_response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        questions = llm_response.choices[0].message.content.split("\n")
+        
+        # 2. Save to DB
+        new_interview = Interview(
+            user_id=current_user.id,
+            cv_text=req.cv_text,
+            jd_text=req.jd_text,
+            interview_type=req.interview_type,
+            language=req.language,
+            predicted_questions=questions,
+            status="setup"
+        )
+        db.add(new_interview)
+        db.commit()
+        db.refresh(new_interview)
+        
+        return {"session_id": new_interview.id, "predicted_questions": questions}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/transcribe")
+async def transcribe_audio(file: UploadFile = File(...), current_user: CurrentUser = None):
+    """Transcribe audio using Whisper."""
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
+            tmp.write(await file.read())
+            tmp_path = tmp.name
+        
+        with open(tmp_path, "rb") as audio_file:
+            transcript = client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file
+            )
+        
+        os.unlink(tmp_path)
+        return {"text": transcript.text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Transcription failed: {str(e)}")
+
 @router.post("/start")
-async def start_interview(req: SetupReq, db: SessionDep):
-    # Ensure user is onboarded
-    user_email = req.session_id # Simplified assumption
-    db_user = db.query(User).filter(User.email == user_email).first()
-    
-    if not db_user or not db_user.is_onboarded:
+async def start_interview(session_id: int, db: SessionDep, current_user: CurrentUser):
+    # Ensure current user is onboarded
+    if not current_user.is_onboarded:
          raise HTTPException(status_code=403, detail="Tài khoản chưa hoàn thành Onboarding. Vui lòng upload CV.")
 
-    config = {"configurable": {"thread_id": req.session_id or "default_user"}}
+    # Get session from DB
+    interview = db.query(Interview).filter(Interview.id == session_id, Interview.user_id == current_user.id).first()
+    if not interview:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Secure thread_id: user can only access their own threads
+    safe_thread_id = f"user_{current_user.id}_{session_id}"
+    config = {"configurable": {"thread_id": safe_thread_id}}
     state = {
-        "cv_content": req.cv_text, "jd_content": req.jd_text,
+        "cv_content": interview.cv_text, "jd_content": interview.jd_text,
         "chat_history": [], "current_question_count": 0,
-        "interview_type": req.interview_type, "language": req.language,
-        "is_stress_test": req.is_stress_test, "current_phase": None,
+        "interview_type": interview.interview_type, "language": interview.language,
+        "is_stress_test": False, # TODO: pass from UI
+        "current_phase": None,
         "skills_extracted": [], "question_bank": "", "evaluations": [], "final_report": ""
     }
+    
+    interview.status = "in_progress"
+    db.commit()
     
     result = await app_graph.ainvoke(state, config=config)
     ai_text = result['chat_history'][-1]['content']
@@ -55,14 +115,17 @@ async def start_interview(req: SetupReq, db: SessionDep):
     }
 
 @router.post("/chat")
-async def chat_interview(req: ChatReq):
-    config = {"configurable": {"thread_id": req.session_id or "default_user"}}
+async def chat_interview(req: ChatReq, current_user: CurrentUser):
+    # Secure thread_id
+    safe_thread_id = f"user_{current_user.id}_{req.session_id or 'default'}"
+    config = {"configurable": {"thread_id": safe_thread_id}}
     new_input = {
         "chat_history": [{"role": "user", "content": req.message}]
     }
 
     result = await app_graph.ainvoke(new_input, config=config)
     ai_text = result['chat_history'][-1]['content']
+    current_phase = result.get("current_phase")
     
     current_evals = result.get('evaluations', [])
     last_eval = current_evals[-1] if current_evals else None
@@ -72,11 +135,12 @@ async def chat_interview(req: ChatReq):
         "evaluations": result.get('evaluations', []),
         "last_evaluation": last_eval,
         "audio_base64": generate_speech_base64(ai_text),
-        "current_phase": result.get("current_phase")
+        "current_phase": current_phase,
+        "should_end": current_phase == "Closing"
     }
 
 @router.post("/end")
-async def end_interview(req: ChatReq, db: SessionDep):
+async def end_interview(req: ChatReq, db: SessionDep, current_user: CurrentUser):
     history = [{"role": m.role, "content": m.content} for m in req.history]
     
     class MockReq:
@@ -87,7 +151,7 @@ async def end_interview(req: ChatReq, db: SessionDep):
     feedback_text = generate_report_logic(report_req)
     
     new_interview = Interview(
-        user_id=1, cv_text=req.cv_text, jd_text=req.jd_text, interview_type=req.interview_type,
+        user_id=current_user.id, cv_text=req.cv_text, jd_text=req.jd_text, interview_type=req.interview_type,
         language=req.language, transcript=history, evaluations=req.evaluations,
         final_report=feedback_text, score=85
     )

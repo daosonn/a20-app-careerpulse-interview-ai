@@ -1,13 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { doc, getDoc, collection, addDoc, query, where, getDocs, updateDoc } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from '../../../lib/firebase';
-import { processInterviewTurn, generateSessionSummary, generateOpeningMessage, INTERVIEW_PHASES, transcribeAudio as whisperTranscribe } from '../../../lib/gemini';
 import { useAuth } from '../../auth';
 import { SessionData, InterviewTurn } from '../types';
 
 export function useInterviewSession(id: string | undefined, speakText: (text: string, lang: string) => Promise<void>) {
-  const { user } = useAuth();
+  const { user, authenticatedFetch } = useAuth();
   const navigate = useNavigate();
   
   const [session, setSession] = useState<SessionData | null>(null);
@@ -21,86 +18,74 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
   const loadData = useCallback(async () => {
     if (!id || !user) return;
     try {
-      const docRef = doc(db, 'interview_sessions', id);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const sessionData = docSnap.data() as SessionData;
-        setSession({ ...sessionData, id: docSnap.id });
-        
-        const q = query(
-          collection(db, 'interview_turns'),
-          where('sessionId', '==', id),
-          where('userId', '==', user.uid)
-        );
-        const turnsSnap = await getDocs(q);
-        const loadedTurns = turnsSnap.docs
-          .map(d => ({ id: d.id, ...d.data() } as InterviewTurn))
-          .sort((a, b) => a.turnOrder - b.turnOrder);
-          
-        setTurns(loadedTurns);
+      const response = await authenticatedFetch(`http://127.0.0.1:8000/api/v1/history/${id}`);
+      if (!response.ok) throw new Error("Could not load session");
+      
+      const data = await response.json();
+      setSession(data);
+      
+      // Map transcript to turns
+      const loadedTurns = (data.transcript || []).map((t: any, idx: number) => ({
+        id: `turn-${idx}`,
+        turnOrder: idx + 1,
+        question: t.role === 'model' ? t.content : '',
+        answer: t.role === 'user' ? t.content : '',
+      }));
+      setTurns(loadedTurns);
 
-        if (sessionData.status === 'setup' || (sessionData.status === 'in_progress' && loadedTurns.length === 0)) {
-          const openingMsg = await generateOpeningMessage(
-            sessionData.cvText, 
-            sessionData.jobDescription, 
-            sessionData.language, 
-            sessionData.isStressTest || false
-          );
-          setCurrentQuestion(openingMsg);
-          setCurrentPhase(1);
-          if (sessionData.status === 'setup') {
-            await updateDoc(docRef, { status: 'in_progress' });
-          }
-          speakText(openingMsg, sessionData.language);
-        } else if (sessionData.status === 'in_progress' && loadedTurns.length > 0) {
-          const lastTurn = loadedTurns[loadedTurns.length - 1];
-          setCurrentPhase(lastTurn.phase || 1);
-          const nextQ = sessionData.language === 'vi' 
-              ? "Chào mừng bạn quay lại. Bạn có thể chia sẻ thêm về kinh nghiệm của mình không?"
-              : "Welcome back. Could you share more about your experience?";
-          setCurrentQuestion(nextQ);
-        } else if (sessionData.status === 'completed') {
-           setCurrentQuestion(sessionData.language === 'vi' ? "Buổi phỏng vấn đã kết thúc." : "The interview has ended.");
+      if (data.status === 'setup' || (data.status === 'in_progress' && loadedTurns.length === 0)) {
+        // Start interview on backend
+        const startResp = await authenticatedFetch(`http://127.0.0.1:8000/api/v1/interview/start?session_id=${id}`, {
+          method: 'POST'
+        });
+        if (startResp.ok) {
+          const startData = await startResp.json();
+          setCurrentQuestion(startData.first_question);
+          setCurrentPhase(startData.current_phase || 1);
+          speakText(startData.first_question, data.language);
         }
+      } else if (data.status === 'completed') {
+         setCurrentQuestion(data.language === 'vi' ? "Buổi phỏng vấn đã kết thúc." : "The interview has ended.");
       }
     } catch (err) {
-      handleFirestoreError(err, OperationType.GET, `interview_sessions/${id}`);
+      console.error(err);
+      setError("Failed to load interview session.");
     } finally {
       setLoading(false);
     }
-  }, [id, user, speakText]);
+  }, [id, user, speakText, authenticatedFetch]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  const endSession = useCallback(async () => {
+  const endSession = useCallback(async (currentHistory: any[]) => {
     if (!session || !id) return;
     setIsProcessing(true);
     try {
-      const chatHistory = turns.map(t => [
-        { role: 'model' as const, text: t.question },
-        { role: 'user' as const, text: t.answer }
-      ]).flat();
-      
-      let summaryData = null;
-      if (chatHistory.length > 0) {
-         summaryData = await generateSessionSummary(session.cvText, session.jobDescription, chatHistory, session.language);
-      }
-
-      await updateDoc(doc(db, 'interview_sessions', id), { 
-        status: 'completed',
-        summary: summaryData?.summary || '',
-        keyTakeaways: summaryData?.keyTakeaways || []
+      const response = await authenticatedFetch(`http://127.0.0.1:8000/api/v1/interview/end`, {
+        method: 'POST',
+        body: JSON.stringify({
+          session_id: id,
+          history: currentHistory,
+          cv_text: session.cvText,
+          jd_text: session.jobDescription,
+          interview_type: session.interviewType,
+          language: session.language,
+          evaluations: [] // Backend handles this now
+        })
       });
-      navigate(`/session/${id}/summary`);
+
+      if (response.ok) {
+        navigate(`/session/${id}/summary`);
+      }
     } catch (err) {
       console.error(err);
-      handleFirestoreError(err, OperationType.UPDATE, `interview_sessions/${id}`);
+      setError("Failed to end session properly.");
     } finally {
       setIsProcessing(false);
     }
-  }, [session, id, turns, navigate]);
+  }, [session, id, navigate, authenticatedFetch]);
 
   const submitAnswer = useCallback(async (answerText: string, audioBlob?: Blob | null, audioUrl?: string | null) => {
     if (!session || !user || !id) return;
@@ -109,19 +94,26 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
 
     let finalAnswer = answerText.trim();
 
-    // transcribed via hook or need whisper
     if (!finalAnswer && audioBlob) {
         try {
-            finalAnswer = await whisperTranscribe(audioBlob, session.language);
+            const formData = new FormData();
+            formData.append('file', audioBlob);
+            const token = await user.getIdToken();
+            const resp = await fetch(`http://127.0.0.1:8000/api/v1/interview/transcribe`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+            const data = await resp.json();
+            finalAnswer = data.text;
         } catch (err) {
-            setError(session.language === 'vi' ? 'Lỗi chuyển giọng nói thành văn bản.' : 'Speech-to-text failed.');
+            setError('Transcription failed.');
             setIsProcessing(false);
             return;
         }
     }
 
     if (!finalAnswer) {
-      setError(session.language === 'vi' ? 'Chưa ghi nhận được câu trả lời.' : 'No answer detected.');
       setIsProcessing(false);
       return;
     }
@@ -133,68 +125,36 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
       turnOrder,
       question: currentQuestion,
       answer: finalAnswer,
-      audioUrl: audioUrl || undefined,
-      phase: currentPhase,
-      phaseName: INTERVIEW_PHASES[currentPhase - 1]?.[session.language === 'vi' ? 'vi' : 'en'] || '',
     };
     
     setTurns(prev => [...prev, pendingTurn]);
-    setCurrentQuestion('');
 
     try {
-      const chatHistory = turns.map(t => [
-        { role: 'model' as const, text: t.question },
-        { role: 'user' as const, text: t.answer }
-      ]).flat();
+      const response = await authenticatedFetch(`http://127.0.0.1:8000/api/v1/interview/chat`, {
+        method: 'POST',
+        body: JSON.stringify({
+          session_id: id,
+          message: finalAnswer
+        })
+      });
 
-      const result = await processInterviewTurn(
-        session.cvText,
-        session.jobDescription,
-        session.interviewType,
-        session.language,
-        session.isStressTest || false,
-        chatHistory,
-        currentQuestion,
-        finalAnswer,
-        currentPhase
-      );
+      if (!response.ok) throw new Error("Chat failed");
+      const result = await response.json();
 
-      const newTurn = {
-        sessionId: session.id,
-        userId: user.uid,
-        turnOrder,
-        question: currentQuestion,
-        answer: finalAnswer,
-        phase: result.phase || currentPhase,
-        phaseName: result.phaseName || '',
-        evaluation: result.evaluation || null,
-        createdAt: new Date().toISOString()
-      };
+      setCurrentQuestion(result.reply);
+      setCurrentPhase(result.current_phase || currentPhase);
+      speakText(result.reply, session.language);
 
-      const docRef = await addDoc(collection(db, 'interview_turns'), newTurn);
-      
-      setTurns(prev => prev.map(t => 
-        t.id === tempId 
-          ? { ...t, id: docRef.id, evaluation: result.evaluation || null, phase: result.phase || currentPhase, phaseName: result.phaseName || '' }
-          : t
-      ));
-      
-      const fallbackQuestion = session.language === 'vi' ? 'Bạn có thể chia sẻ thêm được không?' : 'Could you share more about that?';
-      setCurrentPhase(result.phase || currentPhase);
-      setCurrentQuestion(result.nextQuestion || fallbackQuestion);
-      speakText(result.nextQuestion || fallbackQuestion, session.language);
-
-      if (result.shouldEndInterview) {
-        await endSession();
+      if (result.should_end) {
+        await endSession([...turns, pendingTurn]);
       }
     } catch (err: any) {
       setError(err?.message || 'Unknown error');
       setTurns(prev => prev.filter(t => t.id !== tempId));
-      setCurrentQuestion(pendingTurn.question);
     } finally {
       setIsProcessing(false);
     }
-  }, [session, user, id, turns, currentQuestion, currentPhase, speakText, endSession]);
+  }, [session, user, id, turns, currentQuestion, currentPhase, speakText, endSession, authenticatedFetch]);
 
   return {
     session,

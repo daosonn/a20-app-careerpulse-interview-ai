@@ -19,6 +19,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  authenticatedFetch: (url: string, options?: RequestInit) => Promise<Response>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,9 +29,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
+    if (!user) {
+      throw new Error("User not authenticated");
+    }
+    const token = await user.getIdToken();
+    const headers = {
+      ...options.headers,
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+    return fetch(url, { ...options, headers });
+  };
+
   const fetchProfile = async (email: string) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/v1/user/profile/${email}`);
+      const response = await authenticatedFetch(`http://127.0.0.1:8000/api/v1/user/profile`);
       if (response.ok) {
         const data = await response.json();
         setProfile({
@@ -105,7 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signInWithGoogle, logout, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading, signInWithGoogle, logout, refreshProfile, authenticatedFetch }}>
       {children}
     </AuthContext.Provider>
   );

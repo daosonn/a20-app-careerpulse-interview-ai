@@ -1,14 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { doc, setDoc } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from '../../../lib/firebase';
 import { useAuth } from '../../auth';
-import { generatePredictedQuestions } from '../../../lib/gemini';
 import { extractTextFromFile } from '../../../lib/fileParser';
 import { Loader2, Upload, FileText, X, Sparkles, Brain, Code, Users, Smile, Zap, ArrowRight } from 'lucide-react';
 
 export function SetupSession() {
-  const { user } = useAuth();
+  const { user, authenticatedFetch } = useAuth();
   const navigate = useNavigate();
   
   const [cvText, setCvText] = useState('');
@@ -53,34 +50,30 @@ export function SetupSession() {
     setError('');
 
     try {
-      // 1. Generate questions using Gemini
-      const questions = await generatePredictedQuestions(cvText, jobDescription, interviewType, language);
-      
-      // 2. Save to Firestore
-      const sessionId = crypto.randomUUID();
-      const sessionRef = doc(db, 'interview_sessions', sessionId);
-      
-      await setDoc(sessionRef, {
-        id: sessionId,
-        userId: user.uid,
-        cvText,
-        jobDescription,
-        interviewType,
-        language,
-        isStressTest,
-        status: 'setup',
-        predictedQuestions: questions,
-        createdAt: new Date().toISOString()
+      // 1. Call backend /setup
+      const response = await authenticatedFetch('http://127.0.0.1:8000/api/v1/interview/setup', {
+        method: 'POST',
+        body: JSON.stringify({
+          cv_text: cvText,
+          jd_text: jobDescription,
+          interview_type: interviewType,
+          language: language,
+          is_stress_test: isStressTest
+        })
       });
 
-      // 3. Navigate to session detail
+      if (!response.ok) {
+        throw new Error('Không thể khởi tạo phiên phỏng vấn.');
+      }
+
+      const data = await response.json();
+      const sessionId = data.session_id;
+
+      // 2. Navigate to session detail
       navigate(`/session/${sessionId}`);
     } catch (err) {
       console.error(err);
       setError('Đã có lỗi xảy ra khi phân tích dữ liệu. Vui lòng thử lại.');
-      if (err instanceof Error && err.message.includes('permission')) {
-         handleFirestoreError(err, OperationType.CREATE, 'interview_sessions');
-      }
     } finally {
       setIsGenerating(false);
     }

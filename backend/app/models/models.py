@@ -30,6 +30,8 @@ class Interview(Base):
     evaluations = Column(JSON) # List of evaluations
     final_report = Column(Text)
     score = Column(Integer, default=0)
+    status = Column(String, default="setup") # setup, in_progress, completed
+    predicted_questions = Column(JSON)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     
     owner = relationship("User", back_populates="interviews")
