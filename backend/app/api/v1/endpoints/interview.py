@@ -63,9 +63,14 @@ async def transcribe_audio(file: UploadFile = File(...), current_user: CurrentUs
     """Transcribe audio using Whisper."""
     tmp_path = None
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
-            tmp_path = tmp.name  # Assign immediately
-            tmp.write(await file.read())
+        # Use mkstemp for more robust path assignment
+        fd, tmp_path = tempfile.mkstemp(suffix=".wav")
+        try:
+            with os.fdopen(fd, 'wb') as tmp:
+                tmp.write(await file.read())
+        except Exception:
+            # If writing fails, we still have tmp_path for cleanup in finally
+            raise
         
         with open(tmp_path, "rb") as audio_file:
             transcript = client.audio.transcriptions.create(

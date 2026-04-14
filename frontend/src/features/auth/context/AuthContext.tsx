@@ -37,8 +37,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const headers = new Headers(options.headers);
     headers.set('Authorization', `Bearer ${token}`);
     
-    // Only set Content-Type to application/json if not already set and body is not FormData
-    if (!(options.body instanceof FormData) && !headers.has('Content-Type')) {
+    // Only set Content-Type to application/json if body exists, is not FormData, and not already set
+    if (options.body && !(options.body instanceof FormData) && !headers.has('Content-Type')) {
       headers.set('Content-Type', 'application/json');
     }
     
