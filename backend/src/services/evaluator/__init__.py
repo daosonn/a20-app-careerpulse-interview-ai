@@ -1,1 +1,0 @@
-# Evaluator service package
