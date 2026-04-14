@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { auth, db, googleProvider, handleFirestoreError, OperationType } from '../lib/firebase';
+import { auth, db, googleProvider, handleFirestoreError, OperationType } from '../../../lib/firebase';
 
-interface UserProfile {
+export interface UserProfile {
   isOnboarded: boolean;
   cvText?: string;
   skills?: string[];
@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setProfile(null);
       }
       setUser(currentUser);
-      setLoading(false); // Move this to AFTER profile is fetched
+      setLoading(false);
     });
 
     return () => unsubscribe();

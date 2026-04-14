@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { Rocket, Sparkles } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { Sparkles } from 'lucide-react';
 
 export function Login() {
   const { user, signInWithGoogle } = useAuth();

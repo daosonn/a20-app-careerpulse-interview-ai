@@ -1,4 +1,4 @@
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../auth';
 import { User as UserIcon, Mail, FileText, Cpu, MapPin, Calendar, Award } from 'lucide-react';
 
 export function Profile() {
@@ -14,7 +14,6 @@ export function Profile() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
-      {/* Header Profile Card */}
       <div className="bg-white rounded-[2rem] shadow-xl shadow-blue-900/5 border border-[#c3c5d7]/20 p-8 md:p-12 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-5">
           <UserIcon className="w-32 h-32 text-[#003fb1]" />
@@ -61,7 +60,6 @@ export function Profile() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Left Column: Skills & Info */}
         <div className="md:col-span-1 space-y-8">
           <div className="bg-white p-8 rounded-[2rem] shadow-lg shadow-blue-900/5 border border-[#c3c5d7]/20">
             <h3 className="text-lg font-bold text-[#191c1d] flex items-center gap-2 mb-6">
@@ -93,7 +91,6 @@ export function Profile() {
           </div>
         </div>
 
-        {/* Right Column: CV Content */}
         <div className="md:col-span-2">
           <div className="bg-white p-8 rounded-[2rem] shadow-lg shadow-blue-900/5 border border-[#c3c5d7]/20 h-full flex flex-col">
             <h3 className="text-lg font-bold text-[#191c1d] flex items-center gap-2 mb-6">

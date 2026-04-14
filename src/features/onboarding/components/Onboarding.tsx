@@ -1,10 +1,10 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { extractTextFromFile } from '../lib/fileParser';
+import { useAuth } from '../../auth';
+import { extractTextFromFile } from '../../../lib/fileParser';
 import { Upload, FileText, CheckCircle2, Loader2, Sparkles, Rocket } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { db } from '../../../lib/firebase';
 
 export function Onboarding() {
   const { user, refreshProfile } = useAuth();
