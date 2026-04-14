@@ -34,11 +34,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error("User not authenticated");
     }
     const token = await user.getIdToken();
-    const headers = {
-      ...options.headers,
+    const headers: Record<string, string> = {
+      ...(options.headers as Record<string, string>),
       'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
     };
+    
+    // Only set Content-Type to application/json if not already set and body is not FormData
+    if (!(options.body instanceof FormData) && !headers['Content-Type']) {
+      headers['Content-Type'] = 'application/json';
+    }
+    
     return fetch(url, { ...options, headers });
   };
 

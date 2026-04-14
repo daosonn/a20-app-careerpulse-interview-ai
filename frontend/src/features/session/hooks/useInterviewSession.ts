@@ -98,10 +98,8 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
         try {
             const formData = new FormData();
             formData.append('file', audioBlob);
-            const token = await user.getIdToken();
-            const resp = await fetch(`http://127.0.0.1:8000/api/v1/interview/transcribe`, {
+            const resp = await authenticatedFetch(`http://127.0.0.1:8000/api/v1/interview/transcribe`, {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
             });
             const data = await resp.json();

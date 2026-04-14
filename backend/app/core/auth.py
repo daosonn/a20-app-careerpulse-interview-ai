@@ -3,6 +3,7 @@ from firebase_admin import auth, credentials
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from typing import Annotated
 import os
 
@@ -49,16 +50,23 @@ async def get_current_user(
         db_user = db.query(User).filter(User.email == email).first()
         
         if not db_user:
-            # Auto-create user record on first successful auth
-            db_user = User(
-                email=email,
-                name=name,
-                avatar=picture,
-                is_onboarded=False
-            )
-            db.add(db_user)
-            db.commit()
-            db.refresh(db_user)
+            try:
+                # Auto-create user record on first successful auth
+                db_user = User(
+                    email=email,
+                    name=name,
+                    avatar=picture,
+                    is_onboarded=False
+                )
+                db.add(db_user)
+                db.commit()
+                db.refresh(db_user)
+            except IntegrityError:
+                db.rollback()
+                # Another request might have created the user simultaneously
+                db_user = db.query(User).filter(User.email == email).first()
+                if not db_user:
+                    raise
             
         return db_user
 

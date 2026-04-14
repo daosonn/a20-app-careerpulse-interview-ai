@@ -61,6 +61,7 @@ async def setup_interview(req: SetupReq, db: SessionDep, current_user: CurrentUs
 @router.post("/transcribe")
 async def transcribe_audio(file: UploadFile = File(...), current_user: CurrentUser = None):
     """Transcribe audio using Whisper."""
+    tmp_path = None
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
             tmp.write(await file.read())
@@ -72,10 +73,12 @@ async def transcribe_audio(file: UploadFile = File(...), current_user: CurrentUs
                 file=audio_file
             )
         
-        os.unlink(tmp_path)
         return {"text": transcript.text}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Transcription failed: {str(e)}")
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            os.unlink(tmp_path)
 
 @router.post("/start")
 async def start_interview(session_id: int, db: SessionDep, current_user: CurrentUser):
