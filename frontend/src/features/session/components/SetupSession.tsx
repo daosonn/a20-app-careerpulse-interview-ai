@@ -3,6 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth';
 import { extractTextFromFile } from '../../../lib/fileParser';
 import { Loader2, Upload, FileText, X, Sparkles, Brain, Code, Users, Smile, Zap, ArrowRight } from 'lucide-react';
+import { apiUrl } from '../../../lib/api';
+
+async function parseErrorMessage(response: Response, fallback: string): Promise<string> {
+  try {
+    const payload = await response.json();
+    if (payload?.detail) {
+      return payload.detail;
+    }
+  } catch {
+    // Ignore parse failures and return fallback.
+  }
+  return fallback;
+}
 
 export function SetupSession() {
   const { user, authenticatedFetch } = useAuth();
@@ -31,7 +44,7 @@ export function SetupSession() {
       setCvText(text);
       setFileName(file.name);
     } catch (err: any) {
-      setError(err.message || 'Lỗi khi đọc file CV.');
+      setError(err.message || 'Loi khi doc file CV.');
     } finally {
       setIsParsingFile(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -40,9 +53,12 @@ export function SetupSession() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user) {
+      setError('Vui lòng đăng nhập đềEbắt đầu phỏng vấn.');
+      return;
+    }
     if (!cvText.trim() || !jobDescription.trim()) {
-      setError('Vui lòng nhập đầy đủ CV và Job Description.');
+      setError('Vui lòng nhập đầy đủ CV và Job Description ềEcột bên trái.');
       return;
     }
 
@@ -51,7 +67,7 @@ export function SetupSession() {
 
     try {
       // 1. Call backend /setup
-      const response = await authenticatedFetch('http://127.0.0.1:8000/api/v1/interview/setup', {
+      const response = await authenticatedFetch(apiUrl('/api/v1/interview/setup'), {
         method: 'POST',
         body: JSON.stringify({
           cv_text: cvText,
@@ -63,7 +79,7 @@ export function SetupSession() {
       });
 
       if (!response.ok) {
-        throw new Error('Không thể khởi tạo phiên phỏng vấn.');
+        throw new Error(await parseErrorMessage(response, 'Khong the khoi tao phien phong van.'));
       }
 
       const data = await response.json();
@@ -73,7 +89,7 @@ export function SetupSession() {
       navigate(`/session/${sessionId}`);
     } catch (err) {
       console.error(err);
-      setError('Đã có lỗi xảy ra khi phân tích dữ liệu. Vui lòng thử lại.');
+      setError((err as Error)?.message || 'Da co loi xay ra khi phan tich du lieu. Vui long thu lai.');
     } finally {
       setIsGenerating(false);
     }
@@ -83,27 +99,21 @@ export function SetupSession() {
     <div className="max-w-5xl mx-auto">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
         <div className="lg:col-span-7">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-[#191c1d] tracking-tight mb-4">Chuẩn bị cho <span className="text-[#003fb1]">bước ngoặt.</span></h1>
-          <p className="text-[#434654] text-lg leading-relaxed max-w-2xl">Cấu hình phiên phỏng vấn với AI Coach. Chúng tôi sẽ tùy chỉnh câu hỏi dựa trên hồ sơ và vị trí mục tiêu của bạn.</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-[#191c1d] tracking-tight mb-4">Chuẩn bềEcho <span className="text-[#003fb1]">bước ngoặt.</span></h1>
+          <p className="text-[#434654] text-lg leading-relaxed max-w-2xl">Cấu hình phiên phỏng vấn với AI Coach. Chúng tôi sẽ tùy chỉnh câu hỏi dựa trên hềEsơ và vềEtrí mục tiêu của bạn.</p>
         </div>
         <div className="lg:col-span-5 flex items-center justify-end">
           <div className="bg-[#8b4aff]/10 p-6 rounded-xl border border-[#c3c5d7]/20 flex items-center gap-4">
             <Sparkles className="text-[#7127e5] w-10 h-10" />
             <div>
               <p className="text-sm font-bold text-[#7127e5]">AI Insight</p>
-              <p className="text-xs text-[#434654]">Chế độ Stress-test tăng độ chân thực lên 40% dựa trên xu hướng HR gần đây.</p>
+              <p className="text-xs text-[#434654]">Chế đềEStress-test tăng đềEchân thực lên 40% dựa trên xu hướng HR gần đây.</p>
             </div>
           </div>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {error && (
-          <div className="md:col-span-2 p-4 bg-[#ffdad6] text-[#ba1a1a] rounded-xl text-sm border border-[#ba1a1a]/20 font-medium">
-            {error}
-          </div>
-        )}
-
         {/* Left Column: Context Selection */}
         <div className="space-y-8">
           <section>
@@ -120,7 +130,7 @@ export function SetupSession() {
                       onClick={() => fileInputRef.current?.click()}
                     >
                       <Upload className="w-8 h-8 text-[#737686] mb-2" />
-                      <p className="text-sm text-[#434654] font-medium">Click để tải lên CV (PDF, DOCX, TXT)</p>
+                      <p className="text-sm text-[#434654] font-medium">Click đềEtải lên CV (PDF, DOCX, TXT)</p>
                       <input 
                         type="file" 
                         ref={fileInputRef} 
@@ -156,7 +166,7 @@ export function SetupSession() {
                     value={cvText}
                     onChange={(e) => { setCvText(e.target.value); if(!e.target.value) setFileName(''); }}
                     rows={4}
-                    placeholder="Nội dung CV sẽ hiển thị ở đây. Bạn cũng có thể dán trực tiếp text vào..."
+                    placeholder="Nội dung CV sẽ hiển thềEềEđây. Bạn cũng có thềEdán trực tiếp text vào..."
                     className="w-full rounded-xl border border-[#c3c5d7] px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#003fb1] focus:border-transparent resize-y mt-3 text-sm bg-[#f8f9fa]"
                   />
                 </div>
@@ -223,7 +233,7 @@ export function SetupSession() {
           </section>
 
           <section>
-            <h2 className="text-sm font-bold tracking-widest text-[#434654] uppercase mb-4">4. Cường độ (Intensity)</h2>
+            <h2 className="text-sm font-bold tracking-widest text-[#434654] uppercase mb-4">4. Cường đềE(Intensity)</h2>
             <div className="grid grid-cols-2 gap-4">
               <label className={`block p-6 rounded-xl cursor-pointer transition-all border ${!isStressTest ? 'bg-[#003fb1]/5 border-[#003fb1]' : 'bg-white border-[#c3c5d7]/20 hover:bg-[#f3f4f5]'}`}>
                 <input type="radio" name="mode" checked={!isStressTest} onChange={() => setIsStressTest(false)} className="hidden" />
@@ -241,6 +251,11 @@ export function SetupSession() {
           </section>
 
           <div className="pt-4">
+            {error && (
+              <div className="mb-4 p-4 bg-[#ffdad6] text-[#ba1a1a] rounded-xl text-sm border border-[#ba1a1a]/20 font-medium animate-pulse">
+                {error}
+              </div>
+            )}
             <button
               type="submit"
               disabled={isGenerating}
@@ -265,3 +280,4 @@ export function SetupSession() {
     </div>
   );
 }
+

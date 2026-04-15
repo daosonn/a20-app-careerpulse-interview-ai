@@ -5,9 +5,10 @@ import { extractTextFromFile } from '../../../lib/fileParser';
 import { Upload, FileText, CheckCircle2, Loader2, Sparkles, Rocket } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
+import { apiUrl } from '../../../lib/api';
 
 export function Onboarding() {
-  const { user, refreshProfile } = useAuth();
+  const { user, refreshProfile, authenticatedFetch } = useAuth();
   const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -37,9 +38,8 @@ export function Onboarding() {
       const cvText = await extractTextFromFile(file);
 
       // 2. Call Backend API to extract skills and save to SQLite
-      const response = await fetch('http://127.0.0.1:8000/api/v1/user/onboard', {
+      const response = await authenticatedFetch(apiUrl('/api/v1/user/onboard'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           uid: user.uid,
           email: user.email,
