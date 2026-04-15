@@ -2,6 +2,19 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth';
 import { SessionData, InterviewTurn } from '../types';
+import { apiUrl } from '../../../lib/api';
+
+async function parseErrorMessage(response: Response, fallback: string): Promise<string> {
+  try {
+    const payload = await response.json();
+    if (payload?.detail) {
+      return payload.detail;
+    }
+  } catch {
+    // Ignore parse failures and keep fallback.
+  }
+  return fallback;
+}
 
 export function useInterviewSession(id: string | undefined, speakText: (text: string, lang: string) => Promise<void>) {
   const { user, authenticatedFetch } = useAuth();
@@ -18,8 +31,8 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
   const loadData = useCallback(async () => {
     if (!id || !user) return;
     try {
-      const response = await authenticatedFetch(`http://127.0.0.1:8000/api/v1/history/${id}`);
-      if (!response.ok) throw new Error("Could not load session");
+      const response = await authenticatedFetch(apiUrl(`/api/v1/history/${id}`));
+      if (!response.ok) throw new Error(await parseErrorMessage(response, 'Could not load session'));
       
       const data = await response.json();
       setSession(data);
@@ -35,7 +48,7 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
 
       if (data.status === 'setup' || (data.status === 'in_progress' && loadedTurns.length === 0)) {
         // Start interview on backend
-        const startResp = await authenticatedFetch(`http://127.0.0.1:8000/api/v1/interview/start?session_id=${id}`, {
+        const startResp = await authenticatedFetch(apiUrl(`/api/v1/interview/start?session_id=${id}`), {
           method: 'POST'
         });
         if (startResp.ok) {
@@ -43,6 +56,8 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
           setCurrentQuestion(startData.first_question);
           setCurrentPhase(startData.current_phase || 1);
           speakText(startData.first_question, data.language);
+        } else {
+          setError(await parseErrorMessage(startResp, 'Failed to start interview session.'));
         }
       } else if (data.status === 'completed') {
          setCurrentQuestion(data.language === 'vi' ? "Buổi phỏng vấn đã kết thúc." : "The interview has ended.");
@@ -62,12 +77,19 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
   const endSession = useCallback(async (currentHistory: any[]) => {
     if (!session || !id) return;
     setIsProcessing(true);
+    
+    const mappedHistory: {role: string, content: string}[] = [];
+    currentHistory.forEach(turn => {
+      if (turn.question) mappedHistory.push({ role: 'model', content: turn.question });
+      if (turn.answer) mappedHistory.push({ role: 'user', content: turn.answer });
+    });
+
     try {
-      const response = await authenticatedFetch(`http://127.0.0.1:8000/api/v1/interview/end`, {
+      const response = await authenticatedFetch(apiUrl('/api/v1/interview/end'), {
         method: 'POST',
         body: JSON.stringify({
           session_id: id,
-          history: currentHistory,
+          history: mappedHistory,
           cv_text: session.cvText,
           jd_text: session.jobDescription,
           interview_type: session.interviewType,
@@ -78,6 +100,8 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
 
       if (response.ok) {
         navigate(`/session/${id}/summary`);
+      } else {
+        setError(await parseErrorMessage(response, 'Failed to end session properly.'));
       }
     } catch (err) {
       console.error(err);
@@ -98,10 +122,15 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
         try {
             const formData = new FormData();
             formData.append('file', audioBlob);
-            const resp = await authenticatedFetch(`http://127.0.0.1:8000/api/v1/interview/transcribe`, {
+            const resp = await authenticatedFetch(apiUrl('/api/v1/interview/transcribe'), {
                 method: 'POST',
                 body: formData
             });
+            if (!resp.ok) {
+              setError(await parseErrorMessage(resp, 'Transcription failed.'));
+              setIsProcessing(false);
+              return;
+            }
             const data = await resp.json();
             finalAnswer = data.text;
         } catch (err) {
@@ -128,7 +157,7 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
     setTurns(prev => [...prev, pendingTurn]);
 
     try {
-      const response = await authenticatedFetch(`http://127.0.0.1:8000/api/v1/interview/chat`, {
+      const response = await authenticatedFetch(apiUrl('/api/v1/interview/chat'), {
         method: 'POST',
         body: JSON.stringify({
           session_id: id,
@@ -136,7 +165,7 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
         })
       });
 
-      if (!response.ok) throw new Error("Chat failed");
+      if (!response.ok) throw new Error(await parseErrorMessage(response, 'Chat failed'));
       const result = await response.json();
 
       setCurrentQuestion(result.reply);
