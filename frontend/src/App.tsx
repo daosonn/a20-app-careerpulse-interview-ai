@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './features/auth';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout } from './components/Layout';
+import { AuthGate } from './components/AuthGate';
 import { Loader2 } from 'lucide-react';
 
 // Lazy load components from features
@@ -17,10 +18,12 @@ const Profile = lazy(() => import('./features/profile').then(m => ({ default: m.
 
 // Loading component for Suspense
 const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-[#f8f9fa]">
+  <div className="min-h-screen flex items-center justify-center bg-navy-950 font-sans">
     <div className="flex flex-col items-center gap-4">
-      <Loader2 className="w-10 h-10 text-[#003fb1] animate-spin" />
-      <p className="text-[#434654] font-medium animate-pulse">Đang tải trang...</p>
+      <Loader2 className="w-10 h-10 text-gold-400 animate-spin" aria-hidden />
+      <p className="text-text-muted font-medium tracking-wide animate-pulse">
+        Đang tải trang...
+      </p>
     </div>
   </div>
 );
@@ -32,13 +35,20 @@ export default function App() {
         <BrowserRouter>
           <Suspense fallback={<PageLoader />}>
             <Routes>
+              {/* Public routes */}
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/onboarding" element={<Onboarding />} />
+
+              {/* Authenticated full-viewport routes — no sidebar */}
+              <Route element={<AuthGate />}>
+                <Route path="/session/:id" element={<InterviewRoom />} />
+              </Route>
+
+              {/* Authenticated routes with the sidebar shell */}
               <Route path="/" element={<Layout />}>
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="setup" element={<SetupSession />} />
-                <Route path="session/:id" element={<InterviewRoom />} />
                 <Route path="session/:id/summary" element={<SessionDetail />} />
                 <Route path="profile" element={<Profile />} />
               </Route>

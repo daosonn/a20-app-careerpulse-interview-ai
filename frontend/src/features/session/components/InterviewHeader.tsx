@@ -1,6 +1,8 @@
-import React from 'react';
-import { INTERVIEW_PHASES } from '../../../lib/gemini';
+import { Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { INTERVIEW_PHASES } from '../constants';
 import { SessionData } from '../types';
+import { Badge, Button } from '../../../components/ui';
 
 interface Props {
   session: SessionData;
@@ -9,35 +11,71 @@ interface Props {
   isVi: boolean;
 }
 
-export function InterviewHeader({ session, currentPhase, onEndSession, isVi }: Props) {
+export function InterviewHeader({
+  session,
+  currentPhase,
+  onEndSession,
+  isVi,
+}: Props) {
   const roomTitle = isVi ? 'Phòng Phỏng Vấn' : 'Interview Room';
-  const endSessionLabel = isVi ? 'Kết thúc phỏng vấn' : 'End Interview';
+  const kicker = isVi ? 'The Arena — Phòng luyện tập' : 'The Arena — Coaching Room';
+  const endSessionLabel = isVi ? 'Kết thúc' : 'End';
   const phaseLabel = isVi ? 'Giai đoạn' : 'Phase';
+  const backLabel = isVi ? 'Bảng điều khiển' : 'Dashboard';
+
+  const phaseMeta = INTERVIEW_PHASES[String(currentPhase)];
+  const jdTitle = (session.jobDescription || '').split('\n')[0];
 
   return (
-    <div className="bg-[#191c1d] text-white p-5 flex justify-between items-center relative">
-      <div>
-        <h2 className="font-bold text-xl flex items-center gap-2">
-          {roomTitle}
-          {session.isStressTest && (
-            <span className="text-xs bg-red-500/20 text-red-300 border border-red-500/30 px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">
-              Stress Test
-            </span>
-          )}
-        </h2>
-        <p className="text-sm text-slate-400 mt-1">{session.interviewType} • {session.jobDescription.split('\n')[0]}</p>
-      </div>
-      
-      <div className="absolute left-1/2 -translate-x-1/2 bg-white/10 px-4 py-1.5 rounded-full border border-white/10 hidden md:flex items-center gap-2">
-        <span className="text-xl">{INTERVIEW_PHASES[currentPhase - 1]?.icon}</span>
-        <span className="text-sm font-bold text-white tracking-wide">
-          {phaseLabel} {currentPhase}: {INTERVIEW_PHASES[currentPhase - 1]?.[isVi ? 'vi' : 'en']}
-        </span>
+    <header className="relative bg-navy-950 border-b border-gold-500/25 px-4 sm:px-8 py-4 flex items-center gap-4">
+      {/* Left — back link + title */}
+      <div className="flex items-center gap-4 min-w-0 flex-1">
+        <Link
+          to="/dashboard"
+          className="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium text-text-muted hover:text-gold-400 transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" aria-hidden />
+          {backLabel}
+        </Link>
+        <div className="min-w-0">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-gold-400 mb-0.5 leading-none">
+            {kicker}
+          </p>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h2 className="font-serif text-xl sm:text-2xl text-text-primary leading-tight">
+              {roomTitle}
+            </h2>
+            {session.isStressTest && (
+              <Badge variant="error" size="sm">
+                Stress Test
+              </Badge>
+            )}
+          </div>
+          <p className="text-xs text-text-muted mt-1 truncate">
+            {session.interviewType}
+            {jdTitle ? ` · ${jdTitle}` : ''}
+          </p>
+        </div>
       </div>
 
-      <button onClick={onEndSession} className="text-sm font-bold bg-[#434654] hover:bg-[#737686] px-5 py-2.5 rounded-xl transition-colors">
-        {endSessionLabel}
-      </button>
-    </div>
+      {/* Center — phase pill (hidden on mobile) */}
+      {phaseMeta && (
+        <div className="hidden md:flex items-center gap-2 shrink-0 px-3.5 py-1.5 rounded-full border border-gold-500/40 bg-gold-500/5">
+          <span className="text-base leading-none" aria-hidden>
+            {phaseMeta.icon}
+          </span>
+          <span className="text-xs font-semibold text-gold-300 tracking-wide">
+            {phaseLabel} {currentPhase}: {phaseMeta[isVi ? 'vi' : 'en']}
+          </span>
+        </div>
+      )}
+
+      {/* Right — end button */}
+      <div className="shrink-0">
+        <Button variant="secondary" size="sm" onClick={onEndSession}>
+          {endSessionLabel}
+        </Button>
+      </div>
+    </header>
   );
 }

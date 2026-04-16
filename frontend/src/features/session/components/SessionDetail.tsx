@@ -1,11 +1,62 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from '../../../lib/firebase';
+import {
+  doc,
+  getDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from 'firebase/firestore';
+import {
+  db,
+  handleFirestoreError,
+  OperationType,
+} from '../../../lib/firebase';
 import { useAuth } from '../../auth';
-import { ArrowLeft, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Sparkles,
+  Lightbulb,
+  MessageSquareText,
+  TrendingUp,
+  TrendingDown,
+  Loader2,
+} from 'lucide-react';
 import { FormattedText } from '../../../components/FormattedText';
+import {
+  Card,
+  Badge,
+  Button,
+  ScoreRing,
+  SectionHeading,
+} from '../../../components/ui';
 import { SessionData, InterviewTurn } from '../types';
+
+type CompetencyKey =
+  | 'relevance'
+  | 'structure'
+  | 'specificity'
+  | 'clarity'
+  | 'confidence';
+
+const COMPETENCY_LABELS: Record<CompetencyKey, [string, string]> = {
+  relevance: ['Liên quan', 'Relevance'],
+  structure: ['Cấu trúc', 'Structure'],
+  specificity: ['Chi tiết', 'Specificity'],
+  clarity: ['Rõ ràng', 'Clarity'],
+  confidence: ['Tự tin', 'Confidence'],
+};
+
+const STAR_STEPS: Array<'situation' | 'task' | 'action' | 'result'> = [
+  'situation',
+  'task',
+  'action',
+  'result',
+];
+
+/* ------------------------------------------------------------------ */
 
 export function SessionDetail() {
   const { id } = useParams<{ id: string }>();
@@ -20,7 +71,6 @@ export function SessionDetail() {
       try {
         const docRef = doc(db, 'interview_sessions', id);
         const docSnap = await getDoc(docRef);
-        
         if (docSnap.exists()) {
           setSession(docSnap.data() as SessionData);
         }
@@ -28,16 +78,19 @@ export function SessionDetail() {
         const q = query(
           collection(db, 'interview_turns'),
           where('sessionId', '==', id),
-          where('userId', '==', user.uid)
+          where('userId', '==', user.uid),
         );
         const turnsSnap = await getDocs(q);
         const loadedTurns = turnsSnap.docs
-          .map(d => ({ id: d.id, ...d.data() } as InterviewTurn))
+          .map((d) => ({ id: d.id, ...d.data() } as InterviewTurn))
           .sort((a, b) => a.turnOrder - b.turnOrder);
         setTurns(loadedTurns);
-
       } catch (error) {
-        handleFirestoreError(error, OperationType.GET, `interview_sessions/${id}`);
+        handleFirestoreError(
+          error,
+          OperationType.GET,
+          `interview_sessions/${id}`,
+        );
       } finally {
         setLoading(false);
       }
@@ -47,180 +100,375 @@ export function SessionDetail() {
   }, [id, user]);
 
   if (loading) {
-    return <div className="animate-pulse text-slate-500">Đang tải dữ liệu phiên...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-9 h-9 text-gold-400 animate-spin" aria-hidden />
+          <p className="text-text-muted text-sm font-medium tracking-wide">
+            Đang tải dữ liệu phiên...
+          </p>
+        </div>
+      </div>
+    );
   }
 
   if (!session) {
-    return <div>Không tìm thấy phiên phỏng vấn.</div>;
-  }
-
-  // Calculate average score
-  let avgScore = 0;
-  if (turns.length > 0) {
-    const scoredTurns = turns.filter(t => t.evaluation);
-    if (scoredTurns.length > 0) {
-      const totalScores = scoredTurns.reduce((acc, turn) => {
-        const s = turn.evaluation!.scores;
-        return acc + (s.relevance + s.structure + s.specificity + s.clarity + s.confidence) / 5;
-      }, 0);
-      avgScore = totalScores / scoredTurns.length;
-    }
+    return (
+      <div className="px-8 py-12 text-center">
+        <h2 className="font-serif text-2xl text-gold-400 mb-2">
+          Không tìm thấy phiên phỏng vấn
+        </h2>
+        <Link to="/dashboard">
+          <Button variant="secondary" size="md" className="mt-4">
+            Về Bảng điều khiển
+          </Button>
+        </Link>
+      </div>
+    );
   }
 
   const isVi = session.language === 'vi';
   const t = {
-    backToDashboard: isVi ? 'Quay lại Dashboard' : 'Back to Dashboard',
-    badge: isVi ? 'Phân tích sau phỏng vấn' : 'Post-Interview Analysis',
-    title: isVi ? 'Kết quả Phỏng vấn' : 'Interview Result',
-    subtitle: isVi ? 'Tuyệt vời! Bạn đã hoàn thành phiên phỏng vấn. Dưới đây là phân tích chi tiết về hiệu suất của bạn để giúp bạn cải thiện.' : 'Great job! You have completed the interview session. Below is a detailed analysis of your performance to help you improve.',
-    outOf5: isVi ? 'Trên 5' : 'Out of 5',
-    overviewTitle: isVi ? 'Tổng quan buổi phỏng vấn' : 'Interview Overview',
+    back: isVi ? 'Bảng điều khiển' : 'Dashboard',
+    kicker: isVi ? 'Phân tích sau phỏng vấn' : 'Post-interview debrief',
+    title: isVi ? 'Kết quả phỏng vấn' : 'Interview Debrief',
+    subtitle: isVi
+      ? 'Tuyệt vời! Bạn đã hoàn thành phiên phỏng vấn. Dưới đây là phân tích chi tiết về hiệu suất để giúp bạn cải thiện.'
+      : 'Great job! You have completed the interview. Below is a detailed analysis of your performance.',
+    overviewTitle: isVi ? 'Tổng quan buổi phỏng vấn' : 'Session Overview',
     keyTakeaways: isVi ? 'Điểm cần chú ý' : 'Key Takeaways',
-    questionsDetail: isVi ? 'Chi tiết các câu hỏi' : 'Question Details',
-    noQuestions: isVi ? 'Phiên này chưa có câu hỏi nào được trả lời.' : 'No questions were answered in this session.',
-    evalTitle: isVi ? 'Đánh giá chi tiết' : 'Detailed Evaluation',
-    starTitle: isVi ? 'Phân tích STAR:' : 'STAR Analysis:',
-    feedbackLabel: isVi ? 'Nhận xét:' : 'Feedback:',
-    betterVersion: isVi ? 'Phiên bản tốt hơn:' : 'Better Version:',
-    goToDashboard: isVi ? 'Về Dashboard' : 'Go to Dashboard',
+    strengths: isVi ? 'Điểm mạnh' : 'Strengths',
+    growth: isVi ? 'Cần cải thiện' : 'Areas for Growth',
+    questionsDetail: isVi ? 'Chi tiết câu hỏi' : 'Question Breakdown',
+    noQuestions: isVi
+      ? 'Phiên này chưa có câu hỏi nào được trả lời.'
+      : 'No questions were answered in this session.',
+    yourResponse: isVi ? 'Câu trả lời của bạn' : 'Your Response',
+    starTitle: isVi ? 'Phân tích STAR' : 'STAR Analysis',
+    feedbackLabel: isVi ? 'Nhận xét' : 'Feedback',
+    betterVersion: isVi ? 'Phiên bản tốt hơn' : 'Elevate Standard',
+    goToDashboard: isVi ? 'Về Bảng điều khiển' : 'Go to Dashboard',
+    readinessLabel: isVi ? 'Chỉ số sẵn sàng' : 'Readiness',
   };
 
-  const scoreLabel = (key: string) => {
-    const map: Record<string, [string, string]> = {
-      relevance: ['Liên quan', 'Relevance'],
-      structure: ['Cấu trúc', 'Structure'],
-      specificity: ['Chi tiết', 'Specificity'],
-      clarity: ['Rõ ràng', 'Clarity'],
-      confidence: ['Tự tin', 'Confidence'],
-    };
-    return map[key]?.[isVi ? 0 : 1] || key;
+  const scoreLabel = (key: string) =>
+    COMPETENCY_LABELS[key as CompetencyKey]?.[isVi ? 0 : 1] || key;
+  const starLabel = (step: string) => step.charAt(0).toUpperCase() + step.slice(1);
+
+  // Compute session-level averages.
+  const scoredTurns = turns.filter((t) => t.evaluation);
+  let avgScore = 0;
+  const competencySums: Record<CompetencyKey, number> = {
+    relevance: 0,
+    structure: 0,
+    specificity: 0,
+    clarity: 0,
+    confidence: 0,
   };
+  if (scoredTurns.length > 0) {
+    const totals = scoredTurns.reduce((acc, turn) => {
+      const s = turn.evaluation!.scores;
+      competencySums.relevance += s.relevance;
+      competencySums.structure += s.structure;
+      competencySums.specificity += s.specificity;
+      competencySums.clarity += s.clarity;
+      competencySums.confidence += s.confidence;
+      return acc + (s.relevance + s.structure + s.specificity + s.clarity + s.confidence) / 5;
+    }, 0);
+    avgScore = totals / scoredTurns.length;
+  }
+  const readinessPct = Math.round((avgScore / 5) * 100);
+
+  const perCompetencyAvg: Array<{ key: CompetencyKey; score: number }> = (
+    Object.keys(competencySums) as CompetencyKey[]
+  ).map((key) => ({
+    key,
+    score: scoredTurns.length ? competencySums[key] / scoredTurns.length : 0,
+  }));
+  const sortedByScore = [...perCompetencyAvg].sort((a, b) => b.score - a.score);
+  const strengths = sortedByScore.slice(0, 2);
+  const growth = sortedByScore.slice(-2).reverse();
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12">
-      <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm font-bold text-[#434654] hover:text-[#003fb1] transition-colors mb-8">
-        <ArrowLeft className="w-4 h-4" />
-        {t.backToDashboard}
-      </Link>
+    <div className="font-sans">
+      {/* ---------- Hero (navy) ---------- */}
+      <section className="bg-navy-950 px-4 sm:px-8 lg:px-12 pt-8 pb-14">
+        <Link
+          to="/dashboard"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-text-muted hover:text-gold-400 transition-colors mb-8"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" aria-hidden />
+          {t.back}
+        </Link>
 
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end mb-16">
-        <div className="md:col-span-8">
-          <span className="inline-block px-4 py-1.5 rounded-full bg-[#eaddff] text-[#5a00c6] text-xs font-bold tracking-widest uppercase mb-4">{t.badge}</span>
-          <h1 className="font-extrabold text-5xl md:text-6xl text-[#191c1d] tracking-tight">{t.title}</h1>
-          <p className="mt-4 text-[#434654] text-lg max-w-xl leading-relaxed">{t.subtitle}</p>
-        </div>
-        
-        {turns.length > 0 && !isNaN(avgScore) && (
-          <div className="md:col-span-4 flex justify-center md:justify-end">
-            <div className="relative w-48 h-48 flex items-center justify-center">
-              <div className="absolute inset-0 rounded-full border-[12px] border-[#e7e8e9] opacity-20"></div>
-              <div className="absolute inset-0 rounded-full border-[12px] border-transparent border-t-[#7127e5] border-r-[#7127e5] border-b-[#7127e5] opacity-90 transform rotate-12"></div>
-              <div className="bg-white shadow-2xl rounded-full w-40 h-40 flex flex-col items-center justify-center z-10 border border-[#c3c5d7]/10">
-                <span className="text-5xl font-extrabold text-[#191c1d]">{avgScore.toFixed(1)}</span>
-                <span className="text-sm font-bold text-[#737686] tracking-wider uppercase">{t.outOf5}</span>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {(session.summary || (session.keyTakeaways && session.keyTakeaways.length > 0)) && (
-        <div className="mb-16 bg-white rounded-2xl border border-[#c3c5d7]/20 shadow-sm overflow-hidden">
-          <div className="p-8 border-b border-[#f3f4f5] bg-[#f8f9fa]">
-            <h2 className="font-bold text-[#191c1d] text-2xl mb-4">{t.overviewTitle}</h2>
-            {session.summary && <p className="text-[#434654] leading-relaxed text-lg">{session.summary}</p>}
-          </div>
-          {session.keyTakeaways && session.keyTakeaways.length > 0 && (
-            <div className="p-8">
-              <h3 className="font-bold text-[#191c1d] text-xl mb-4">{t.keyTakeaways}</h3>
-              <ul className="space-y-3">
-                {session.keyTakeaways.map((takeaway, idx) => (
-                  <li key={idx} className="flex items-start gap-3">
-                    <CheckCircle2 className="w-6 h-6 text-[#003fb1] flex-shrink-0 mt-0.5" />
-                    <span className="text-[#434654] leading-relaxed">{takeaway}</span>
-                  </li>
-                ))}
-              </ul>
+        <div className="grid lg:grid-cols-[1.2fr_1fr] gap-10 items-center max-w-6xl">
+          <SectionHeading
+            label={t.kicker}
+            title={
+              scoredTurns.length > 0 ? (
+                <>
+                  {isVi ? 'Bạn đã sẵn sàng' : 'You are'}{' '}
+                  <span className="text-gold-400">
+                    {readinessPct}%{isVi ? '' : ' ready'}
+                  </span>
+                  {isVi ? ' cho vòng phỏng vấn tiếp theo.' : '.'}
+                </>
+              ) : (
+                t.title
+              )
+            }
+            subtitle={t.subtitle}
+            size="lg"
+          />
+          {scoredTurns.length > 0 && (
+            <div className="flex justify-center lg:justify-end">
+              <ScoreRing
+                value={avgScore}
+                max={5}
+                size={200}
+                suffix="/5"
+                label={t.readinessLabel}
+              />
             </div>
           )}
         </div>
-      )}
 
-      <div className="space-y-12">
-        <h2 className="font-bold text-[#191c1d] text-2xl">{t.questionsDetail} ({turns.length})</h2>
-        {turns.length === 0 ? (
-          <p className="text-[#434654] italic">{t.noQuestions}</p>
-        ) : (
-          turns.map((turn, index) => (
-            <div key={turn.id} className="bg-white rounded-2xl border border-[#c3c5d7]/20 shadow-sm overflow-hidden">
-              <div className="p-6 border-b border-[#f3f4f5] bg-[#f8f9fa]">
-                <div className="flex gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#191c1d] flex items-center justify-center flex-shrink-0 text-white text-sm font-bold shadow-md">
-                    Q{index + 1}
-                  </div>
-                  <p className="text-[#191c1d] font-bold text-lg mt-1">{turn.question}</p>
-                </div>
+        {/* Strengths / Growth */}
+        {scoredTurns.length > 0 && (
+          <div className="grid md:grid-cols-2 gap-4 mt-10 max-w-6xl">
+            <Card variant="highlighted" padding="md">
+              <div className="flex items-center gap-2.5 mb-4">
+                <span className="inline-flex w-8 h-8 rounded-full bg-gold-500/15 border border-gold-500/40 items-center justify-center">
+                  <TrendingUp className="w-4 h-4 text-gold-400" aria-hidden />
+                </span>
+                <h3 className="font-serif text-lg text-text-primary">
+                  {t.strengths}
+                </h3>
               </div>
-              
-              <div className="p-6 border-b border-[#f3f4f5]">
-                <div className="flex gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#003fb1] flex items-center justify-center flex-shrink-0 text-white text-sm font-bold shadow-md">
-                    {isVi ? 'Bạn' : 'You'}
-                  </div>
-                  <p className="text-[#434654] mt-1 leading-relaxed">{turn.answer}</p>
-                </div>
+              <ul className="space-y-2">
+                {strengths.map((s) => (
+                  <li
+                    key={s.key}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span className="text-text-primary">{scoreLabel(s.key)}</span>
+                    <span className="font-serif text-lg text-gold-400">
+                      {s.score.toFixed(1)}
+                      <span className="text-xs text-text-muted">/5</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+            <Card variant="dark" padding="md">
+              <div className="flex items-center gap-2.5 mb-4">
+                <span className="inline-flex w-8 h-8 rounded-full bg-status-warning/15 border border-status-warning/40 items-center justify-center">
+                  <TrendingDown className="w-4 h-4 text-status-warning" aria-hidden />
+                </span>
+                <h3 className="font-serif text-lg text-text-primary">
+                  {t.growth}
+                </h3>
               </div>
+              <ul className="space-y-2">
+                {growth.map((g) => (
+                  <li
+                    key={g.key}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span className="text-text-primary">{scoreLabel(g.key)}</span>
+                    <span className="font-serif text-lg text-status-warning">
+                      {g.score.toFixed(1)}
+                      <span className="text-xs text-text-muted">/5</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          </div>
+        )}
 
-              {turn.evaluation && (
-                <div className="p-6 bg-white">
-                  <div className="flex items-center gap-2 mb-6">
-                    <AlertCircle className="w-6 h-6 text-[#8b4aff]" />
-                    <h4 className="font-bold text-[#191c1d] text-xl">{t.evalTitle}</h4>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-                    {Object.entries(turn.evaluation.scores || {}).map(([key, score]) => (
-                      <div key={key} className="bg-[#f8f9fa] p-4 rounded-xl text-center border border-[#c3c5d7]/20 transition-transform hover:scale-105">
-                        <div className="text-xs font-bold text-[#737686] uppercase tracking-wider mb-2">{scoreLabel(key)}</div>
-                        <div className="font-extrabold text-[#191c1d] text-2xl">{score}/5</div>
-                      </div>
+        {/* Overview + Takeaways */}
+        {(session.summary ||
+          (session.keyTakeaways && session.keyTakeaways.length > 0)) && (
+          <div className="mt-10 max-w-6xl">
+            <Card variant="dark" padding="lg">
+              <h2 className="font-serif text-2xl text-text-primary mb-3">
+                {t.overviewTitle}
+              </h2>
+              {session.summary && (
+                <p className="text-text-muted leading-relaxed">
+                  {session.summary}
+                </p>
+              )}
+              {session.keyTakeaways && session.keyTakeaways.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.25em] text-gold-400 mb-3">
+                    {t.keyTakeaways}
+                  </h3>
+                  <ul className="space-y-2.5">
+                    {session.keyTakeaways.map((takeaway, idx) => (
+                      <li key={idx} className="flex items-start gap-3">
+                        <CheckCircle2
+                          className="w-4 h-4 text-gold-400 shrink-0 mt-1"
+                          aria-hidden
+                        />
+                        <span className="text-text-primary leading-relaxed text-sm">
+                          {takeaway}
+                        </span>
+                      </li>
                     ))}
-                  </div>
-
-                  <div className="space-y-6">
-                    {turn.evaluation.starAnalysis && (
-                      <div className="bg-[#f3f4f5] p-6 rounded-xl">
-                        <strong className="text-[#191c1d] block mb-4 font-bold text-lg">{t.starTitle}</strong>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {['situation', 'task', 'action', 'result'].map(step => (
-                            <div key={step} className="bg-white p-4 rounded-lg border border-[#c3c5d7]/10">
-                              <span className="inline-block font-bold text-[#003fb1] text-xs uppercase tracking-wider mb-1">{step}</span>
-                              <p className="text-[#434654] leading-relaxed text-sm">{(turn.evaluation!.starAnalysis as any)[step]}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    <div className="bg-[#fffbeb] p-6 rounded-xl border border-[#f59e0b]/10">
-                      <strong className="text-[#191c1d] block mb-3 font-bold text-lg">{t.feedbackLabel}</strong>
-                      <FormattedText text={turn.evaluation.feedback} className="text-sm text-[#434654]" />
-                    </div>
-                    <div className="bg-[#dbe1ff] p-6 rounded-xl border border-[#003fb1]/10 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 p-2 opacity-10"><Sparkles className="w-16 h-16 text-[#003fb1]" /></div>
-                      <strong className="text-[#003fb1] block mb-3 font-bold text-lg relative z-10">{t.betterVersion}</strong>
-                      <FormattedText text={turn.evaluation.betterVersion} className="text-sm text-[#00174d] italic relative z-10" />
-                    </div>
-                  </div>
+                  </ul>
                 </div>
               )}
-            </div>
-          ))
+            </Card>
+          </div>
         )}
-      </div>
+      </section>
 
-      <div className="mt-16 flex justify-center">
-        <Link to="/dashboard" className="bg-[#191c1d] text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-[#434654] transition-colors shadow-lg active:scale-95">{t.goToDashboard}</Link>
-      </div>
+      {/* ---------- Q&A body (cream) ---------- */}
+      <section className="bg-cream-100 text-text-dark px-4 sm:px-8 lg:px-12 py-14">
+        <div className="max-w-6xl">
+          <div className="mb-8 flex items-end justify-between flex-wrap gap-3">
+            <h2 className="font-serif text-3xl text-text-dark leading-tight">
+              {t.questionsDetail}
+            </h2>
+            <Badge variant="gold-outline" className="border-gold-600/60 text-gold-600">
+              {turns.length} {isVi ? 'câu hỏi' : 'questions'}
+            </Badge>
+          </div>
+
+          {turns.length === 0 ? (
+            <p className="text-text-dark/60 italic">{t.noQuestions}</p>
+          ) : (
+            <div className="space-y-6">
+              {turns.map((turn, index) => (
+                <article
+                  key={turn.id}
+                  className="rounded-2xl overflow-hidden border border-cream-200 bg-cream-50"
+                >
+                  {/* Q header — navy strip */}
+                  <header className="bg-navy-800 text-text-primary px-6 py-5 flex items-start gap-4">
+                    <div className="shrink-0 w-10 h-10 rounded-full bg-gold-500/15 border border-gold-500/40 flex items-center justify-center font-serif text-gold-400 text-sm">
+                      Q{index + 1}
+                    </div>
+                    <p className="font-serif text-lg leading-snug text-text-primary flex-1">
+                      {turn.question}
+                    </p>
+                  </header>
+
+                  {/* Answer */}
+                  <div className="px-6 py-5 border-b border-cream-200">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-gold-600 mb-2">
+                      {t.yourResponse}
+                    </p>
+                    <p className="text-text-dark leading-relaxed whitespace-pre-wrap">
+                      {turn.answer}
+                    </p>
+                  </div>
+
+                  {/* Evaluation */}
+                  {turn.evaluation && (
+                    <div className="px-6 py-6 space-y-5 bg-cream-50">
+                      {/* Scores */}
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                        {Object.entries(turn.evaluation.scores || {}).map(
+                          ([key, score]) => (
+                            <div
+                              key={key}
+                              className="bg-white border border-cream-200 rounded-xl px-3 py-3 text-center"
+                            >
+                              <div className="text-[10px] font-semibold uppercase tracking-widest text-text-dark/60 mb-1.5">
+                                {scoreLabel(key)}
+                              </div>
+                              <div className="font-serif text-2xl text-gold-600 leading-none">
+                                {score}
+                                <span className="text-sm text-text-dark/60">/5</span>
+                              </div>
+                            </div>
+                          ),
+                        )}
+                      </div>
+
+                      {/* STAR */}
+                      {turn.evaluation.starAnalysis && (
+                        <div className="bg-white border border-cream-200 rounded-xl p-5">
+                          <strong className="text-[11px] font-semibold uppercase tracking-[0.25em] text-gold-600 block mb-3">
+                            {t.starTitle}
+                          </strong>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {STAR_STEPS.map((step) => (
+                              <div
+                                key={step}
+                                className="bg-cream-50 border border-cream-200 rounded-lg p-3"
+                              >
+                                <span className="inline-block font-semibold text-gold-600 text-[10px] uppercase tracking-widest mb-1.5">
+                                  {starLabel(step)}
+                                </span>
+                                <p className="text-text-dark leading-relaxed text-sm">
+                                  {(turn.evaluation!.starAnalysis as any)[step]}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Feedback */}
+                      <div className="bg-white border border-cream-200 rounded-xl p-5">
+                        <div className="flex items-center gap-2 mb-2">
+                          <MessageSquareText
+                            className="w-4 h-4 text-gold-600"
+                            aria-hidden
+                          />
+                          <strong className="text-[11px] font-semibold uppercase tracking-[0.25em] text-gold-600">
+                            {t.feedbackLabel}
+                          </strong>
+                        </div>
+                        <FormattedText
+                          text={turn.evaluation.feedback}
+                          className="text-text-dark leading-relaxed text-sm"
+                        />
+                      </div>
+
+                      {/* Better version — gold band */}
+                      <div className="bg-gold-500/10 border border-gold-600/40 rounded-xl p-5 relative overflow-hidden">
+                        <div
+                          className="absolute top-2 right-2 opacity-[0.08]"
+                          aria-hidden
+                        >
+                          <Sparkles className="w-16 h-16 text-gold-600" />
+                        </div>
+                        <div className="flex items-center gap-2 mb-2 relative z-10">
+                          <Lightbulb
+                            className="w-4 h-4 text-gold-600"
+                            aria-hidden
+                          />
+                          <strong className="text-[11px] font-semibold uppercase tracking-[0.25em] text-gold-600">
+                            {t.betterVersion}
+                          </strong>
+                        </div>
+                        <FormattedText
+                          text={turn.evaluation.betterVersion}
+                          className="text-text-dark italic leading-relaxed text-sm relative z-10"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ---------- Footer CTA ---------- */}
+      <section className="bg-navy-950 px-4 sm:px-8 lg:px-12 py-12 text-center">
+        <Link to="/dashboard" className="inline-block">
+          <Button variant="primary" size="lg">
+            {t.goToDashboard}
+          </Button>
+        </Link>
+      </section>
     </div>
   );
 }
