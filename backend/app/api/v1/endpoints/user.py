@@ -1,3 +1,4 @@
+from fastapi import APIRouter, HTTPException
 from app.schemas.user import OnboardReq
 from app.core.database import SessionDep
 from app.core.auth import CurrentUser
