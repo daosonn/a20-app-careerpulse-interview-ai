@@ -90,3 +90,9 @@ Required variables in `.env`:
 ## 🤝 Rules for Contributors
 
 If you are using AI coding agents, please ensure `scripts/setup_hooks.sh` has been run to enable automatic activity logging.
+
+## Vercel Deployment
+
+For fork-based Vercel deployment (frontend + backend as two separate projects), see:
+
+- `docs/11_vercel_deployment.md`
