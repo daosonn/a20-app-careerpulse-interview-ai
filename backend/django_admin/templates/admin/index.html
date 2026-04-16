@@ -1,0 +1,98 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+{% block nav-breadcrumbs %}{% endblock %}
+
+{% block content_title %}
+<div class="ops-dashboard-header">
+  <div>
+    <h1>Operations Dashboard</h1>
+    <p>Monitor platform health, support users, and manage interview operations from one workspace.</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="ops-dashboard-grid">
+  <section class="ops-panel ops-panel-full">
+    <h2>Platform Snapshot</h2>
+    <div class="ops-kpi-grid">
+      {% for kpi in dashboard_kpis %}
+      <article class="ops-kpi-card">
+        <h3>{{ kpi.label }}</h3>
+        <p class="ops-kpi-value">{{ kpi.value }}</p>
+        <p class="ops-kpi-hint">{{ kpi.hint }}</p>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="ops-panel">
+    <h2>Quick Actions</h2>
+    <div class="ops-quick-links">
+      {% for link in dashboard_quick_links %}
+      <a class="ops-link-card ops-link-{{ link.accent }}" href="{{ link.url }}">
+        <span class="ops-link-title">{{ link.label }}</span>
+        <span class="ops-link-desc">{{ link.description }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="ops-panel">
+    <h2>Recent User Activity</h2>
+    {% if dashboard_recent_activities %}
+    <ul class="ops-activity-list">
+      {% for item in dashboard_recent_activities %}
+      <li>
+        <div>
+          <p class="ops-activity-title">{{ item.event }}</p>
+          <p class="ops-activity-meta">{{ item.user }}{% if item.when %} · {{ item.when }}{% endif %}</p>
+          {% if item.details %}<p class="ops-activity-details">{{ item.details }}</p>{% endif %}
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="ops-empty">No tracked activity yet.</p>
+    {% endif %}
+  </section>
+
+  <section class="ops-panel ops-panel-full">
+    <h2>Data Modules</h2>
+    {% if app_list %}
+    <div class="ops-module-grid">
+      {% for app in app_list %}
+      <article class="ops-module-card">
+        <header>
+          <h3><a href="{{ app.app_url }}">{{ app.name }}</a></h3>
+        </header>
+        <ul>
+          {% for model in app.models %}
+          <li>
+            <span>
+              {% if model.admin_url %}
+              <a href="{{ model.admin_url }}">{{ model.name }}</a>
+              {% else %}
+              {{ model.name }}
+              {% endif %}
+            </span>
+            <span class="ops-inline-actions">
+              {% if model.add_url %}<a href="{{ model.add_url }}">Add</a>{% endif %}
+              {% if model.admin_url %}
+                {% if model.view_only %}<a href="{{ model.admin_url }}">View</a>{% else %}<a href="{{ model.admin_url }}">Manage</a>{% endif %}
+              {% endif %}
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+      <p class="ops-empty">You do not have permission to access modules.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

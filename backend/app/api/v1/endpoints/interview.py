@@ -4,16 +4,21 @@ from app.services.graph import app_graph
 from app.services.reporter import generate_report_logic
 from app.core.database import SessionDep
 from app.core.auth import CurrentUser
-from app.models.models import Interview
+from app.models.models import Interview, UserActivity
 import base64
 from openai import OpenAI
 import os
 from fastapi import UploadFile, File
 import tempfile
 from typing import Any
+import datetime
 
 router = APIRouter()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+
+def _utcnow() -> datetime.datetime:
+    return datetime.datetime.utcnow()
 
 DEFAULT_QUESTIONS_VI = [
     "Hay gioi thieu ngan gon ve ban than va kinh nghiem gan day nhat cua ban.",
@@ -123,6 +128,17 @@ async def setup_interview(req: SetupReq, db: SessionDep, current_user: CurrentUs
             status="setup"
         )
         db.add(new_interview)
+        current_user.last_activity_at = _utcnow()
+        db.add(
+            UserActivity(
+                user_id=current_user.id,
+                event_type="interview_setup",
+                details={
+                    "interview_type": req.interview_type,
+                    "language": req.language,
+                },
+            )
+        )
         db.commit()
         db.refresh(new_interview)
         
@@ -173,6 +189,14 @@ async def start_interview(session_id: int, db: SessionDep, current_user: Current
     state = _build_base_state(interview)
 
     interview.status = "in_progress"
+    current_user.last_activity_at = _utcnow()
+    db.add(
+        UserActivity(
+            user_id=current_user.id,
+            event_type="interview_started",
+            details={"session_id": session_id},
+        )
+    )
     db.commit()
 
     try:
@@ -238,6 +262,8 @@ async def chat_interview(req: ChatReq, db: SessionDep, current_user: CurrentUser
 
     ai_text = result["chat_history"][-1]["content"]
     current_phase = result.get("current_phase")
+    current_user.last_activity_at = _utcnow()
+    db.commit()
     
     current_evals = result.get("evaluations", [])
     last_eval = current_evals[-1] if current_evals else None
@@ -262,12 +288,55 @@ async def end_interview(req: ChatReq, db: SessionDep, current_user: CurrentUser)
     report_req = MockReq({"chat_history": history, "evaluations": req.evaluations, "language": req.language})
     feedback_text = generate_report_logic(report_req)
     
-    new_interview = Interview(
-        user_id=current_user.id, cv_text=req.cv_text, jd_text=req.jd_text, interview_type=req.interview_type,
-        language=req.language, transcript=history, evaluations=req.evaluations,
-        final_report=feedback_text, score=85
+    target_interview = None
+    if req.session_id:
+        try:
+            session_id = int(req.session_id)
+            target_interview = db.query(Interview).filter(
+                Interview.id == session_id,
+                Interview.user_id == current_user.id,
+            ).first()
+        except (TypeError, ValueError):
+            target_interview = None
+
+    if target_interview:
+        target_interview.cv_text = req.cv_text
+        target_interview.jd_text = req.jd_text
+        target_interview.interview_type = req.interview_type
+        target_interview.language = req.language
+        target_interview.transcript = history
+        target_interview.evaluations = req.evaluations
+        target_interview.final_report = feedback_text
+        target_interview.score = 85
+        target_interview.status = "completed"
+        target_interview.ended_at = _utcnow()
+    else:
+        target_interview = Interview(
+            user_id=current_user.id,
+            cv_text=req.cv_text,
+            jd_text=req.jd_text,
+            interview_type=req.interview_type,
+            language=req.language,
+            transcript=history,
+            evaluations=req.evaluations,
+            final_report=feedback_text,
+            score=85,
+            status="completed",
+            ended_at=_utcnow(),
+        )
+        db.add(target_interview)
+
+    current_user.last_activity_at = _utcnow()
+    db.add(
+        UserActivity(
+            user_id=current_user.id,
+            event_type="interview_completed",
+            details={
+                "session_id": req.session_id,
+                "turn_count": len(history),
+            },
+        )
     )
-    db.add(new_interview)
     db.commit()
 
     return {"feedback": feedback_text, "audio_base64": generate_speech_base64(feedback_text)}

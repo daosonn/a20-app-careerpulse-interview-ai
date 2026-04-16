@@ -1,3 +1,4 @@
+from fastapi import APIRouter, HTTPException
 from app.core.database import SessionDep
 from app.core.auth import CurrentUser
 from app.models.models import Interview, User
@@ -19,5 +20,7 @@ async def get_interview_detail(interview_id: int, current_user: CurrentUser, db:
     return {
         "id": hist.id, "cv_text": hist.cv_text, "jd_text": hist.jd_text, "interview_type": hist.interview_type,
         "language": hist.language, "transcript": hist.transcript, "evaluations": hist.evaluations,
-        "final_report": hist.final_report, "created_at": hist.created_at.isoformat()
+        "final_report": hist.final_report, "score": hist.score, "status": hist.status,
+        "created_at": hist.created_at.isoformat(),
+        "ended_at": hist.ended_at.isoformat() if hist.ended_at else None,
     }

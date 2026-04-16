@@ -3,20 +3,69 @@ from sqlalchemy.orm import relationship
 import datetime
 from app.core.database import Base
 
+
+def utcnow() -> datetime.datetime:
+    return datetime.datetime.utcnow()
+
+
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True)
     name = Column(String)
     avatar = Column(String)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
+    last_cv_uploaded_at = Column(DateTime, nullable=True)
+    last_profile_update_at = Column(DateTime, nullable=True)
+    last_activity_at = Column(DateTime, nullable=True)
+
     cv_text = Column(Text)
     skills = Column(JSON)
     is_onboarded = Column(Boolean, default=False)
     full_name = Column(String)
     dob = Column(String)
     current_position = Column(String)
-    
-    interviews = relationship("Interview", back_populates="owner")
+
+    # Preferences
+    preferred_language = Column(String, default="vi")
+    difficulty = Column(String, default="Normal")
+    ai_persona = Column(String, default="AI Coach")
+    availability = Column(String, default="")
+    default_interview_type = Column(String, default="Behavioral")
+    stress_test_default = Column(Boolean, default=False)
+    auto_read_questions = Column(Boolean, default=True)
+    questions_per_session = Column(Integer, default=5)
+
+    # Settings
+    ui_language = Column(String, default="vi")
+    theme = Column(String, default="dark")
+    email_reminders = Column(Boolean, default=True)
+    ai_suggestions = Column(Boolean, default=True)
+    security_alerts = Column(Boolean, default=True)
+    public_profile = Column(Boolean, default=False)
+    anonymous_practice = Column(Boolean, default=False)
+
+    interviews = relationship("Interview", back_populates="owner", cascade="all, delete-orphan")
+    educations = relationship("Education", back_populates="user", cascade="all, delete-orphan")
+    resume_uploads = relationship("ResumeUpload", back_populates="user", cascade="all, delete-orphan")
+    suggested_jobs = relationship("SuggestedJob", back_populates="user", cascade="all, delete-orphan")
+    activities = relationship("UserActivity", back_populates="user", cascade="all, delete-orphan")
+
+
+class Education(Base):
+    __tablename__ = "educations"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    school = Column(String, nullable=False)
+    degree = Column(String, default="")
+    field = Column(String, default="")
+    year = Column(String, default="")
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
+
+    user = relationship("User", back_populates="educations")
+
 
 class Interview(Base):
     __tablename__ = "interviews"
@@ -27,11 +76,60 @@ class Interview(Base):
     interview_type = Column(String)
     language = Column(String)
     transcript = Column(JSON)  # List of {role, content}
-    evaluations = Column(JSON) # List of evaluations
+    evaluations = Column(JSON)  # List of evaluations
     final_report = Column(Text)
     score = Column(Integer, default=0)
-    status = Column(String, default="setup") # setup, in_progress, completed
+    status = Column(String, default="setup")  # setup, in_progress, completed
     predicted_questions = Column(JSON)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
+    ended_at = Column(DateTime, nullable=True)
+
     owner = relationship("User", back_populates="interviews")
+
+
+class ResumeUpload(Base):
+    __tablename__ = "resume_uploads"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    file_name = Column(String, default="")
+    source = Column(String, default="manual")  # onboard, cv_update, manual, import
+    raw_text = Column(Text)
+    status = Column(String, default="processed")  # pending, processed, failed
+    parsed_skills = Column(JSON)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    processed_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
+
+    user = relationship("User", back_populates="resume_uploads")
+
+
+class SuggestedJob(Base):
+    __tablename__ = "suggested_jobs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    title = Column(String, nullable=False)
+    company = Column(String, default="")
+    industry = Column(String, default="")
+    fit_score = Column(Integer, default=0)
+    reason = Column(Text, default="")
+    source = Column(String, default="auto")  # auto, admin, imported
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
+
+    user = relationship("User", back_populates="suggested_jobs")
+
+
+class UserActivity(Base):
+    __tablename__ = "user_activities"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    event_type = Column(String, nullable=False, index=True)
+    details = Column(JSON)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+
+    user = relationship("User", back_populates="activities")
