@@ -10,6 +10,7 @@ interface Props {
   transcript: string;
   isProcessing: boolean;
   isVi: boolean;
+  currentTip?: string;
   scrollRef: React.RefObject<HTMLDivElement>;
 }
 
@@ -42,7 +43,7 @@ function UserAvatar({ recording }: { recording?: boolean }) {
   );
 }
 
-function AiBubble({ children }: { children: React.ReactNode }) {
+function AiBubble({ children, tip }: { children: React.ReactNode, tip?: string }) {
   return (
     <div className="flex gap-4">
       <AiAvatar />
@@ -50,6 +51,16 @@ function AiBubble({ children }: { children: React.ReactNode }) {
         <div className="text-text-primary leading-relaxed whitespace-pre-wrap">
           {children}
         </div>
+        {tip && (
+          <div className="mt-3 flex items-start gap-1.5">
+            <span className="bg-navy-600/60 text-gold-300 text-[10px] font-bold px-2 py-0.5 rounded border border-navy-500 uppercase tracking-wider shrink-0">
+              Tip
+            </span>
+            <span className="text-xs text-text-muted italic">
+              {tip}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -109,6 +120,7 @@ export function ChatHistory({
   transcript,
   isProcessing,
   isVi,
+  currentTip,
   scrollRef,
 }: Props) {
   return (
@@ -119,7 +131,7 @@ export function ChatHistory({
       <div className="max-w-5xl mx-auto space-y-8">
         {turns.map((turn) => (
           <div key={turn.id} className="space-y-6">
-            <AiBubble>{turn.question}</AiBubble>
+            <AiBubble tip={turn.tip}>{turn.question}</AiBubble>
             <UserBubble audioUrl={turn.audioUrl} isVi={isVi}>
               {turn.answer}
             </UserBubble>
@@ -127,7 +139,7 @@ export function ChatHistory({
           </div>
         ))}
 
-        {currentQuestion && <AiBubble>{currentQuestion}</AiBubble>}
+        {currentQuestion && <AiBubble tip={currentTip}>{currentQuestion}</AiBubble>}
 
         {isRecording && transcript && (
           <UserBubble ghost recording>

@@ -92,6 +92,10 @@ def _build_base_state(interview: Interview, req: ChatReq | None = None) -> dict[
         "question_bank": req.question_bank or "" if req else "",
         "evaluations": req.evaluations or [] if req else [],
         "final_report": "",
+        "pending_questions": [],
+        "total_question_count": 0,
+        "current_model_answer": "",
+        "current_tip": ""
     }
 
 def generate_speech_base64(text: str) -> str:
@@ -207,6 +211,7 @@ async def start_interview(session_id: int, db: SessionDep, current_user: Current
     
     return {
         "first_question": ai_text,
+        "tip": result.get("current_tip"),
         "audio_base64": generate_speech_base64(ai_text),
         "current_phase": result.get("current_phase"),
         "skills_extracted": result.get("skills_extracted"),
@@ -270,6 +275,7 @@ async def chat_interview(req: ChatReq, db: SessionDep, current_user: CurrentUser
     
     return {
         "reply": ai_text,
+        "tip": result.get("current_tip"),
         "evaluations": result.get("evaluations", []),
         "last_evaluation": last_eval,
         "audio_base64": generate_speech_base64(ai_text),

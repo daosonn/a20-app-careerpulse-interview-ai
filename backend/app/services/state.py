@@ -14,3 +14,7 @@ class InterviewState(TypedDict):
     is_stress_test: bool
     evaluations: Annotated[list[str], operator.add]
     final_report: str
+    pending_questions: list[dict] # list of {"question", "tip", "model_answer"}
+    total_question_count: int
+    current_model_answer: str
+    current_tip: str

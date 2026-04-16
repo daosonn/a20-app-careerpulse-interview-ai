@@ -1,0 +1,54 @@
+# Implementation Plan - Dynamic Dynamic Question Batches & Enhanced Evaluation
+
+The goal is to replace the rigid, phase-based question logic with a more flexible, AI-driven approach that generates questions in batches of 3. Each question will include a short label and a model answer to improve evaluation accuracy.
+
+## User Review Required
+
+> [!IMPORTANT]
+> - The system will change from "Phase-based" to "Batch-based" (3 questions per batch).
+> - Each AI question will now have a "short label" (3-5 words) displayed on the frontend.
+> - Evaluation will now compare the candidate's answer against a specific "model answer" generated for that exact question.
+
+## Proposed Changes
+
+### [Backend]
+
+#### [MODIFY] [state.py](file:///d:/A%20-%20AI%20Project/A20-App-011/backend/app/services/state.py)
+- Add `pending_questions: list[dict]` to `InterviewState` to store the current batch.
+- Each item: `{"question": str, "label": str, "model_answer": str}`.
+
+#### [MODIFY] [interviewer.py](file:///d:/A%20-%20AI%20Project/A20-App-011/backend/app/services/interviewer.py)
+- **Comment out** old phase-based code (`PHASES`, `get_next_phase`).
+- Implement `generate_batch_questions(state)` using OpenAI to get 3 context-aware questions.
+- Update `generate_question_logic` to fetch from `pending_questions`.
+
+#### [MODIFY] [evaluator.py](file:///d:/A%20-%20AI%20Project/A20-App-011/backend/app/services/evaluator.py)
+- Update `evaluate_star_logic` to take an optional `model_answer`.
+- Modify the prompt to calculate similarity and structure compared to the `model_answer`.
+
+#### [MODIFY] [graph.py](file:///d:/A%20-%20AI%20Project/A20-App-011/backend/app/services/graph.py)
+- Update nodes to manage the batch logic (re-generate when the batch is empty, up to a total of 5-8 questions).
+
+### [Frontend]
+
+#### [MODIFY] [types/index.ts](file:///d:/A%20-%20AI%20Project/A20-App-011/frontend/src/features/session/types/index.ts)
+- Add `label?: string` to `InterviewTurn`.
+
+#### [MODIFY] [ChatHistory.tsx](file:///d:/A%20-%20AI%20Project/A20-App-011/frontend/src/features/session/components/ChatHistory.tsx)
+- Render the `label` as a small badge (e.g., using a subtle gold/navy style) below the question text in `AiBubble`.
+
+## Open Questions
+
+- **Evaluation Timing**: Should we evaluate *every* question immediately (using its model answer), or only evaluate the entire batch of 3 at once? (I recommend immediate evaluation for feedback, using the model answer provided by the batch generation).
+- **Label UI**: Do you have a specific color or icon preference for the 3-5 word label?
+
+## Verification Plan
+
+### Automated Tests
+- Mock OpenAI responses and verify batch generation logic.
+- Verify that `evaluator_node` correctly receives the `model_answer` for the current turn.
+
+### Manual Verification
+- Start a session and confirm the first 3 questions are generated dynamically.
+- Check if labels are visible in the chat bubbles.
+- Verify that after 3 answers, the system generates the next appropriate batch.

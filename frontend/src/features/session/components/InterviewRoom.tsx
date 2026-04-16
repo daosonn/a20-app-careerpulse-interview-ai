@@ -25,6 +25,7 @@ export function InterviewRoom() {
     turns,
     loading,
     currentQuestion,
+    currentTip,
     isProcessing,
     error,
     currentPhase,
@@ -110,6 +111,7 @@ export function InterviewRoom() {
         transcript={transcript}
         isProcessing={isProcessing}
         isVi={isVi}
+        currentTip={currentTip}
         scrollRef={scrollRef}
       />
 

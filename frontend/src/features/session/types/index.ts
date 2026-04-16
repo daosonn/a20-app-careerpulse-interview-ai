@@ -41,6 +41,7 @@ export interface InterviewTurn {
   audioUrl?: string;
   phase?: number;
   phaseName?: string;
+  tip?: string;
   evaluation?: InterviewTurnResult['evaluation'];
 }
 

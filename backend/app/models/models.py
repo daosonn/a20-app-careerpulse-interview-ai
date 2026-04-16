@@ -81,10 +81,11 @@ class Interview(Base):
     score = Column(Integer, default=0)
     status = Column(String, default="setup")  # setup, in_progress, completed
     predicted_questions = Column(JSON)
+    predicted_questions = Column(JSON)
+    pending_questions = Column(JSON) # To survive session interruptions
     created_at = Column(DateTime, default=utcnow, nullable=False)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
     ended_at = Column(DateTime, nullable=True)
-
     owner = relationship("User", back_populates="interviews")
 
 
