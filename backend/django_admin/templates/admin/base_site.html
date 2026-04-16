@@ -1,0 +1,32 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Operations Admin') }}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'ops_admin/admin.css' %}">
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<script src="{% static 'ops_admin/admin.js' %}" defer></script>
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} ops-admin-theme{% endblock %}
+
+{% block branding %}
+<div id="site-name" class="ops-branding">
+  <a href="{% url 'admin:index' %}">AI Interview Platform Operations</a>
+  <span class="ops-branding-subtitle">Internal Control Center</span>
+</div>
+{% if user.is_anonymous %}
+  {% include "admin/color_theme_toggle.html" %}
+{% endif %}
+{% endblock %}
+
+{% block nav-global %}
+<div class="ops-global-links">
+  <a href="{% url 'admin:index' %}">{% translate 'Dashboard' %}</a>
+</div>
+{% endblock %}
