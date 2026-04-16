@@ -2,7 +2,7 @@ from langgraph.graph import StateGraph, END, START
 from langgraph.checkpoint.memory import MemorySaver
 from .state import InterviewState
 from .profiler import extract_cv_info_logic, search_questions_logic
-from .interviewer import generate_question_logic
+from .interviewer import generate_ai_batch
 from .evaluator import evaluate_star_logic
 
 # Standard retry policy
@@ -17,36 +17,48 @@ async def profiler_node(state: InterviewState):
     return {
         "skills_extracted": skills,
         "question_bank": questions,
-        "current_phase": "Introduction"
+        "current_phase": "Introduction",
+        "pending_questions": [],
+        "total_question_count": 0,
+        "current_model_answer": "",
+        "current_tip": ""
     }
 
 async def interviewer_node(state: InterviewState):
-    """Integrates Interviewer logic directly."""
-    # Wrap state in a MockReq-like object for generate_question_logic
-    class MockReq:
-        def __init__(self, state):
-            self.cv_content = state["cv_content"]
-            self.jd_content = state["jd_content"]
-            self.chat_history = state["chat_history"]
-            self.current_question_count = state["current_question_count"]
-            self.interview_type = state["interview_type"]
-            self.language = state["language"]
-            self.is_stress_test = state["is_stress_test"]
-            self.current_phase = state["current_phase"]
-            self.skills_extracted = state["skills_extracted"]
-            self.question_bank = state["question_bank"]
-
-    req = MockReq(state)
-    ai_text, next_phase, next_count = generate_question_logic(req)
+    """Orchestrates dynamic batch generation and question popping."""
+    pending = list(state.get("pending_questions", []))
+    count = state.get("total_question_count", 0)
+    
+    # Check if we need a new batch
+    if not pending and count < 9:
+        # Generate new batch of 3
+        # In a real system, we'd pass evaluations/history to inform the next batch
+        new_batch = generate_ai_batch(state)
+        pending.extend(new_batch)
+    
+    if not pending:
+        # End of interview
+        return {
+            "chat_history": [{"role": "ai", "content": "Thank you for the interview. We will get back to you soon."}],
+            "current_phase": "Closing"
+        }
+    
+    # Pop the first question
+    item = pending.pop(0)
+    next_q = item["question"]
+    tip = item.get("tip", "")
+    model_ans = item.get("model_answer", "")
     
     return {
-        "chat_history": [{"role": "ai", "content": ai_text}],
-        "current_phase": next_phase,
-        "current_question_count": next_count
+        "chat_history": [{"role": "ai", "content": next_q, "tip": tip}],
+        "pending_questions": pending,
+        "total_question_count": count + 1,
+        "current_model_answer": model_ans,
+        "current_tip": tip
     }
 
 async def evaluator_node(state: InterviewState):
-    """Integrates Evaluator logic directly."""
+    """Integrates Evaluator logic with model answer comparison."""
     if len(state['chat_history']) < 2: return {}
     
     class MockReq:
@@ -54,6 +66,7 @@ async def evaluator_node(state: InterviewState):
             self.last_ai_msg = state['chat_history'][-2]['content']
             self.last_user_msg = state['chat_history'][-1]['content']
             self.language = state['language']
+            self.model_answer = state.get("current_model_answer", "")
 
     req = MockReq(state)
     evaluation = evaluate_star_logic(req)
@@ -64,6 +77,9 @@ def route_next(state: InterviewState):
     if not state.get("current_phase"):
         return "profiler"
     
+    if state.get("current_phase") == "Closing":
+        return END
+
     if state["chat_history"] and state["chat_history"][-1]["role"] == "user":
         return "evaluator"
     

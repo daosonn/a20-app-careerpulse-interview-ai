@@ -24,6 +24,7 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
   const [turns, setTurns] = useState<InterviewTurn[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentQuestion, setCurrentQuestion] = useState('');
+  const [currentTip, setCurrentTip] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
   const [currentPhase, setCurrentPhase] = useState<number>(1);
@@ -43,8 +44,13 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
         turnOrder: idx + 1,
         question: t.role === 'model' ? t.content : '',
         answer: t.role === 'user' ? t.content : '',
+        tip: t.tip || '',
       }));
       setTurns(loadedTurns);
+      if (loadedTurns.length > 0 && data.status === 'in_progress') {
+          // Try to find the last AI tip if available in history (if stored)
+          // For now we assume fresh tips for fresh questions
+      }
 
       if (data.status === 'setup' || (data.status === 'in_progress' && loadedTurns.length === 0)) {
         // Start interview on backend
@@ -54,6 +60,7 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
         if (startResp.ok) {
           const startData = await startResp.json();
           setCurrentQuestion(startData.first_question);
+          setCurrentTip(startData.tip || '');
           setCurrentPhase(startData.current_phase || 1);
           speakText(startData.first_question, data.language);
         } else {
@@ -154,7 +161,7 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
       answer: finalAnswer,
     };
     
-    setTurns(prev => [...prev, pendingTurn]);
+    setTurns(prev => [...prev, { ...pendingTurn, tip: currentTip }]);
 
     try {
       const response = await authenticatedFetch(apiUrl('/api/v1/interview/chat'), {
@@ -169,6 +176,7 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
       const result = await response.json();
 
       setCurrentQuestion(result.reply);
+      setCurrentTip(result.tip || '');
       setCurrentPhase(result.current_phase || currentPhase);
       speakText(result.reply, session.language);
 
@@ -188,6 +196,7 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
     turns,
     loading,
     currentQuestion,
+    currentTip,
     isProcessing,
     error,
     currentPhase,
