@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db, googleProvider, handleFirestoreError, OperationType } from '../../../lib/firebase';
+import { apiUrl } from '../../../lib/api';
 
 export interface UserProfile {
   isOnboarded: boolean;
@@ -47,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async (email: string) => {
     try {
-      const response = await authenticatedFetch(`http://127.0.0.1:8000/api/v1/user/profile`);
+      const response = await authenticatedFetch(apiUrl('/api/v1/user/profile'));
       if (response.ok) {
         const data = await response.json();
         setProfile({

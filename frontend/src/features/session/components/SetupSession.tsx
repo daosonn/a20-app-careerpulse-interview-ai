@@ -2,20 +2,145 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth';
 import { extractTextFromFile } from '../../../lib/fileParser';
-import { Loader2, Upload, FileText, X, Sparkles, Brain, Code, Users, Smile, Zap, ArrowRight } from 'lucide-react';
+import {
+  Loader2,
+  Upload,
+  FileText,
+  X,
+  Sparkles,
+  Brain,
+  Code,
+  Users,
+  Smile,
+  Zap,
+  ArrowRight,
+} from 'lucide-react';
+import { apiUrl } from '../../../lib/api';
+import {
+  Button,
+  Card,
+  Textarea,
+  SectionHeading,
+} from '../../../components/ui';
+import { cn } from '../../../lib/utils';
+
+async function parseErrorMessage(
+  response: Response,
+  fallback: string,
+): Promise<string> {
+  try {
+    const payload = await response.json();
+    if (payload?.detail) return payload.detail;
+  } catch {
+    /* ignore */
+  }
+  return fallback;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Sub-components                                                     */
+/* ------------------------------------------------------------------ */
+
+function StepHeading({ index, label }: { index: number; label: string }) {
+  return (
+    <h2 className="flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.25em] text-gold-400 mb-4">
+      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full border border-gold-500/60 text-gold-300 font-serif text-sm">
+        {index}
+      </span>
+      {label}
+    </h2>
+  );
+}
+
+interface TileOption<V extends string> {
+  value: V;
+  icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean }>;
+  title: string;
+  subtitle: string;
+}
+
+function TileRadioGroup<V extends string>({
+  name,
+  value,
+  options,
+  onChange,
+  columns = 3,
+}: {
+  name: string;
+  value: V;
+  options: TileOption<V>[];
+  onChange: (v: V) => void;
+  columns?: 2 | 3;
+}) {
+  return (
+    <div
+      className={cn(
+        'grid gap-3',
+        columns === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2',
+      )}
+    >
+      {options.map((opt) => {
+        const active = opt.value === value;
+        const Icon = opt.icon;
+        return (
+          <label
+            key={opt.value}
+            className={cn(
+              'relative flex flex-col gap-2 p-4 rounded-xl cursor-pointer transition-all border',
+              active
+                ? 'bg-gold-500/10 border-gold-500 shadow-[0_0_20px_-8px_rgba(201,169,97,0.35)]'
+                : 'bg-navy-800 border-navy-600 hover:border-gold-500/40',
+            )}
+          >
+            <input
+              type="radio"
+              name={name}
+              value={opt.value}
+              checked={active}
+              onChange={() => onChange(opt.value)}
+              className="sr-only"
+            />
+            <Icon
+              className={cn(
+                'w-6 h-6',
+                active ? 'text-gold-400' : 'text-text-muted',
+              )}
+              aria-hidden
+            />
+            <span
+              className={cn(
+                'font-semibold leading-tight',
+                active ? 'text-text-primary' : 'text-text-primary/90',
+              )}
+            >
+              {opt.title}
+            </span>
+            <span className="text-xs text-text-muted leading-relaxed">
+              {opt.subtitle}
+            </span>
+          </label>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Main component                                                     */
+/* ------------------------------------------------------------------ */
 
 export function SetupSession() {
   const { user, authenticatedFetch } = useAuth();
   const navigate = useNavigate();
-  
+
   const [cvText, setCvText] = useState('');
   const [fileName, setFileName] = useState('');
   const [isParsingFile, setIsParsingFile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [jobDescription, setJobDescription] = useState('');
-  const [interviewType, setInterviewType] = useState('Behavioral');
-  const [language, setLanguage] = useState('vi');
+  const [interviewType, setInterviewType] = useState<'Behavioral' | 'Technical' | 'HR'>('Behavioral');
+  const [language, setLanguage] = useState<'vi' | 'en'>('vi');
   const [isStressTest, setIsStressTest] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
@@ -40,7 +165,10 @@ export function SetupSession() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user) {
+      setError('Vui lòng đăng nhập để bắt đầu phỏng vấn.');
+      return;
+    }
     if (!cvText.trim() || !jobDescription.trim()) {
       setError('Vui lòng nhập đầy đủ CV và Job Description.');
       return;
@@ -50,215 +178,335 @@ export function SetupSession() {
     setError('');
 
     try {
-      // 1. Call backend /setup
-      const response = await authenticatedFetch('http://127.0.0.1:8000/api/v1/interview/setup', {
+      const response = await authenticatedFetch(apiUrl('/api/v1/interview/setup'), {
         method: 'POST',
         body: JSON.stringify({
           cv_text: cvText,
           jd_text: jobDescription,
           interview_type: interviewType,
           language: language,
-          is_stress_test: isStressTest
-        })
+          is_stress_test: isStressTest,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Không thể khởi tạo phiên phỏng vấn.');
+        throw new Error(
+          await parseErrorMessage(response, 'Không thể khởi tạo phiên phỏng vấn.'),
+        );
       }
 
       const data = await response.json();
-      const sessionId = data.session_id;
-
-      // 2. Navigate to session detail
-      navigate(`/session/${sessionId}`);
+      navigate(`/session/${data.session_id}`);
     } catch (err) {
       console.error(err);
-      setError('Đã có lỗi xảy ra khi phân tích dữ liệu. Vui lòng thử lại.');
+      setError(
+        (err as Error)?.message ||
+          'Đã có lỗi xảy ra khi phân tích dữ liệu. Vui lòng thử lại.',
+      );
     } finally {
       setIsGenerating(false);
     }
   };
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
-        <div className="lg:col-span-7">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-[#191c1d] tracking-tight mb-4">Chuẩn bị cho <span className="text-[#003fb1]">bước ngoặt.</span></h1>
-          <p className="text-[#434654] text-lg leading-relaxed max-w-2xl">Cấu hình phiên phỏng vấn với AI Coach. Chúng tôi sẽ tùy chỉnh câu hỏi dựa trên hồ sơ và vị trí mục tiêu của bạn.</p>
-        </div>
-        <div className="lg:col-span-5 flex items-center justify-end">
-          <div className="bg-[#8b4aff]/10 p-6 rounded-xl border border-[#c3c5d7]/20 flex items-center gap-4">
-            <Sparkles className="text-[#7127e5] w-10 h-10" />
-            <div>
-              <p className="text-sm font-bold text-[#7127e5]">AI Insight</p>
-              <p className="text-xs text-[#434654]">Chế độ Stress-test tăng độ chân thực lên 40% dựa trên xu hướng HR gần đây.</p>
-            </div>
+    <div className="px-4 sm:px-8 lg:px-12 py-8 sm:py-10 max-w-6xl mx-auto">
+      {/* Header */}
+      <div className="grid lg:grid-cols-[1.3fr_1fr] gap-8 mb-10 items-end">
+        <SectionHeading
+          label="Cấu hình phiên"
+          title={
+            <>
+              Chuẩn bị cho{' '}
+              <span className="text-gold-400">bước ngoặt sự nghiệp.</span>
+            </>
+          }
+          subtitle="Cấu hình phiên phỏng vấn với AI Coach. Chúng tôi sẽ tùy chỉnh câu hỏi dựa trên hồ sơ và vị trí mục tiêu của bạn."
+          size="lg"
+        />
+        <Card variant="highlighted" padding="md" className="flex items-center gap-4">
+          <span className="inline-flex w-11 h-11 rounded-full bg-gold-500/10 border border-gold-500/40 items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5 text-gold-400" aria-hidden />
+          </span>
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-gold-400 mb-1">
+              AI Insight
+            </p>
+            <p className="text-sm text-text-muted leading-relaxed">
+              Chế độ Stress-test tăng độ chân thực lên 40% dựa trên xu hướng HR gần đây.
+            </p>
           </div>
-        </div>
+        </Card>
       </div>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {error && (
-          <div className="md:col-span-2 p-4 bg-[#ffdad6] text-[#ba1a1a] rounded-xl text-sm border border-[#ba1a1a]/20 font-medium">
-            {error}
-          </div>
-        )}
-
-        {/* Left Column: Context Selection */}
+      <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-8">
+        {/* ---------- Left column: context ---------- */}
         <div className="space-y-8">
           <section>
-            <h2 className="text-sm font-bold tracking-widest text-[#434654] uppercase mb-4">1. Cung cấp ngữ cảnh</h2>
-            <div className="space-y-4">
-              <div className="bg-white p-6 rounded-xl border border-[#c3c5d7]/20 shadow-sm">
-                <div className="mb-4">
-                  <label className="block font-bold text-[#191c1d] mb-1">CV của bạn</label>
-                  <p className="text-sm text-[#434654] mb-3">Tải lên hoặc dán nội dung CV</p>
-                  
-                  {!fileName ? (
-                    <div 
-                      className="border-2 border-dashed border-[#c3c5d7] rounded-xl p-6 flex flex-col items-center justify-center text-center hover:bg-[#f8f9fa] transition-colors cursor-pointer"
-                      onClick={() => fileInputRef.current?.click()}
+            <StepHeading index={1} label="Cung cấp ngữ cảnh" />
+            <Card variant="dark" padding="md" className="space-y-6">
+              {/* CV upload */}
+              <div>
+                <label className="block font-serif text-lg text-text-primary mb-1">
+                  CV của bạn
+                </label>
+                <p className="text-sm text-text-muted mb-3 leading-relaxed">
+                  Tải lên hoặc dán nội dung CV
+                </p>
+
+                {!fileName ? (
+                  <div
+                    className="border-2 border-dashed border-navy-600 hover:border-gold-500/60 rounded-xl p-6 flex flex-col items-center justify-center text-center hover:bg-navy-700/40 transition-colors cursor-pointer"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <span className="inline-flex w-10 h-10 rounded-full bg-gold-500/10 border border-gold-500/30 items-center justify-center mb-3">
+                      <Upload className="w-4 h-4 text-gold-400" aria-hidden />
+                    </span>
+                    <p className="text-sm text-text-primary font-medium">
+                      Nhấn để tải lên CV
+                    </p>
+                    <p className="text-xs text-text-muted mt-1">
+                      PDF, DOCX, TXT
+                    </p>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileUpload}
+                      accept=".pdf,.docx,.txt"
+                      className="hidden"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between bg-gold-500/10 border border-gold-500/40 p-3 rounded-xl">
+                    <div className="flex items-center gap-2 text-gold-300 min-w-0">
+                      <FileText className="w-4 h-4 shrink-0" aria-hidden />
+                      <span className="font-medium text-sm truncate">
+                        {fileName}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFileName('');
+                        setCvText('');
+                      }}
+                      className="p-1 hover:bg-gold-500/20 rounded-md text-gold-300 shrink-0"
+                      aria-label="Xóa file CV"
                     >
-                      <Upload className="w-8 h-8 text-[#737686] mb-2" />
-                      <p className="text-sm text-[#434654] font-medium">Click để tải lên CV (PDF, DOCX, TXT)</p>
-                      <input 
-                        type="file" 
-                        ref={fileInputRef} 
-                        onChange={handleFileUpload} 
-                        accept=".pdf,.docx,.txt" 
-                        className="hidden" 
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between bg-[#dbe1ff] border border-[#003fb1]/20 p-3 rounded-xl">
-                      <div className="flex items-center gap-2 text-[#003fb1]">
-                        <FileText className="w-5 h-5" />
-                        <span className="font-medium text-sm">{fileName}</span>
-                      </div>
-                      <button 
-                        type="button" 
-                        onClick={() => { setFileName(''); setCvText(''); }}
-                        className="p-1 hover:bg-[#b5c4ff] rounded-md text-[#003fb1]"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
+                      <X className="w-4 h-4" aria-hidden />
+                    </button>
+                  </div>
+                )}
 
-                  {isParsingFile && (
-                    <div className="flex items-center gap-2 text-sm text-[#003fb1] mt-2 font-medium">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Đang đọc file...
-                    </div>
-                  )}
+                {isParsingFile && (
+                  <div className="flex items-center gap-2 text-sm text-gold-400 mt-2 font-medium">
+                    <Loader2 className="w-4 h-4 animate-spin" aria-hidden />
+                    Đang đọc file...
+                  </div>
+                )}
 
-                  <textarea
+                <div className="mt-3">
+                  <Textarea
                     value={cvText}
-                    onChange={(e) => { setCvText(e.target.value); if(!e.target.value) setFileName(''); }}
+                    onChange={(e) => {
+                      setCvText(e.target.value);
+                      if (!e.target.value) setFileName('');
+                    }}
                     rows={4}
                     placeholder="Nội dung CV sẽ hiển thị ở đây. Bạn cũng có thể dán trực tiếp text vào..."
-                    className="w-full rounded-xl border border-[#c3c5d7] px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#003fb1] focus:border-transparent resize-y mt-3 text-sm bg-[#f8f9fa]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-[#191c1d] mb-1">Job Description (JD)</label>
-                  <p className="text-sm text-[#434654] mb-3">Dán mô tả công việc mục tiêu</p>
-                  <textarea
-                    value={jobDescription}
-                    onChange={(e) => setJobDescription(e.target.value)}
-                    rows={4}
-                    placeholder="Dán nội dung JD vào đây..."
-                    className="w-full rounded-xl border border-[#c3c5d7] px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#003fb1] focus:border-transparent resize-y text-sm bg-[#f8f9fa]"
                   />
                 </div>
               </div>
-            </div>
+
+              {/* JD */}
+              <div>
+                <label className="block font-serif text-lg text-text-primary mb-1">
+                  Job Description (JD)
+                </label>
+                <p className="text-sm text-text-muted mb-3 leading-relaxed">
+                  Dán mô tả công việc mục tiêu
+                </p>
+                <Textarea
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
+                  rows={5}
+                  placeholder="Dán nội dung JD vào đây..."
+                />
+              </div>
+            </Card>
           </section>
 
           <section>
-            <h2 className="text-sm font-bold tracking-widest text-[#434654] uppercase mb-4">2. Ngôn ngữ phỏng vấn</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <label className={`flex flex-col items-center justify-center p-6 rounded-xl cursor-pointer transition-all border ${language === 'vi' ? 'bg-[#003fb1] text-white border-[#003fb1] shadow-lg shadow-blue-900/20' : 'bg-white text-[#191c1d] border-[#c3c5d7]/20 hover:bg-[#f3f4f5]'}`}>
-                <input type="radio" name="language" value="vi" checked={language === 'vi'} onChange={() => setLanguage('vi')} className="hidden" />
-                <span className="text-sm font-bold">Tiếng Việt</span>
-                <span className={`text-xs ${language === 'vi' ? 'opacity-80' : 'text-[#434654]'}`}>Mặc định</span>
-              </label>
-              <label className={`flex flex-col items-center justify-center p-6 rounded-xl cursor-pointer transition-all border ${language === 'en' ? 'bg-[#003fb1] text-white border-[#003fb1] shadow-lg shadow-blue-900/20' : 'bg-white text-[#191c1d] border-[#c3c5d7]/20 hover:bg-[#f3f4f5]'}`}>
-                <input type="radio" name="language" value="en" checked={language === 'en'} onChange={() => setLanguage('en')} className="hidden" />
-                <span className="text-sm font-bold">English</span>
-                <span className={`text-xs ${language === 'en' ? 'opacity-80' : 'text-[#434654]'}`}>Tiếng Anh</span>
-              </label>
+            <StepHeading index={2} label="Ngôn ngữ phỏng vấn" />
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { value: 'vi' as const, title: 'Tiếng Việt', subtitle: 'Mặc định' },
+                { value: 'en' as const, title: 'English', subtitle: 'Tiếng Anh' },
+              ].map((opt) => {
+                const active = opt.value === language;
+                return (
+                  <label
+                    key={opt.value}
+                    className={cn(
+                      'flex flex-col items-center justify-center p-6 rounded-xl cursor-pointer transition-all border text-center',
+                      active
+                        ? 'bg-gold-500/10 border-gold-500 shadow-[0_0_20px_-8px_rgba(201,169,97,0.35)]'
+                        : 'bg-navy-800 border-navy-600 hover:border-gold-500/40',
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="language"
+                      value={opt.value}
+                      checked={active}
+                      onChange={() => setLanguage(opt.value)}
+                      className="sr-only"
+                    />
+                    <span
+                      className={cn(
+                        'font-serif text-xl leading-tight',
+                        active ? 'text-gold-400' : 'text-text-primary',
+                      )}
+                    >
+                      {opt.title}
+                    </span>
+                    <span className="text-xs text-text-muted mt-1">
+                      {opt.subtitle}
+                    </span>
+                  </label>
+                );
+              })}
             </div>
           </section>
         </div>
 
-        {/* Right Column: Settings & Mode */}
+        {/* ---------- Right column: mode & submit ---------- */}
         <div className="space-y-8">
           <section>
-            <h2 className="text-sm font-bold tracking-widest text-[#434654] uppercase mb-4">3. Loại phỏng vấn</h2>
-            <div className="bg-[#f3f4f5] p-2 rounded-xl flex flex-col gap-2">
-              <label className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-colors ${interviewType === 'Behavioral' ? 'bg-white border border-[#c3c5d7]/20 shadow-sm' : 'hover:bg-[#e7e8e9]'}`}>
-                <div className="flex items-center gap-3">
-                  <Brain className={`w-6 h-6 ${interviewType === 'Behavioral' ? 'text-[#003fb1]' : 'text-[#434654]'}`} />
-                  <span className="font-semibold text-[#191c1d]">Behavioral (Hành vi)</span>
-                </div>
-                <input type="radio" name="type" value="Behavioral" checked={interviewType === 'Behavioral'} onChange={() => setInterviewType('Behavioral')} className="w-5 h-5 text-[#003fb1] focus:ring-[#003fb1]" />
-              </label>
-              <label className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-colors ${interviewType === 'Technical' ? 'bg-white border border-[#c3c5d7]/20 shadow-sm' : 'hover:bg-[#e7e8e9]'}`}>
-                <div className="flex items-center gap-3">
-                  <Code className={`w-6 h-6 ${interviewType === 'Technical' ? 'text-[#003fb1]' : 'text-[#434654]'}`} />
-                  <span className="font-semibold text-[#191c1d]">Technical (Kỹ thuật)</span>
-                </div>
-                <input type="radio" name="type" value="Technical" checked={interviewType === 'Technical'} onChange={() => setInterviewType('Technical')} className="w-5 h-5 text-[#003fb1] focus:ring-[#003fb1]" />
-              </label>
-              <label className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-colors ${interviewType === 'HR' ? 'bg-white border border-[#c3c5d7]/20 shadow-sm' : 'hover:bg-[#e7e8e9]'}`}>
-                <div className="flex items-center gap-3">
-                  <Users className={`w-6 h-6 ${interviewType === 'HR' ? 'text-[#003fb1]' : 'text-[#434654]'}`} />
-                  <span className="font-semibold text-[#191c1d]">HR (Văn hóa)</span>
-                </div>
-                <input type="radio" name="type" value="HR" checked={interviewType === 'HR'} onChange={() => setInterviewType('HR')} className="w-5 h-5 text-[#003fb1] focus:ring-[#003fb1]" />
-              </label>
-            </div>
+            <StepHeading index={3} label="Loại phỏng vấn" />
+            <TileRadioGroup
+              name="type"
+              value={interviewType}
+              onChange={setInterviewType}
+              columns={3}
+              options={[
+                {
+                  value: 'Behavioral',
+                  icon: Brain,
+                  title: 'Behavioral',
+                  subtitle: 'Tình huống & hành vi',
+                },
+                {
+                  value: 'Technical',
+                  icon: Code,
+                  title: 'Technical',
+                  subtitle: 'Kỹ thuật chuyên môn',
+                },
+                {
+                  value: 'HR',
+                  icon: Users,
+                  title: 'HR',
+                  subtitle: 'Văn hóa & phù hợp',
+                },
+              ]}
+            />
           </section>
 
           <section>
-            <h2 className="text-sm font-bold tracking-widest text-[#434654] uppercase mb-4">4. Cường độ (Intensity)</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <label className={`block p-6 rounded-xl cursor-pointer transition-all border ${!isStressTest ? 'bg-[#003fb1]/5 border-[#003fb1]' : 'bg-white border-[#c3c5d7]/20 hover:bg-[#f3f4f5]'}`}>
-                <input type="radio" name="mode" checked={!isStressTest} onChange={() => setIsStressTest(false)} className="hidden" />
-                <Smile className={`block mb-2 w-8 h-8 ${!isStressTest ? 'text-[#003fb1]' : 'text-[#434654]'}`} />
-                <span className="block font-bold text-[#191c1d]">Normal</span>
-                <span className="block text-xs text-[#434654]">Phản hồi mang tính xây dựng</span>
+            <StepHeading index={4} label="Cường độ" />
+            <div className="grid grid-cols-2 gap-3">
+              <label
+                className={cn(
+                  'flex flex-col gap-2 p-5 rounded-xl cursor-pointer transition-all border',
+                  !isStressTest
+                    ? 'bg-gold-500/10 border-gold-500 shadow-[0_0_20px_-8px_rgba(201,169,97,0.35)]'
+                    : 'bg-navy-800 border-navy-600 hover:border-gold-500/40',
+                )}
+              >
+                <input
+                  type="radio"
+                  name="mode"
+                  checked={!isStressTest}
+                  onChange={() => setIsStressTest(false)}
+                  className="sr-only"
+                />
+                <Smile
+                  className={cn(
+                    'w-6 h-6',
+                    !isStressTest ? 'text-gold-400' : 'text-text-muted',
+                  )}
+                  aria-hidden
+                />
+                <span className="font-semibold text-text-primary">Normal</span>
+                <span className="text-xs text-text-muted leading-relaxed">
+                  Phản hồi mang tính xây dựng
+                </span>
               </label>
-              <label className={`block p-6 rounded-xl cursor-pointer transition-all border ${isStressTest ? 'bg-[#ffdad6]/50 border-[#ba1a1a]' : 'bg-white border-[#c3c5d7]/20 hover:bg-[#f3f4f5]'}`}>
-                <input type="radio" name="mode" checked={isStressTest} onChange={() => setIsStressTest(true)} className="hidden" />
-                <Zap className={`block mb-2 w-8 h-8 ${isStressTest ? 'text-[#ba1a1a]' : 'text-[#434654]'}`} />
-                <span className={`block font-bold ${isStressTest ? 'text-[#ba1a1a]' : 'text-[#191c1d]'}`}>Stress-test</span>
-                <span className="block text-xs text-[#434654]">Hỏi xoáy, ngắt lời</span>
+              <label
+                className={cn(
+                  'flex flex-col gap-2 p-5 rounded-xl cursor-pointer transition-all border',
+                  isStressTest
+                    ? 'bg-status-error/10 border-status-error/60 shadow-[0_0_20px_-8px_rgba(248,113,113,0.25)]'
+                    : 'bg-navy-800 border-navy-600 hover:border-status-error/40',
+                )}
+              >
+                <input
+                  type="radio"
+                  name="mode"
+                  checked={isStressTest}
+                  onChange={() => setIsStressTest(true)}
+                  className="sr-only"
+                />
+                <Zap
+                  className={cn(
+                    'w-6 h-6',
+                    isStressTest ? 'text-status-error' : 'text-text-muted',
+                  )}
+                  aria-hidden
+                />
+                <span
+                  className={cn(
+                    'font-semibold',
+                    isStressTest ? 'text-status-error' : 'text-text-primary',
+                  )}
+                >
+                  Stress-test
+                </span>
+                <span className="text-xs text-text-muted leading-relaxed">
+                  Hỏi xoáy, ngắt lời
+                </span>
               </label>
             </div>
           </section>
 
-          <div className="pt-4">
-            <button
+          <div className="pt-2">
+            {error && (
+              <div
+                role="alert"
+                className="mb-4 p-4 bg-status-error/10 text-status-error rounded-xl text-sm border border-status-error/40 font-medium"
+              >
+                {error}
+              </div>
+            )}
+            <Button
               type="submit"
+              variant="primary"
+              size="lg"
+              fullWidth
+              loading={isGenerating}
               disabled={isGenerating}
-              className="w-full py-5 rounded-xl bg-gradient-to-r from-[#003fb1] to-[#1a56db] text-white font-bold text-lg shadow-xl shadow-blue-900/30 flex items-center justify-center gap-3 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isGenerating ? (
-                <>
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                  Đang phân tích...
-                </>
+                'Đang phân tích...'
               ) : (
                 <>
-                  <span>Bắt đầu phỏng vấn</span>
-                  <ArrowRight className="w-6 h-6" />
+                  Bắt đầu phỏng vấn
+                  <ArrowRight className="w-5 h-5" aria-hidden />
                 </>
               )}
-            </button>
-            <p className="text-center text-xs text-[#434654] mt-4 font-medium">Thời gian phỏng vấn dự kiến: 20-30 phút</p>
+            </Button>
+            <p className="text-center text-xs text-text-muted mt-4 font-medium">
+              Thời gian phỏng vấn dự kiến: 20-30 phút
+            </p>
           </div>
         </div>
       </form>

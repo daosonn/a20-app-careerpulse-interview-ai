@@ -1,5 +1,6 @@
-import React, { useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { useInterviewSession } from '../hooks/useInterviewSession';
 import { useAudioRecorder } from '../hooks/useAudioRecorder';
 import { useSpeech } from '../hooks/useSpeech';
@@ -7,12 +8,18 @@ import { InterviewHeader } from './InterviewHeader';
 import { ChatHistory } from './ChatHistory';
 import { SessionControls } from './SessionControls';
 
+/**
+ * The Arena — full-viewport live interview screen.
+ *
+ * Routed outside of <Layout> so it claims the entire viewport (no sidebar).
+ * The sub-components own their visual treatment; this file only composes.
+ */
 export function InterviewRoom() {
   const { id } = useParams<{ id: string }>();
   const scrollRef = useRef<HTMLDivElement>(null);
-  
+
   const { speakText, stopSpeaking } = useSpeech();
-  
+
   const {
     session,
     turns,
@@ -23,7 +30,6 @@ export function InterviewRoom() {
     currentPhase,
     submitAnswer,
     endSession,
-    setError
   } = useInterviewSession(id, speakText);
 
   const {
@@ -38,7 +44,6 @@ export function InterviewRoom() {
     stopRecording,
     resetRecording,
     setTranscript,
-    setError: setRecorderError
   } = useAudioRecorder(session?.language || 'vi');
 
   // Auto-scroll on new turns or transcript
@@ -53,8 +58,34 @@ export function InterviewRoom() {
     return () => stopSpeaking();
   }, [stopSpeaking]);
 
-  if (loading) return <div className="p-8 text-center animate-pulse">Loading...</div>;
-  if (!session) return <div className="p-8 text-center text-red-500">Session not found.</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-navy-950 font-sans">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-9 h-9 text-gold-400 animate-spin" aria-hidden />
+          <p className="text-text-muted text-sm font-medium tracking-wide">
+            Đang chuẩn bị phòng phỏng vấn...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-navy-950 font-sans text-center px-6">
+        <div className="max-w-md">
+          <h2 className="font-serif text-2xl text-gold-400 mb-3">
+            Không tìm thấy phiên phỏng vấn
+          </h2>
+          <p className="text-text-muted text-sm leading-relaxed">
+            Phiên này có thể đã bị xóa hoặc không còn hợp lệ. Vui lòng quay lại
+            bảng điều khiển và bắt đầu phiên mới.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const isVi = session.language === 'vi';
 
@@ -64,15 +95,15 @@ export function InterviewRoom() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto h-[calc(100vh-5rem)] flex flex-col bg-white rounded-2xl border border-[#c3c5d7]/20 shadow-lg overflow-hidden">
-      <InterviewHeader 
-        session={session} 
-        currentPhase={currentPhase} 
-        onEndSession={endSession} 
-        isVi={isVi} 
+    <div className="min-h-screen h-screen w-full bg-navy-950 text-text-primary font-sans antialiased flex flex-col">
+      <InterviewHeader
+        session={session}
+        currentPhase={currentPhase}
+        onEndSession={endSession}
+        isVi={isVi}
       />
 
-      <ChatHistory 
+      <ChatHistory
         turns={turns}
         currentQuestion={currentQuestion}
         isRecording={isRecording}
@@ -82,7 +113,7 @@ export function InterviewRoom() {
         scrollRef={scrollRef}
       />
 
-      <SessionControls 
+      <SessionControls
         isProcessing={isProcessing}
         isRecording={isRecording}
         recordingState={recordingState}
