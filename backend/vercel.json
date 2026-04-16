@@ -1,9 +1,3 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "functions": {
-    "app/index.py": {
-      "maxDuration": 60,
-      "excludeFiles": "{.venv/**,venv/**,__pycache__/**,**/*.pyc,backend.egg-info/**,data/**,docs/**,guideline/**,stitch/**}"
-    }
-  }
+  "$schema": "https://openapi.vercel.sh/vercel.json"
 }
