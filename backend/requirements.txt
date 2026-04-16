@@ -13,3 +13,4 @@ langgraph>=0.2.0
 sqlalchemy>=2.0.0
 python-multipart>=0.0.12
 chromadb>=0.5.15
+firebase-admin>=6.5.0
