@@ -15,9 +15,9 @@ import { useAuth } from '../../auth';
 import { Card, Badge, Button } from '../../../components/ui';
 
 export function Profile() {
-  const { user, profile } = useAuth();
+  const { user, profile, loading } = useAuth();
 
-  if (!user || !profile) {
+  if (loading || !user) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -26,6 +26,32 @@ export function Profile() {
             Đang tải thông tin...
           </p>
         </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center px-4">
+        <Card
+          variant="dark"
+          padding="md"
+          className="max-w-lg w-full text-center space-y-4"
+        >
+          <h2 className="font-serif text-2xl text-text-primary">
+            Khong the tai ho so
+          </h2>
+          <p className="text-text-muted leading-relaxed">
+            Khong lay duoc thong tin profile tu backend. Hay kiem tra backend va dang nhap lai.
+          </p>
+          <div className="flex justify-center">
+            <Link to="/onboarding">
+              <Button variant="secondary" size="md">
+                Vao trang onboarding
+              </Button>
+            </Link>
+          </div>
+        </Card>
       </div>
     );
   }
