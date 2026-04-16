@@ -1,9 +1,39 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
+  /* Typography */
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-headline: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", "Playfair Display", Georgia, serif;
+
+  /* Navy — dark surfaces */
+  --color-navy-950: #0b1628;
+  --color-navy-900: #0f1d32;
+  --color-navy-800: #12233d;
+  --color-navy-700: #1a3152;
+  --color-navy-600: #243d5e;
+
+  /* Gold — accent, CTA, headline */
+  --color-gold-300: #e0c994;
+  --color-gold-400: #d4b87a;
+  --color-gold-500: #c9a961;
+  --color-gold-600: #a88b3d;
+
+  /* Cream — light surfaces */
+  --color-cream-50:  #faf8f3;
+  --color-cream-100: #f5f1e8;
+  --color-cream-200: #ede7d9;
+
+  /* Text */
+  --color-text-primary: #f0ece3;  /* on dark bg */
+  --color-text-muted:   #95a7c0;  /* on dark bg, WCAG AA safe */
+  --color-text-dark:    #1a1a2e;  /* on cream bg */
+
+  /* Status */
+  --color-status-success: #4ade80;
+  --color-status-error:   #f87171;
+  --color-status-warning: #fbbf24;
 }
 
 @keyframes fadeInUp {
@@ -15,4 +45,17 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@keyframes goldPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(201, 169, 97, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(201, 169, 97, 0);
+  }
+}
+
+.animate-gold-pulse {
+  animation: goldPulse 1.6s ease-out infinite;
 }

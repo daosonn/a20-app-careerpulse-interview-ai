@@ -1,4 +1,22 @@
-import { InterviewTurnResult } from '../../../lib/gemini';
+export interface InterviewTurnResult {
+  evaluation: {
+    scores: {
+      relevance: number;
+      structure: number;
+      specificity: number;
+      clarity: number;
+      confidence: number;
+    };
+    starAnalysis: {
+      situation: string;
+      task: string;
+      action: string;
+      result: string;
+    };
+    feedback: string;
+    betterVersion: string;
+  };
+}
 
 export interface SessionData {
   id: string;
@@ -9,6 +27,10 @@ export interface SessionData {
   status: string;
   isStressTest?: boolean;
   predictedQuestions: string[];
+  /** Populated once the session is completed and summarized by the backend. */
+  summary?: string;
+  /** Populated once the session is completed. */
+  keyTakeaways?: string[];
 }
 
 export interface InterviewTurn {
