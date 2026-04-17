@@ -7,60 +7,166 @@
 {% block content_title %}
 <div class="ops-dashboard-header">
   <div>
-    <h1>Operations Dashboard</h1>
-    <p>Monitor platform health, support users, and manage interview operations from one workspace.</p>
+    <h1>{% translate 'Operations Dashboard' %}</h1>
+    <p>{% translate 'Monitor platform health, support users, and manage interview operations.' %}</p>
   </div>
+  {% if dashboard_system_status %}
+  <div class="ops-system-status ops-system-status--{{ dashboard_system_status.overall }}"
+       role="status" aria-label="System status: {{ dashboard_system_status.overall }}">
+    <span class="ops-system-status__dot"></span>
+    <span class="ops-system-status__label">{{ dashboard_system_status.overall|title }}</span>
+    {% if dashboard_system_status.alerts %}
+    <button class="ops-system-status__toggle" aria-expanded="false"
+            aria-controls="ops-status-alerts" type="button">
+      {% include "admin/partials/icon.html" with name="chevron-down" %}
+    </button>
+    <div id="ops-status-alerts" class="ops-system-status__alerts" hidden>
+      {% for alert in dashboard_system_status.alerts %}
+      <p class="ops-system-status__alert ops-system-status__alert--{{ alert.level }}">
+        {{ alert.message }}
+      </p>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
 </div>
 {% endblock %}
 
 {% block content %}
-<div class="ops-dashboard-grid">
-  <section class="ops-panel ops-panel-full">
-    <h2>Platform Snapshot</h2>
-    <div class="ops-kpi-grid">
-      {% for kpi in dashboard_kpis %}
-      <article class="ops-kpi-card">
-        <h3>{{ kpi.label }}</h3>
-        <p class="ops-kpi-value">{{ kpi.value }}</p>
-        <p class="ops-kpi-hint">{{ kpi.hint }}</p>
+<div class="ops-dashboard" role="main">
+
+  {# ===== KPI Overview — flat 6-card row ===== #}
+  {% if dashboard_kpis_flat %}
+  <section aria-label="{% translate 'KPI Overview' %}">
+    <div class="ops-kpi-overview">
+      {% for kpi in dashboard_kpis_flat %}
+      <div class="ops-kpi-flat ops-kpi-flat--{{ kpi.variant }}">
+        <div class="ops-kpi-flat__label">{{ kpi.label }}</div>
+        <div class="ops-kpi-flat__value">{{ kpi.value }}</div>
+        <div class="ops-kpi-flat__footer">
+          {% if kpi.trend %}
+          <span class="ops-kpi-trend-{{ kpi.trend_dir }}">{{ kpi.trend }}</span>
+          {% endif %}
+          <span>{{ kpi.hint }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  {% else %}
+  {# Fallback: grouped KPI sections #}
+  {% for group in dashboard_kpi_groups %}
+  <section class="ops-kpi-section" aria-labelledby="ops-kpi-{{ group.key }}">
+    <h2 id="ops-kpi-{{ group.key }}" class="ops-kpi-section__title">
+      <span class="ops-kpi-section__icon" aria-hidden="true">
+        {% include "admin/partials/icon.html" with name=group.icon %}
+      </span>
+      {{ group.title }}
+    </h2>
+    <div class="ops-kpi-section__grid ops-kpi-section__grid--{{ group.kpis|length }}">
+      {% for kpi in group.kpis %}
+      <article class="ops-kpi-card ops-kpi-card--{{ kpi.variant }} ops-kpi-card--{{ kpi.size }}"
+               {% if kpi.alert %}data-alert="true"{% endif %}>
+        <h3 class="ops-kpi-card__label">
+          {{ kpi.label }}
+          {% if kpi.alert %}<span class="ops-kpi-card__alert-dot" aria-label="Needs attention"></span>{% endif %}
+        </h3>
+        <p class="ops-kpi-card__value">{{ kpi.value }}</p>
+        {% if kpi.progress is not None and kpi.progress is not False %}
+        <div class="ops-kpi-card__progress" role="progressbar"
+             aria-valuenow="{{ kpi.progress }}" aria-valuemin="0" aria-valuemax="100">
+          <div class="ops-kpi-card__progress-fill" style="width: {{ kpi.progress }}%"></div>
+        </div>
+        {% endif %}
+        <p class="ops-kpi-card__hint">{{ kpi.hint }}</p>
       </article>
       {% endfor %}
     </div>
   </section>
+  {% endfor %}
+  {% endif %}
 
-  <section class="ops-panel">
-    <h2>Quick Actions</h2>
-    <div class="ops-quick-links">
-      {% for link in dashboard_quick_links %}
-      <a class="ops-link-card ops-link-{{ link.accent }}" href="{{ link.url }}">
-        <span class="ops-link-title">{{ link.label }}</span>
-        <span class="ops-link-desc">{{ link.description }}</span>
-      </a>
+  {# ===== Operations Health ===== #}
+  {% if dashboard_ops_health %}
+  <section class="ops-panel" aria-labelledby="ops-health-title">
+    <h2 id="ops-health-title" class="ops-panel__title">{% translate 'Operations Health' %}</h2>
+    <div class="ops-health-grid">
+      {% for item in dashboard_ops_health %}
+      <div class="ops-health-card ops-health-card--{{ item.status }}">
+        <span class="ops-health-dot" aria-hidden="true"></span>
+        <div class="ops-health-body">
+          <div class="ops-health-name">{{ item.name }}</div>
+          <div class="ops-health-detail">{{ item.detail }}</div>
+        </div>
+        <span class="ops-health-badge ops-health-badge--{{ item.status }}">{{ item.status|title }}</span>
+      </div>
       {% endfor %}
     </div>
   </section>
+  {% endif %}
 
-  <section class="ops-panel">
-    <h2>Recent User Activity</h2>
-    {% if dashboard_recent_activities %}
-    <ul class="ops-activity-list">
-      {% for item in dashboard_recent_activities %}
-      <li>
-        <div>
-          <p class="ops-activity-title">{{ item.event }}</p>
-          <p class="ops-activity-meta">{{ item.user }}{% if item.when %} · {{ item.when }}{% endif %}</p>
-          {% if item.details %}<p class="ops-activity-details">{{ item.details }}</p>{% endif %}
-        </div>
-      </li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    <p class="ops-empty">No tracked activity yet.</p>
-    {% endif %}
-  </section>
+  {# ===== Two-column: Quick Actions + Activity Feed ===== #}
+  <div class="ops-dashboard__columns">
 
-  <section class="ops-panel ops-panel-full">
-    <h2>Data Modules</h2>
+    {# Quick Actions #}
+    <section class="ops-panel" aria-labelledby="ops-quick-actions-title">
+      <h2 id="ops-quick-actions-title" class="ops-panel__title">{% translate 'Quick Actions' %}</h2>
+      <nav class="ops-actions-grid" aria-label="{% translate 'Quick navigation' %}">
+        {% for link in dashboard_quick_links %}
+        <a class="ops-action-card ops-action-card--{{ link.accent }}"
+           href="{{ link.url }}"
+           {% if link.kbd %}data-kbd="{{ link.kbd }}"{% endif %}>
+          <span class="ops-action-card__icon" aria-hidden="true">
+            {% include "admin/partials/icon.html" with name=link.icon %}
+          </span>
+          <span class="ops-action-card__body">
+            <span class="ops-action-card__label">{{ link.label }}</span>
+            <span class="ops-action-card__desc">{{ link.description }}</span>
+          </span>
+          <span class="ops-action-card__meta">
+            {% if link.count %}<span class="ops-badge ops-badge-{{ link.count_variant|default:'neutral' }} ops-badge-sm">{{ link.count }}</span>{% endif %}
+            {% if link.kbd %}<kbd class="ops-kbd" aria-label="Press G then {{ link.kbd }}">{{ link.kbd }}</kbd>{% endif %}
+          </span>
+        </a>
+        {% endfor %}
+      </nav>
+    </section>
+
+    {# Activity Feed (Timeline) #}
+    <section class="ops-panel" aria-labelledby="ops-activity-title">
+      <h2 id="ops-activity-title" class="ops-panel__title">{% translate 'Recent Activity' %}</h2>
+      {% if dashboard_recent_activities %}
+      <ol class="ops-timeline" aria-label="{% translate 'Recent user activity' %}">
+        {% for item in dashboard_recent_activities %}
+        <li class="ops-timeline__item ops-timeline__item--{{ item.accent }}">
+          <span class="ops-timeline__icon" aria-hidden="true">
+            {% include "admin/partials/icon.html" with name=item.icon %}
+          </span>
+          <div class="ops-timeline__content">
+            <p class="ops-timeline__event">{{ item.event }}</p>
+            <p class="ops-timeline__meta">
+              <span class="ops-timeline__user">{{ item.user }}</span>
+              {% if item.when %}<time class="ops-timeline__time" datetime="{{ item.when|date:'c' }}">{{ item.when|timesince }} ago</time>{% endif %}
+            </p>
+            {% if item.details %}<p class="ops-timeline__details">{{ item.details }}</p>{% endif %}
+          </div>
+        </li>
+        {% endfor %}
+      </ol>
+      {% else %}
+      <p class="ops-empty">{% translate 'No tracked activity yet.' %}</p>
+      {% endif %}
+    </section>
+  </div>
+
+  {# ===== Data Modules (collapsible) ===== #}
+  <details class="ops-panel ops-panel--collapsible" open>
+    <summary class="ops-panel__title ops-panel__title--toggle">
+      {% translate 'Data Modules' %}
+      <span class="ops-panel__toggle-hint">{{ app_list|length }} module{{ app_list|length|pluralize }}</span>
+    </summary>
     {% if app_list %}
     <div class="ops-module-grid">
       {% for app in app_list %}
@@ -79,9 +185,9 @@
               {% endif %}
             </span>
             <span class="ops-inline-actions">
-              {% if model.add_url %}<a href="{{ model.add_url }}">Add</a>{% endif %}
+              {% if model.add_url %}<a href="{{ model.add_url }}">{% translate 'Add' %}</a>{% endif %}
               {% if model.admin_url %}
-                {% if model.view_only %}<a href="{{ model.admin_url }}">View</a>{% else %}<a href="{{ model.admin_url }}">Manage</a>{% endif %}
+                {% if model.view_only %}<a href="{{ model.admin_url }}">{% translate 'View' %}</a>{% else %}<a href="{{ model.admin_url }}">{% translate 'Manage' %}</a>{% endif %}
               {% endif %}
             </span>
           </li>
@@ -91,8 +197,9 @@
       {% endfor %}
     </div>
     {% else %}
-      <p class="ops-empty">You do not have permission to access modules.</p>
+    <p class="ops-empty" style="padding: 0 16px 16px;">{% translate 'You do not have permission to access modules.' %}</p>
     {% endif %}
-  </section>
+  </details>
+
 </div>
 {% endblock %}

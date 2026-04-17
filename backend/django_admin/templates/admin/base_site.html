@@ -15,18 +15,130 @@
 
 {% block bodyclass %}{{ block.super }} ops-admin-theme{% endblock %}
 
+{# Branding stays in Django's header for login page use; hidden via CSS on main pages #}
 {% block branding %}
-<div id="site-name" class="ops-branding">
-  <a href="{% url 'admin:index' %}">AI Interview Platform Operations</a>
-  <span class="ops-branding-subtitle">Internal Control Center</span>
+<div id="site-name">
+  <a href="{% url 'admin:index' %}">{{ site_header|default:_('Operations Admin') }}</a>
 </div>
 {% if user.is_anonymous %}
   {% include "admin/color_theme_toggle.html" %}
 {% endif %}
 {% endblock %}
 
+{# ── Custom Stitch dark sidebar ── replaces Django's default nav-sidebar ── #}
+{% block sidebar %}
+<aside id="ops-sidenav" class="ops-sidenav" aria-label="{% translate 'Main navigation' %}">
+
+  {# Brand / logo at top of sidebar #}
+  <a href="{% url 'admin:index' %}" class="ops-brand" aria-label="{% translate 'Go to dashboard' %}">
+    <div class="ops-brand__icon" aria-hidden="true">AI</div>
+    <div class="ops-brand__text">
+      <span class="ops-brand__name">Interview Ops</span>
+      <span class="ops-brand__sub">{% translate 'Control Center' %}</span>
+    </div>
+  </a>
+
+  {# Primary navigation #}
+  <nav class="ops-sidenav__nav" aria-label="{% translate 'Primary navigation' %}">
+    <span class="ops-sidenav__section-label">{% translate 'Navigation' %}</span>
+
+    <a href="{% url 'admin:index' %}"
+       class="ops-sidenav__item"
+       data-path="index"
+       aria-label="{% translate 'Dashboard' %}">
+      {% include "admin/partials/icon.html" with name="pulse" %}
+      <span>{% translate 'Dashboard' %}</span>
+    </a>
+
+    <a href="{% url 'admin:ops_admin_platformuser_changelist' %}"
+       class="ops-sidenav__item"
+       data-path="platformuser"
+       aria-label="{% translate 'Users' %}">
+      {% include "admin/partials/icon.html" with name="users" %}
+      <span>{% translate 'Users' %}</span>
+    </a>
+
+    <a href="{% url 'admin:ops_admin_interviewsession_changelist' %}"
+       class="ops-sidenav__item"
+       data-path="interviewsession"
+       aria-label="{% translate 'Interviews' %}">
+      {% include "admin/partials/icon.html" with name="microphone" %}
+      <span>{% translate 'Interviews' %}</span>
+    </a>
+
+    <a href="{% url 'admin:ops_admin_resumeuploadrecord_changelist' %}"
+       class="ops-sidenav__item"
+       data-path="resumeuploadrecord"
+       aria-label="{% translate 'Resumes' %}">
+      {% include "admin/partials/icon.html" with name="document" %}
+      <span>{% translate 'Resumes' %}</span>
+    </a>
+
+    <a href="{% url 'admin:ops_admin_suggestedjobrecord_changelist' %}"
+       class="ops-sidenav__item"
+       data-path="suggestedjobrecord"
+       aria-label="{% translate 'Jobs' %}">
+      {% include "admin/partials/icon.html" with name="briefcase" %}
+      <span>{% translate 'Jobs' %}</span>
+    </a>
+
+    <a href="{% url 'admin:ops_admin_useractivitylog_changelist' %}"
+       class="ops-sidenav__item"
+       data-path="useractivitylog"
+       aria-label="{% translate 'Activity' %}">
+      {% include "admin/partials/icon.html" with name="activity" %}
+      <span>{% translate 'Activity' %}</span>
+    </a>
+
+  </nav>
+
+  {# Sidebar footer — keyboard shortcut hint #}
+  <div class="ops-sidenav__footer">
+    <button type="button" class="ops-sidenav__item ops-global-kbd-hint" id="ops-kbd-trigger"
+            style="width:100%;background:none;border:none;cursor:pointer;text-align:left;"
+            aria-label="{% translate 'Keyboard shortcuts' %}" title="{% translate 'Keyboard shortcuts (press ?)' %}">
+      {% include "admin/partials/icon.html" with name="settings" %}
+      <span>{% translate 'Shortcuts' %}</span>
+      <kbd style="margin-left:auto;font-size:11px;padding:1px 6px;background:rgba(255,255,255,0.12);border-radius:4px;color:rgba(255,255,255,0.6);">?</kbd>
+    </button>
+  </div>
+
+</aside>
+{% endblock %}
+
 {% block nav-global %}
 <div class="ops-global-links">
-  <a href="{% url 'admin:index' %}">{% translate 'Dashboard' %}</a>
+  <a href="{% url 'admin:index' %}" style="font-size:13px;color:var(--ops-muted);text-decoration:none;margin-right:8px;">
+    {% translate 'Dashboard' %}
+  </a>
+</div>
+{% endblock %}
+
+{% block footer %}
+{{ block.super }}
+{# Keyboard shortcuts modal — available on all admin pages #}
+<div id="ops-kbd-modal" class="ops-shortcut-modal" role="dialog"
+     aria-labelledby="ops-kbd-modal-title" aria-modal="true" hidden>
+  <div class="ops-shortcut-modal-content">
+    <h2 id="ops-kbd-modal-title">{% translate 'Keyboard Shortcuts' %}</h2>
+    <div class="ops-shortcut-grid" role="list">
+      <div role="listitem"><kbd>/</kbd></div><div class="ops-shortcut-desc">{% translate 'Focus search' %}</div>
+      <div role="listitem"><kbd>?</kbd></div><div class="ops-shortcut-desc">{% translate 'Show this help' %}</div>
+      <div role="listitem"><kbd>G</kbd> <kbd>D</kbd></div><div class="ops-shortcut-desc">{% translate 'Go to Dashboard' %}</div>
+      <div role="listitem"><kbd>G</kbd> <kbd>U</kbd></div><div class="ops-shortcut-desc">{% translate 'Go to Users' %}</div>
+      <div role="listitem"><kbd>G</kbd> <kbd>I</kbd></div><div class="ops-shortcut-desc">{% translate 'Go to Interviews' %}</div>
+      <div role="listitem"><kbd>G</kbd> <kbd>R</kbd></div><div class="ops-shortcut-desc">{% translate 'Go to Resume Uploads' %}</div>
+      <div role="listitem"><kbd>G</kbd> <kbd>J</kbd></div><div class="ops-shortcut-desc">{% translate 'Go to Suggested Jobs' %}</div>
+      <div role="listitem"><kbd>G</kbd> <kbd>L</kbd></div><div class="ops-shortcut-desc">{% translate 'Go to Activity Logs' %}</div>
+      <div role="listitem"><kbd>J</kbd> / <kbd>K</kbd></div><div class="ops-shortcut-desc">{% translate 'Navigate rows down / up' %}</div>
+      <div role="listitem"><kbd>X</kbd></div><div class="ops-shortcut-desc">{% translate 'Toggle row selection' %}</div>
+      <div role="listitem"><kbd>Enter</kbd></div><div class="ops-shortcut-desc">{% translate 'Open selected row' %}</div>
+      <div role="listitem"><kbd>E</kbd></div><div class="ops-shortcut-desc">{% translate 'Toggle filter panel' %}</div>
+      <div role="listitem"><kbd>1</kbd> / <kbd>2</kbd></div><div class="ops-shortcut-desc">{% translate 'Compact / Comfortable density' %}</div>
+      <div role="listitem"><kbd>Esc</kbd></div><div class="ops-shortcut-desc">{% translate 'Close / Blur' %}</div>
+    </div>
+    <button class="ops-shortcut-close" id="ops-kbd-close" type="button"
+            aria-label="{% translate 'Close' %}">&times;</button>
+  </div>
 </div>
 {% endblock %}
