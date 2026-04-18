@@ -16,6 +16,7 @@ from app.core.database import SessionDep
 from app.core.auth import CurrentUser
 from app.models.models import User, Education, ResumeUpload, SuggestedJob, UserActivity
 from app.services.profiler import extract_cv_info_logic
+from app.services.matcher import JobMatcherService
 
 router = APIRouter()
 
@@ -364,98 +365,34 @@ async def update_settings(req: SettingsReq, db: SessionDep, current_user: Curren
 
 @router.get("/suggested-jobs")
 async def get_suggested_jobs(db: SessionDep, current_user: CurrentUser):
-    """Return suggested roles based on user's position and skills.
-
-    This is a deterministic heuristic — no LLM call.  It returns 3 roles
-    tailored to the user's ``current_position`` keyword and skills.
-    """
-    position = (current_user.current_position or "").lower()
-    skills = current_user.skills or []
-
-    # Default suggestions
-    jobs = [
-        {
-            "title": "Senior Product Manager",
-            "company": "Công ty công nghệ hàng đầu",
-            "industry": "Technology",
-            "fit": 92,
-            "reason": "Phù hợp cao với kinh nghiệm quản lý sản phẩm và kỹ năng lãnh đạo.",
-        },
-        {
-            "title": "Business Strategy Lead",
-            "company": "Tập đoàn tư vấn quốc tế",
-            "industry": "Consulting",
-            "fit": 87,
-            "reason": "Tư duy chiến lược và khả năng phân tích phù hợp với vai trò cấp cao.",
-        },
-        {
-            "title": "Data-Driven Operations Manager",
-            "company": "Startup FinTech",
-            "industry": "FinTech",
-            "fit": 81,
-            "reason": "Nền tảng kỹ thuật kết hợp kinh nghiệm vận hành.",
-        },
-    ]
-
-    # Tailor if we can detect a domain from position or skills
-    skills_lower = [s.lower() for s in skills] if skills else []
-
-    if any(k in position for k in ["data", "analyst", "scientist"]):
-        jobs = [
-            {"title": "Senior Data Scientist", "company": "Big Tech", "industry": "Technology", "fit": 94,
-             "reason": "Kỹ năng phân tích dữ liệu và ML phù hợp tuyệt vời."},
-            {"title": "ML Engineering Lead", "company": "AI Startup", "industry": "AI/ML", "fit": 88,
-             "reason": "Kinh nghiệm xây dựng pipeline ML phù hợp với vai trò lead."},
-            {"title": "Analytics Manager", "company": "FinTech", "industry": "FinTech", "fit": 83,
-             "reason": "Kết hợp kỹ năng phân tích với kinh nghiệm quản lý."},
-        ]
-    elif any(k in position for k in ["engineer", "developer", "dev", "backend", "frontend", "fullstack"]):
-        jobs = [
-            {"title": "Senior Software Engineer", "company": "Big Tech", "industry": "Technology", "fit": 93,
-             "reason": "Kinh nghiệm kỹ thuật và kỹ năng lập trình phù hợp cao."},
-            {"title": "Tech Lead", "company": "Scale-up", "industry": "SaaS", "fit": 89,
-             "reason": "Sẵn sàng chuyển từ IC sang vai trò dẫn dắt kỹ thuật."},
-            {"title": "Platform Engineer", "company": "Cloud Provider", "industry": "Infrastructure", "fit": 84,
-             "reason": "Kỹ năng hệ thống phân tán và DevOps phù hợp."},
-        ]
-    elif any(k in position for k in ["design", "ux", "ui", "product design"]):
-        jobs = [
-            {"title": "Senior Product Designer", "company": "Design-led Startup", "industry": "Technology", "fit": 95,
-             "reason": "Kỹ năng UX/UI và tư duy sản phẩm xuất sắc."},
-            {"title": "Design Lead", "company": "Agency", "industry": "Creative", "fit": 88,
-             "reason": "Kinh nghiệm dẫn dắt design team và client management."},
-            {"title": "UX Researcher", "company": "Enterprise SaaS", "industry": "B2B", "fit": 82,
-             "reason": "Kỹ năng nghiên cứu người dùng và phân tích dữ liệu."},
-        ]
-    elif any(k in skills_lower for k in ["python", "machine learning", "ai", "deep learning"]):
-        jobs[0] = {"title": "AI/ML Engineer", "company": "AI Startup", "industry": "AI/ML", "fit": 91,
-                   "reason": "Kỹ năng Python và ML phù hợp với các dự án AI tiên tiến."}
-
-    try:
-        db.query(SuggestedJob).filter(SuggestedJob.user_id == current_user.id).delete(synchronize_session=False)
-        for job in jobs:
-            db.add(
-                SuggestedJob(
-                    user_id=current_user.id,
-                    title=job.get("title", ""),
-                    company=job.get("company", ""),
-                    industry=job.get("industry", ""),
-                    fit_score=int(job.get("fit", 0) or 0),
-                    reason=job.get("reason", ""),
-                    source="auto",
-                    is_active=True,
-                )
-            )
-        current_user.last_activity_at = _utcnow()
-        _log_activity(
-            db,
-            current_user.id,
-            "jobs_suggested_refreshed",
-            {"job_count": len(jobs)},
+    """Lấy danh sách job gợi ý, tự động khớp nếu chưa có dữ liệu."""
+    saved_suggestions = db.query(SuggestedJob).filter(
+        SuggestedJob.user_id == current_user.id,
+        SuggestedJob.is_active == True
+    ).all()
+    
+    if not saved_suggestions and current_user.skills:
+        matcher = JobMatcherService(db)
+        await matcher.match_and_persist(
+            user_id=current_user.id, 
+            skills=current_user.skills,
+            current_position=current_user.current_position
         )
-        db.commit()
-    except Exception as e:
-        db.rollback()
-        print(f"Warning: failed to persist suggested jobs for user {current_user.id}: {e}")
+        saved_suggestions = db.query(SuggestedJob).filter(
+            SuggestedJob.user_id == current_user.id
+        ).all()
 
-    return {"jobs": jobs}
+    return {
+        "jobs": [
+            {
+                "title": s.title,
+                "company": s.company,
+                "industry": s.industry,
+                "fit": s.fit_score,
+                "reason": s.reason,
+                "url": s.url,
+                "source": s.source
+            }
+            for s in saved_suggestions
+        ]
+    }

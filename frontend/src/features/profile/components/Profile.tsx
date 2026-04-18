@@ -593,10 +593,17 @@ function JobsTabContent({ authenticatedFetch }: { authenticatedFetch: (url: stri
               {job.company} <span className="text-text-muted/40">·</span> {job.industry}
             </div>
             <p className="text-sm text-text-muted leading-relaxed flex-1">{job.reason}</p>
-            <div className="mt-4 pt-4 border-t border-navy-700/60">
-              <Link to="/setup">
-                <Button variant="secondary" size="sm" fullWidth>Luyện tập cho vai trò này</Button>
+            <div className="mt-4 pt-4 border-t border-navy-700/60 flex gap-2">
+              <Link to="/setup" className="flex-1">
+                <Button variant="secondary" size="sm" fullWidth>Luyện tập</Button>
               </Link>
+              {job.url && (
+                <a href={job.url} target="_blank" rel="noopener noreferrer" className="shrink-0">
+                  <Button variant="ghost" size="sm">
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                </a>
+              )}
             </div>
           </Card>
         ))}
