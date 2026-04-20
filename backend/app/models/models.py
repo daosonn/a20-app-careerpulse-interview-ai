@@ -116,6 +116,7 @@ class SuggestedJob(Base):
     industry = Column(String, default="")
     fit_score = Column(Integer, default=0)
     reason = Column(Text, default="")
+    url = Column(String)
     source = Column(String, default="auto")  # auto, admin, imported
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=utcnow, nullable=False)
@@ -134,3 +135,7 @@ class UserActivity(Base):
     created_at = Column(DateTime, default=utcnow, nullable=False)
 
     user = relationship("User", back_populates="activities")
+
+
+
+

@@ -15,11 +15,11 @@ class SetupReq(BaseModel):
 
 class ChatReq(BaseModel):
     message: str
-    history: List[ChatMsg]
-    cv_text: str
-    jd_text: str
-    question_count: int
-    evaluations: List[str] = []
+    history: List[ChatMsg] = []
+    cv_text: Optional[str] = ""
+    jd_text: Optional[str] = ""
+    question_count: int = 0
+    evaluations: List[dict] = []
     interview_type: str = "Behavioral"
     language: str = "vi"
     is_stress_test: bool = False

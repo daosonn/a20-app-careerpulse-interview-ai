@@ -1,3 +1,4 @@
+import asyncio
 from langgraph.graph import StateGraph, END, START
 from langgraph.checkpoint.memory import MemorySaver
 from .state import InterviewState
@@ -10,7 +11,8 @@ retry_policy = {"max_attempts": 3}
 
 async def profiler_node(state: InterviewState):
     """Integrates Profiler logic directly."""
-    info = extract_cv_info_logic(state["cv_content"])
+    # Parallelize extraction and search (though search is mock now)
+    info = await extract_cv_info_logic(state["cv_content"])
     skills = info.get("skills", [])
     questions = search_questions_logic(skills)
     
@@ -31,13 +33,10 @@ async def interviewer_node(state: InterviewState):
     
     # Check if we need a new batch
     if not pending and count < 9:
-        # Generate new batch of 3
-        # In a real system, we'd pass evaluations/history to inform the next batch
-        new_batch = generate_ai_batch(state)
+        new_batch = await generate_ai_batch(state)
         pending.extend(new_batch)
     
     if not pending:
-        # End of interview
         return {
             "chat_history": [{"role": "ai", "content": "Thank you for the interview. We will get back to you soon."}],
             "current_phase": "Closing"
@@ -69,8 +68,29 @@ async def evaluator_node(state: InterviewState):
             self.model_answer = state.get("current_model_answer", "")
 
     req = MockReq(state)
-    evaluation = evaluate_star_logic(req)
+    evaluation = await evaluate_star_logic(req)
     return {"evaluations": [evaluation]}
+
+async def unified_node(state: InterviewState):
+    """
+    RUNS EVALUATOR AND INTERVIEWER IN PARALLEL.
+    This is the key to reducing latency.
+    """
+    # 1. Start Evaluator and Interviewer tasks simultaneously
+    # Interviewer node needs to know if pending is empty to decide whether to generate batch.
+    
+    eval_task = asyncio.create_task(evaluator_node(state))
+    interview_task = asyncio.create_task(interviewer_node(state))
+    
+    # Wait for both to finish
+    eval_result, interview_result = await asyncio.gather(eval_task, interview_task)
+    
+    # Merge results
+    final_result = {**interview_result}
+    if eval_result.get("evaluations"):
+        final_result["evaluations"] = state.get("evaluations", []) + eval_result["evaluations"]
+    
+    return final_result
 
 def route_next(state: InterviewState):
     """Determines the next step based on the phase."""
@@ -80,27 +100,23 @@ def route_next(state: InterviewState):
     if state.get("current_phase") == "Closing":
         return END
 
-    if state["chat_history"] and state["chat_history"][-1]["role"] == "user":
-        return "evaluator"
-    
-    return "interviewer"
+    return "unified"
 
 # Workflow construction
 workflow = StateGraph(InterviewState)
 
 # Nodes
 workflow.add_node("profiler", profiler_node, retry=retry_policy)
-workflow.add_node("interviewer", interviewer_node, retry=retry_policy)
-workflow.add_node("evaluator", evaluator_node, retry=retry_policy)
+workflow.add_node("unified", unified_node, retry=retry_policy)
 
 # Edges
 workflow.add_conditional_edges(START, route_next)
-workflow.add_edge("profiler", "interviewer")
-workflow.add_edge("evaluator", "interviewer")
-workflow.add_edge("interviewer", END)
+workflow.add_edge("profiler", "unified")
+workflow.add_edge("unified", END)
 
 # Persistence
 checkpointer = MemorySaver()
 
 # Compile
 app_graph = workflow.compile(checkpointer=checkpointer)
+
