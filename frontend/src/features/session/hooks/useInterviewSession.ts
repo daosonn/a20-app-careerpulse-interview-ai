@@ -8,7 +8,11 @@ async function parseErrorMessage(response: Response, fallback: string): Promise<
   try {
     const payload = await response.json();
     if (payload?.detail) {
-      return payload.detail;
+      if (Array.isArray(payload.detail)) {
+        // Handle validation errors from Pydantic
+        return payload.detail.map((err: any) => `${err.loc.join('.')}: ${err.msg}`).join('; ');
+      }
+      return typeof payload.detail === 'string' ? payload.detail : JSON.stringify(payload.detail);
     }
   } catch {
     // Ignore parse failures and keep fallback.
@@ -16,7 +20,7 @@ async function parseErrorMessage(response: Response, fallback: string): Promise<
   return fallback;
 }
 
-export function useInterviewSession(id: string | undefined, speakText: (text: string, lang: string) => Promise<void>) {
+export function useInterviewSession(id: string | undefined, speakText: (text: string, lang: string, base64?: string) => Promise<void>) {
   const { user, authenticatedFetch } = useAuth();
   const navigate = useNavigate();
   
@@ -38,21 +42,34 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
       const data = await response.json();
       setSession(data);
       
-      // Map transcript to turns
-      const loadedTurns = (data.transcript || []).map((t: any, idx: number) => ({
-        id: `turn-${idx}`,
-        turnOrder: idx + 1,
-        question: t.role === 'model' ? t.content : '',
-        answer: t.role === 'user' ? t.content : '',
-        tip: t.tip || '',
-      }));
-      setTurns(loadedTurns);
-      if (loadedTurns.length > 0 && data.status === 'in_progress') {
-          // Try to find the last AI tip if available in history (if stored)
-          // For now we assume fresh tips for fresh questions
+      // Map transcript to turns (pairing Question-Answer)
+      const transcript = data.transcript || [];
+      const loadedTurns: InterviewTurn[] = [];
+      
+      for (let i = 0; i < transcript.length; i++) {
+        const msg = transcript[i];
+        if (msg.role === 'model' || msg.role === 'ai') {
+          // Look ahead for user answer
+          const nextMsg = transcript[i + 1];
+          if (nextMsg && nextMsg.role === 'user') {
+            loadedTurns.push({
+              id: `turn-${i}`,
+              turnOrder: loadedTurns.length + 1,
+              question: msg.content,
+              answer: nextMsg.content,
+              tip: msg.tip || '',
+            });
+            i++; // skip next since we paired it
+          } else {
+            // It's the current (unanswered) question
+            setCurrentQuestion(msg.content);
+            setCurrentTip(msg.tip || '');
+          }
+        }
       }
+      setTurns(loadedTurns);
 
-      if (data.status === 'setup' || (data.status === 'in_progress' && loadedTurns.length === 0)) {
+      if (data.status === 'setup' || (data.status === 'in_progress' && transcript.length === 0)) {
         // Start interview on backend
         const startResp = await authenticatedFetch(apiUrl(`/api/v1/interview/start?session_id=${id}`), {
           method: 'POST'
@@ -62,7 +79,7 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
           setCurrentQuestion(startData.first_question);
           setCurrentTip(startData.tip || '');
           setCurrentPhase(startData.current_phase || 1);
-          speakText(startData.first_question, data.language);
+          speakText(startData.first_question, data.language, startData.audio_base64);
         } else {
           setError(await parseErrorMessage(startResp, 'Failed to start interview session.'));
         }
@@ -118,78 +135,78 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
     }
   }, [session, id, navigate, authenticatedFetch]);
 
-  const submitAnswer = useCallback(async (answerText: string, audioBlob?: Blob | null, audioUrl?: string | null) => {
+  const submitAnswer = useCallback(async (answerText: string, audioBlob?: Blob | null) => {
     if (!session || !user || !id) return;
     setIsProcessing(true);
     setError('');
 
-    let finalAnswer = answerText.trim();
-
-    if (!finalAnswer && audioBlob) {
-        try {
-            const formData = new FormData();
-            formData.append('file', audioBlob);
-            const resp = await authenticatedFetch(apiUrl('/api/v1/interview/transcribe'), {
-                method: 'POST',
-                body: formData
-            });
-            if (!resp.ok) {
-              setError(await parseErrorMessage(resp, 'Transcription failed.'));
-              setIsProcessing(false);
-              return;
-            }
-            const data = await resp.json();
-            finalAnswer = data.text;
-        } catch (err) {
-            setError('Transcription failed.');
-            setIsProcessing(false);
-            return;
-        }
-    }
-
-    if (!finalAnswer) {
-      setIsProcessing(false);
-      return;
-    }
-
     const turnOrder = turns.length + 1;
     const tempId = `temp-${Date.now()}`;
-    const pendingTurn: InterviewTurn = {
-      id: tempId,
-      turnOrder,
-      question: currentQuestion,
-      answer: finalAnswer,
-    };
     
-    setTurns(prev => [...prev, { ...pendingTurn, tip: currentTip }]);
+    // We'll update the UI optimistically if we have text
+    if (answerText.trim()) {
+      setTurns(prev => [...prev, { id: tempId, turnOrder, question: currentQuestion, answer: answerText.trim(), tip: currentTip }]);
+      setCurrentQuestion('');
+      setCurrentTip('');
+    }
 
     try {
-      const response = await authenticatedFetch(apiUrl('/api/v1/interview/chat'), {
-        method: 'POST',
-        body: JSON.stringify({
-          session_id: id,
-          message: finalAnswer
-        })
-      });
+      let response: Response;
+      
+      if (audioBlob) {
+        // COMBINED REQUEST: Transcribe + Chat in one go
+        const formData = new FormData();
+        formData.append('file', audioBlob, 'recording.wav');
+        response = await authenticatedFetch(apiUrl(`/api/v1/interview/transcribe-and-chat?session_id=${id}`), {
+          method: 'POST',
+          body: formData
+        });
+      } else {
+        // Standard text chat
+        response = await authenticatedFetch(apiUrl('/api/v1/interview/chat'), {
+          method: 'POST',
+          body: JSON.stringify({ session_id: id, message: answerText.trim() })
+        });
+      }
 
       if (!response.ok) throw new Error(await parseErrorMessage(response, 'Chat failed'));
       const result = await response.json();
 
+      // If it was audio, we might not have added the turn yet because we didn't have the transcribed text
+      if (audioBlob && !answerText.trim()) {
+         // Note: result should ideally return the transcribed text too. 
+         // Let's assume we might need to adjust backend to return "user_message"
+         setTurns(prev => [...prev, { 
+            id: tempId, 
+            turnOrder, 
+            question: currentQuestion, 
+            answer: result.user_message || "Audio Message", 
+            tip: currentTip 
+         }]);
+         setCurrentQuestion('');
+         setCurrentTip('');
+      }
+
       setCurrentQuestion(result.reply);
       setCurrentTip(result.tip || '');
       setCurrentPhase(result.current_phase || currentPhase);
-      speakText(result.reply, session.language);
+      
+      // Speak the response
+      speakText(result.reply, session.language, result.audio_base64);
 
       if (result.should_end) {
-        await endSession([...turns, pendingTurn]);
+        await endSession([...turns, { id: tempId, turnOrder, question: currentQuestion, answer: answerText || "Audio" }]);
       }
     } catch (err: any) {
       setError(err?.message || 'Unknown error');
-      setTurns(prev => prev.filter(t => t.id !== tempId));
+      if (answerText.trim()) {
+        setTurns(prev => prev.filter(t => t.id !== tempId));
+      }
     } finally {
       setIsProcessing(false);
     }
-  }, [session, user, id, turns, currentQuestion, currentPhase, speakText, endSession, authenticatedFetch]);
+  }, [session, user, id, turns, currentQuestion, currentTip, currentPhase, speakText, endSession, authenticatedFetch]);
+
 
   return {
     session,

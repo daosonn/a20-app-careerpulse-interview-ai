@@ -10,8 +10,8 @@ export function useAudioRecorder(language: string) {
 
   const recognitionRef = useRef<any>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const audioBlobRef = useRef<Blob | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -60,9 +60,9 @@ export function useAudioRecorder(language: string) {
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType || 'audio/webm' });
-        audioBlobRef.current = audioBlob;
-        const url = URL.createObjectURL(audioBlob);
+        const blob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType || 'audio/webm' });
+        setAudioBlob(blob);
+        const url = URL.createObjectURL(blob);
         setAudioUrl(url);
         
         stream.getTracks().forEach(t => t.stop());
@@ -132,7 +132,7 @@ export function useAudioRecorder(language: string) {
 
   const resetRecording = useCallback(() => {
     setAudioUrl(null);
-    audioBlobRef.current = null;
+    setAudioBlob(null);
     setTranscript('');
     setRecordingState('idle');
     setError('');
@@ -145,7 +145,7 @@ export function useAudioRecorder(language: string) {
     transcript,
     audioLevel,
     error,
-    audioBlob: audioBlobRef.current,
+    audioBlob,
     startRecording,
     stopRecording,
     resetRecording,

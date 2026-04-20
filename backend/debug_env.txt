@@ -1,0 +1,3 @@
+DEBUG: Loaded .env from D:\A - AI Project\A20-App-011\.env
+DEBUG: OPENAI_API_KEY found: True
+DEBUG: ANTHROPIC_API_KEY found: True
