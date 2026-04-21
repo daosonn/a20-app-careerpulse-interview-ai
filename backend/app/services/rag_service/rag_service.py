@@ -1,13 +1,12 @@
-import os
 from typing import List, Dict, Any
 from langchain_chroma import Chroma
-from langchain_openai import OpenAIEmbeddings
 from langchain_core.documents import Document
 import uuid
+from app.core.config import embedding_model
 
 class RAGService:
     def __init__(self):
-        self.embeddings = OpenAIEmbeddings(api_key=os.getenv("OPENAI_API_KEY"))
+        self.embeddings = embedding_model
         self.persist_directory = "./chroma_db"
         self.collection_name = "jobs_collection"
         self.vector_db = Chroma(

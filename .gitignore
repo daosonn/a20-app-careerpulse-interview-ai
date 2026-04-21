@@ -9,6 +9,8 @@ coverage/
 
 data/
 chroma/
+chroma_db/
+raw_data/
 
 venv/
 .env

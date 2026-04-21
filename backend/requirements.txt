@@ -18,3 +18,4 @@ firebase-admin>=6.5.0
 beautifulsoup4 
 selenium 
 webdriver-manager
+dashscope

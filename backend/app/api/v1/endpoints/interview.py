@@ -47,7 +47,7 @@ async def _generate_predicted_questions(req: SetupReq) -> list[str]:
         "Return exactly 5 concise predicted interview questions, each on a new line."
     )
     llm_response = await async_client.chat.completions.create(
-        # model="gpt-4o-mini",
+        model="qwen-turbo",
         messages=[{"role": "user", "content": prompt}]
     )
     raw = llm_response.choices[0].message.content or ""
@@ -133,7 +133,7 @@ async def transcribe_audio(file: UploadFile = File(...), current_user: CurrentUs
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-async def _stream_interview_logic(new_input: dict, config: dict, interview_id: int):
+async def _stream_interview_logic(new_input: dict, config: dict, interview_id: int, user_message: str = None):
     """
     Streams LangGraph events, extracts LLM tokens for the next question,
     splits into sentences, and generates TTS chunks.
@@ -144,12 +144,20 @@ async def _stream_interview_logic(new_input: dict, config: dict, interview_id: i
     is_capturing_question = True
     final_result = {}
     
+    # 0. Yield user message if provided (for audio transcript sync)
+    if user_message:
+        yield f"data: {json.dumps({'type': 'u', 'c': user_message})}\n\n"
+    
     # We use astream_events to capture tokens from the LLM inside the graph nodes
     async for event in app_graph.astream_events(new_input, config=config, version="v2"):
         kind = event.get("event")
         
         # 1. Handle LLM Streaming Tokens
         if kind == "on_chat_model_stream":
+            # Only process tokens from the interviewer model
+            if "interviewer" not in event.get("tags", []):
+                continue
+                
             content = event["data"]["chunk"].content
             if not content: continue
             
@@ -158,10 +166,18 @@ async def _stream_interview_logic(new_input: dict, config: dict, interview_id: i
                 is_capturing_question = False
             
             if is_capturing_question:
-                # Clean up "Next Question:" prefix if present
                 clean_content = content
-                if full_response_text == "" and content.lstrip().startswith("Next Question:"):
-                    clean_content = content.replace("Next Question:", "", 1).lstrip()
+                
+                # More robust prefix removal for "Next Question:"
+                # If we are at the very beginning and see the prefix, strip it
+                if full_response_text.strip() == "":
+                    # Check if the cumulative buffer starts with the prefix or is part of it
+                    temp_buf = (full_response_text + content).lstrip()
+                    if "Next Question:".startswith(temp_buf) or temp_buf.startswith("Next Question:"):
+                        # If the current chunk is part of the prefix
+                        full_response_text += content
+                        # Don't yield or TTS the prefix
+                        continue
 
                 full_response_text += clean_content
                 buffer += clean_content
@@ -175,7 +191,8 @@ async def _stream_interview_logic(new_input: dict, config: dict, interview_id: i
                     if len(parts) > 1:
                         for sentence in parts[:-1]:
                             s_text = sentence.strip()
-                            if s_text and len(s_text) > 2:
+                            # Additional check to avoid sending junk or remaining prefix bits to TTS
+                            if s_text and len(s_text) > 2 and not s_text.startswith("---") and "Next Question" not in s_text:
                                 audio_b64 = await generate_speech_base64_async(s_text)
                                 if audio_b64:
                                     yield f"data: {json.dumps({'type': 'a', 'c': audio_b64})}\n\n"
@@ -240,11 +257,7 @@ async def start_interview(session_id: int, db: SessionDep, current_user: Current
         media_type="text/event-stream"
     )
 
-@router.post("/chat")
-async def chat_interview(req: ChatReq, db: SessionDep, current_user: CurrentUser):
-    if not req.message: raise HTTPException(status_code=400, detail="Empty message")
-    
-    session_id = int(req.session_id)
+async def _chat_logic(session_id: int, message: str, db: SessionDep, current_user: CurrentUser):
     interview = db.query(Interview).filter(Interview.id == session_id, Interview.user_id == current_user.id).first()
     if not interview: raise HTTPException(status_code=404, detail="Session not found")
 
@@ -255,20 +268,25 @@ async def chat_interview(req: ChatReq, db: SessionDep, current_user: CurrentUser
     graph_state = dict(snapshot.values) if snapshot and getattr(snapshot, "values", None) else {}
 
     if graph_state:
-        new_input = {"chat_history": [{"role": "user", "content": req.message}]}
+        new_input = {"chat_history": [{"role": "user", "content": message}]}
     else:
         bootstrap_state = _build_base_state(interview)
         persisted_history = _normalize_transcript(interview.transcript)
-        bootstrap_state["chat_history"] = persisted_history + [{"role": "user", "content": req.message}]
+        bootstrap_state["chat_history"] = persisted_history + [{"role": "user", "content": message}]
         new_input = bootstrap_state
 
     current_user.last_activity_at = _utcnow()
     db.commit()
 
     return StreamingResponse(
-        _stream_interview_logic(new_input, config, session_id),
+        _stream_interview_logic(new_input, config, session_id, message),
         media_type="text/event-stream"
     )
+
+@router.post("/chat")
+async def chat_interview(req: ChatReq, db: SessionDep, current_user: CurrentUser):
+    if not req.message: raise HTTPException(status_code=400, detail="Empty message")
+    return await _chat_logic(int(req.session_id), req.message, db, current_user)
 
 @router.post("/transcribe-and-chat")
 async def transcribe_and_chat(

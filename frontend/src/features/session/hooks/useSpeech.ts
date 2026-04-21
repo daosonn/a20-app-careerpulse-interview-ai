@@ -25,27 +25,56 @@ export function useSpeech() {
     window.speechSynthesis.speak(utterance);
   }, []);
 
+  const audioQueue = useRef<string[]>([]);
+  const isPlaying = useRef(false);
+
+  const playNextInQueue = useCallback(async () => {
+    if (audioQueue.current.length === 0) {
+      isPlaying.current = false;
+      return;
+    }
+
+    isPlaying.current = true;
+    const base64Audio = audioQueue.current.shift();
+    if (!base64Audio) {
+        playNextInQueue();
+        return;
+    }
+
+    try {
+      const url = `data:audio/mp3;base64,${base64Audio}`;
+      const audio = new Audio(url);
+      ttsAudioRef.current = audio;
+      
+      audio.onended = () => {
+        ttsAudioRef.current = null;
+        playNextInQueue();
+      };
+
+      await audio.play();
+    } catch (err) {
+      console.warn('[TTS] Playback failed, skipping chunk:', err);
+      playNextInQueue();
+    }
+  }, []);
+
   const speakText = useCallback(async (text: string, lang: string, base64Audio?: string) => {
-    // Stop any currently playing TTS
-    if (ttsAudioRef.current) {
+    // 1. If we have base64 audio from backend, queue it
+    if (base64Audio) {
+      audioQueue.current.push(base64Audio);
+      if (!isPlaying.current) {
+        playNextInQueue();
+      }
+      return;
+    }
+
+    // Stop any currently playing non-queued TTS (e.g. browser synth or older OpenAI call)
+    if (ttsAudioRef.current && !isPlaying.current) {
       ttsAudioRef.current.pause();
       ttsAudioRef.current = null;
     }
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
-    }
-
-    // 1. If we have base64 audio from backend, use it first (most reliable)
-    if (base64Audio) {
-      try {
-        const url = `data:audio/mp3;base64,${base64Audio}`;
-        const audio = new Audio(url);
-        ttsAudioRef.current = audio;
-        await audio.play();
-        return;
-      } catch (err) {
-        console.warn('[TTS] Base64 playback failed:', err);
-      }
     }
 
     // 2. Fallback to OpenAI if key exists (original logic)
@@ -89,9 +118,11 @@ export function useSpeech() {
     } else {
       speakWithBrowser(text, 'en-US');
     }
-  }, [speakWithBrowser]);
+  }, [speakWithBrowser, playNextInQueue]);
 
   const stopSpeaking = useCallback(() => {
+    audioQueue.current = [];
+    isPlaying.current = false;
     if (ttsAudioRef.current) {
       ttsAudioRef.current.pause();
       ttsAudioRef.current = null;
