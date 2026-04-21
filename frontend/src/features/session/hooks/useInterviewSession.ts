@@ -33,6 +33,78 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
   const [error, setError] = useState('');
   const [currentPhase, setCurrentPhase] = useState<number>(1);
 
+  const handleStream = useCallback(async (response: Response, lang: string) => {
+    const reader = response.body?.getReader();
+    if (!reader) return;
+
+    const decoder = new TextDecoder();
+    let partialChunk = '';
+    
+    // Clear current state for new response
+    setCurrentQuestion('');
+    setCurrentTip('');
+    
+    let shouldEnd = false;
+    
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = (partialChunk + chunk).split('\n');
+        partialChunk = lines.pop() || '';
+
+        for (const line of lines) {
+          const cleanLine = line.trim();
+          if (!cleanLine || !cleanLine.startsWith('data: ')) continue;
+          
+          const dataStr = cleanLine.replace('data: ', '');
+          if (dataStr === '[DONE]') continue;
+
+          try {
+            const data = JSON.parse(dataStr);
+            console.log('[Stream] Received:', data.type, data.c ? '(content)' : '');
+            
+            if (data.type === 't') {
+              // Text token
+              setCurrentQuestion(prev => prev + data.c);
+            } else if (data.type === 'u') {
+              // User transcript (for audio messages)
+              setTurns(prev => {
+                 const lastTurn = prev[prev.length - 1];
+                 if (lastTurn && lastTurn.id.startsWith('temp-') && !lastTurn.answer) {
+                    return prev.map((t, idx) => idx === prev.length - 1 ? { ...t, answer: data.c } : t);
+                 }
+                 return [...prev, { 
+                    id: `temp-${Date.now()}`, 
+                    turnOrder: prev.length + 1, 
+                    question: '', 
+                    answer: data.c,
+                    tip: ''
+                 }];
+              });
+            } else if (data.type === 'a') {
+              // Audio base64
+              speakText('', lang, data.c);
+            } else if (data.type === 'm') {
+              // Metadata
+              if (data.tip) setCurrentTip(data.tip);
+              if (data.phase) setCurrentPhase(data.phase);
+              if (data.should_end) shouldEnd = true;
+            }
+          } catch (e) {
+            console.error('Error parsing stream chunk:', e);
+          }
+        }
+      }
+      return shouldEnd;
+    } catch (err) {
+      console.error('Stream reading error:', err);
+      throw err;
+    }
+  }, [speakText]);
+
   const loadData = useCallback(async () => {
     if (!id || !user) return;
     try {
@@ -42,14 +114,12 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
       const data = await response.json();
       setSession(data);
       
-      // Map transcript to turns (pairing Question-Answer)
       const transcript = data.transcript || [];
       const loadedTurns: InterviewTurn[] = [];
       
       for (let i = 0; i < transcript.length; i++) {
         const msg = transcript[i];
         if (msg.role === 'model' || msg.role === 'ai') {
-          // Look ahead for user answer
           const nextMsg = transcript[i + 1];
           if (nextMsg && nextMsg.role === 'user') {
             loadedTurns.push({
@@ -59,9 +129,8 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
               answer: nextMsg.content,
               tip: msg.tip || '',
             });
-            i++; // skip next since we paired it
+            i++;
           } else {
-            // It's the current (unanswered) question
             setCurrentQuestion(msg.content);
             setCurrentTip(msg.tip || '');
           }
@@ -70,19 +139,17 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
       setTurns(loadedTurns);
 
       if (data.status === 'setup' || (data.status === 'in_progress' && transcript.length === 0)) {
-        // Start interview on backend
+        setLoading(false); // Show the room UI so we can see streaming tokens
+        setIsProcessing(true);
         const startResp = await authenticatedFetch(apiUrl(`/api/v1/interview/start?session_id=${id}`), {
           method: 'POST'
         });
         if (startResp.ok) {
-          const startData = await startResp.json();
-          setCurrentQuestion(startData.first_question);
-          setCurrentTip(startData.tip || '');
-          setCurrentPhase(startData.current_phase || 1);
-          speakText(startData.first_question, data.language, startData.audio_base64);
+          await handleStream(startResp, data.language);
         } else {
           setError(await parseErrorMessage(startResp, 'Failed to start interview session.'));
         }
+        setIsProcessing(false);
       } else if (data.status === 'completed') {
          setCurrentQuestion(data.language === 'vi' ? "Buổi phỏng vấn đã kết thúc." : "The interview has ended.");
       }
@@ -92,7 +159,7 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
     } finally {
       setLoading(false);
     }
-  }, [id, user, speakText, authenticatedFetch]);
+  }, [id, user, authenticatedFetch, handleStream]);
 
   useEffect(() => {
     loadData();
@@ -118,7 +185,7 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
           jd_text: session.jobDescription,
           interview_type: session.interviewType,
           language: session.language,
-          evaluations: [] // Backend handles this now
+          evaluations: []
         })
       });
 
@@ -142,19 +209,17 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
 
     const turnOrder = turns.length + 1;
     const tempId = `temp-${Date.now()}`;
+    const questionAsked = currentQuestion;
+    const tipGiven = currentTip;
     
-    // We'll update the UI optimistically if we have text
     if (answerText.trim()) {
-      setTurns(prev => [...prev, { id: tempId, turnOrder, question: currentQuestion, answer: answerText.trim(), tip: currentTip }]);
-      setCurrentQuestion('');
-      setCurrentTip('');
+      setTurns(prev => [...prev, { id: tempId, turnOrder, question: questionAsked, answer: answerText.trim(), tip: tipGiven }]);
     }
 
     try {
       let response: Response;
       
       if (audioBlob) {
-        // COMBINED REQUEST: Transcribe + Chat in one go
         const formData = new FormData();
         formData.append('file', audioBlob, 'recording.wav');
         response = await authenticatedFetch(apiUrl(`/api/v1/interview/transcribe-and-chat?session_id=${id}`), {
@@ -162,7 +227,6 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
           body: formData
         });
       } else {
-        // Standard text chat
         response = await authenticatedFetch(apiUrl('/api/v1/interview/chat'), {
           method: 'POST',
           body: JSON.stringify({ session_id: id, message: answerText.trim() })
@@ -170,33 +234,13 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
       }
 
       if (!response.ok) throw new Error(await parseErrorMessage(response, 'Chat failed'));
-      const result = await response.json();
-
-      // If it was audio, we might not have added the turn yet because we didn't have the transcribed text
-      if (audioBlob && !answerText.trim()) {
-         // Note: result should ideally return the transcribed text too. 
-         // Let's assume we might need to adjust backend to return "user_message"
-         setTurns(prev => [...prev, { 
-            id: tempId, 
-            turnOrder, 
-            question: currentQuestion, 
-            answer: result.user_message || "Audio Message", 
-            tip: currentTip 
-         }]);
-         setCurrentQuestion('');
-         setCurrentTip('');
-      }
-
-      setCurrentQuestion(result.reply);
-      setCurrentTip(result.tip || '');
-      setCurrentPhase(result.current_phase || currentPhase);
       
-      // Speak the response
-      speakText(result.reply, session.language, result.audio_base64);
-
-      if (result.should_end) {
-        await endSession([...turns, { id: tempId, turnOrder, question: currentQuestion, answer: answerText || "Audio" }]);
+      const shouldEnd = await handleStream(response, session.language);
+      if (shouldEnd) {
+         // Final cleanup and redirection
+         await endSession([...turns]);
       }
+
     } catch (err: any) {
       setError(err?.message || 'Unknown error');
       if (answerText.trim()) {
@@ -205,7 +249,7 @@ export function useInterviewSession(id: string | undefined, speakText: (text: st
     } finally {
       setIsProcessing(false);
     }
-  }, [session, user, id, turns, currentQuestion, currentTip, currentPhase, speakText, endSession, authenticatedFetch]);
+  }, [session, user, id, turns, currentQuestion, currentTip, handleStream, authenticatedFetch]);
 
 
   return {

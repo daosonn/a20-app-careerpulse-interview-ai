@@ -1,8 +1,8 @@
 from typing import List, Dict, Any
 from sqlalchemy.orm import Session
 from app.models.models import SuggestedJob
-from app.services.rag_service import rag_service
-from app.services.crawler import TopCVCrawler
+from .rag_service import rag_service
+from .crawler import TopCVCrawler
 
 class JobMatcherService:
     def __init__(self, db: Session):

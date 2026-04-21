@@ -16,7 +16,7 @@ from app.core.database import SessionDep
 from app.core.auth import CurrentUser
 from app.models.models import User, Education, ResumeUpload, SuggestedJob, UserActivity
 from app.services.profiler import extract_cv_info_logic
-from app.services.matcher import JobMatcherService
+from app.services.rag_service.matcher import JobMatcherService
 
 router = APIRouter()
 
