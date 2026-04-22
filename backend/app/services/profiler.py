@@ -17,7 +17,7 @@ async def extract_cv_info_logic(cv_text: str) -> Dict[str, Any]:
     
     try:
         completion = await async_client.chat.completions.create(
-            model="qwen-turbo",
+            model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"}
         )
