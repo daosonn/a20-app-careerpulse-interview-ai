@@ -59,7 +59,13 @@ class RAGService:
 
     def retrieve_by_text(self, query: str, limit: int = 5) -> List[Dict[str, Any]]:
         """Truy xuất job từ ChromaDB dựa trên đoạn văn bản (CV hoặc query)."""
-        results = self.vector_db.similarity_search(query, k=limit)
+        try:
+            results = self.vector_db.similarity_search(query, k=limit)
+        except Exception as e:
+            print(f"RAG Retrieval Error: {e}")
+            # Likely an embedding dimension mismatch if you switched models.
+            # You should clear the 'chroma_db' directory and re-ingest data.
+            return []
         
         recommendations = []
         for doc in results:

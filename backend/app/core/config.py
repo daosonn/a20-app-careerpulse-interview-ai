@@ -86,16 +86,16 @@ async def generate_speech_base64_async(text: str, model: str = "tts-1") -> str:
 # evaluator_llm = LLMFactory.get_llm("qwen-turbo", 0.2)
 
 # Embedding model cho RAG
-embedding_model = OpenAIEmbeddings(
-    model="text-embedding-3-small",
-    api_key=os.getenv("OPENAI_API_KEY")
-)
+# embedding_model = OpenAIEmbeddings(
+#     model="text-embedding-3-small",
+#     api_key=os.getenv("OPENAI_API_KEY")
+# )
 
 # Jina AI Embedding Configuration (Sử dụng Model v3 mới nhất)
-# embedding_model = JinaEmbeddings(
-#     jina_api_key=os.getenv("JINA_API_KEY"),
-#     model_name="jina-embeddings-v3"
-# )
+embedding_model = JinaEmbeddings(
+    jina_api_key=os.getenv("JINA_API_KEY"),
+    model_name="jina-embeddings-v3"
+)
 
 # Async Client theo mẫu chuẩn
 # alibaba_async_client = AsyncOpenAI(
