@@ -48,7 +48,7 @@ async def _generate_predicted_questions(req: SetupReq) -> list[str]:
         "Return exactly 5 concise predicted interview questions, each on a new line."
     )
     llm_response = await async_client.chat.completions.create(
-        model="qwen-turbo",
+        model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}]
     )
     raw = llm_response.choices[0].message.content or ""
