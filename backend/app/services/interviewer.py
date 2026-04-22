@@ -29,8 +29,10 @@ async def generate_ai_batch(req_data: Any) -> List[dict]:
     lang_instruction = "Vietnamese (Tiếng Việt)" if language == "vi" else "English"
     stress_instruction = "BE VERY STRICT, CHALLENGING, and probing (Stress-test mode)." if is_stress_test else "Be professional, polite, and encouraging."
     
+    lang_instruction = "VIETNAMESE (Tiếng Việt)" if language == "vi" else "ENGLISH"
+    
     system_prompt = f"""You are a professional Interviewer for a {interview_type} interview.
-    Generates a batch of 3 concise interview questions based on the candidate's CV and the Job Description.
+    IMPORTANT: You MUST conduct the interview and generate all questions, tips, and model answers in {lang_instruction}.
     
     Context:
     - CV: {cv_content}
@@ -38,31 +40,33 @@ async def generate_ai_batch(req_data: Any) -> List[dict]:
     - Previous Chat History: {chat_history}
     
     Guidelines:
-    1. Respond in {lang_instruction}.
+    1. Output MUST be in {lang_instruction}.
     2. {stress_instruction}
-    3. Output format:
-       Next Question: <The actual text of the next question to ask now>
+    3. Output format (Strictly follow this):
+       Next Question: <The actual text of the next question in {lang_instruction}>
        ---BATCH---
        [
          {{
-           "question": "...",
-           "tip": "...",
-           "model_answer": "..."
+           "question": "The question text in {lang_instruction}",
+           "tip": "Short 3-5 word tip in {lang_instruction}",
+           "model_answer": "Ideal response in {lang_instruction}"
          }},
-         ... (total 3 objects, including the one above)
+         ...
        ]
-    
-    4. Each question object must include:
-       - 'question': The actual question text.
-       - 'tip': A short 3-5 word tip for the candidate.
-       - 'model_answer': A sample ideal response.
     
     Return the text followed by the JSON block."""
 
+    from langchain_core.messages import SystemMessage, HumanMessage
+    
+    messages = [
+        SystemMessage(content=system_prompt),
+        HumanMessage(content=f"Generate the next batch of questions. Previous context: {chat_history[-2:] if len(chat_history) > 2 else chat_history}")
+    ]
+
     full_content = ""
     try:
-        # We use astream even here so that on_chat_model_stream events are triggered for LangGraph astream_events
-        async for chunk in interviewer_llm.astream(system_prompt):
+        # Use astream with messages list
+        async for chunk in interviewer_llm.astream(messages):
             full_content += chunk.content
         
         content = full_content.strip()

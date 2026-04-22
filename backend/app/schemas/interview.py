@@ -18,7 +18,7 @@ class SetupReq(BaseModel):
     session_id: Optional[str] = "default_user"
 
 class ChatReq(BaseModel):
-    message: str
+    message: Optional[str] = ""
     history: List[ChatMsg] = []
     cv_text: Optional[str] = ""
     jd_text: Optional[str] = ""

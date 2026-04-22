@@ -6,7 +6,7 @@ from app.services.reporter import generate_report_logic
 from app.services.rag_service.rag_service import rag_service
 from app.core.database import SessionDep
 from app.core.auth import CurrentUser
-from app.models.models import Interview, UserActivity
+from app.models.models import Interview, UserActivity, User
 from app.core.config import async_client, transcribe_audio_async, generate_speech_base64_async
 import base64
 import os
@@ -42,20 +42,28 @@ def _fallback_questions(language: str) -> list[str]:
     return DEFAULT_QUESTIONS_VI if language == "vi" else DEFAULT_QUESTIONS_EN
 
 async def _generate_predicted_questions(req: SetupReq) -> list[str]:
+    target_lang = "Vietnamese (Tiếng Việt)" if req.language == "vi" else "English"
+    system_msg = f"You are a professional recruiter. You must respond ONLY in {target_lang}."
     prompt = (
-        f"Analyze this CV and JD for a {req.interview_type} interview in {req.language}. "
+        f"Analyze this CV and JD for a {req.interview_type} interview. "
         f"CV: {req.cv_text[:500]} JD: {req.jd_text[:500]}. "
-        "Return exactly 5 concise predicted interview questions, each on a new line."
+        f"Return exactly 5 concise predicted interview questions in {target_lang}. "
+        "Return as a JSON object with a 'questions' key containing a list of strings."
     )
-    llm_response = await async_client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}]
-    )
-    raw = llm_response.choices[0].message.content or ""
-    lines = [line.strip("-* \t") for line in raw.splitlines() if line.strip()]
-    if not lines:
+    try:
+        llm_response = await async_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_msg},
+                {"role": "user", "content": prompt}
+            ],
+            response_format={"type": "json_object"}
+        )
+        data = json.loads(llm_response.choices[0].message.content)
+        return data.get("questions", _fallback_questions(req.language))[:5]
+    except Exception as e:
+        print(f"Error generating predicted questions: {e}")
         return _fallback_questions(req.language)
-    return lines[:5]
 
 def _normalize_transcript(history: Any) -> list[dict[str, str]]:
     if not isinstance(history, list): return []
@@ -68,7 +76,7 @@ def _normalize_transcript(history: Any) -> list[dict[str, str]]:
         normalized.append({"role": role, "content": content})
     return normalized
 
-def _build_base_state(interview: Interview, req: ChatReq | None = None) -> dict[str, Any]:
+def _build_base_state(interview: Interview, user: User, req: ChatReq | None = None) -> dict[str, Any]:
     return {
         "cv_content": interview.cv_text or "",
         "jd_content": interview.jd_text or "",
@@ -77,12 +85,12 @@ def _build_base_state(interview: Interview, req: ChatReq | None = None) -> dict[
         "interview_type": interview.interview_type or (req.interview_type if req else "Behavioral"),
         "language": interview.language or (req.language if req else "vi"),
         "is_stress_test": req.is_stress_test if req else False,
-        "current_phase": req.current_phase if req else None,
-        "skills_extracted": req.skills_extracted or [] if req else [],
+        "current_phase": (req.current_phase if req and req.current_phase else None) or "Introduction",
+        "skills_extracted": (req.skills_extracted if req and req.skills_extracted else None) or user.skills or [],
         "question_bank": req.question_bank or "" if req else "",
         "evaluations": req.evaluations or [] if req else [],
         "final_report": "",
-        "pending_questions": [],
+        "pending_questions": [{"question": q, "tip": "Phát triển ý dựa trên kinh nghiệm trong CV của bạn.", "model_answer": ""} for q in (interview.predicted_questions or [])],
         "total_question_count": 0,
         "current_model_answer": "",
         "current_tip": ""
@@ -209,18 +217,23 @@ async def _stream_interview_logic(new_input: dict, config: dict, interview_id: i
         
         # 2. Handle Final Output and Metadata
         elif kind == "on_chain_end":
-            if event.get("name") == "LangGraph":
-                final_result = event["data"].get("output") or {}
+            output = event["data"].get("output")
+            # Capture any output that looks like our graph state
+            if isinstance(output, dict) and "chat_history" in output:
+                final_result = output
 
     # 3. Handle Case: Question was NOT streamed (e.g. pulled from bank/cache)
     if not full_response_text and final_result:
         history = final_result.get("chat_history", [])
-        if history and history[-1]["role"] == "ai":
-            cached_q = history[-1]["content"]
-            full_response_text = cached_q
-            # Stream the cached question in one or few chunks for TTS
-            yield f"data: {json.dumps({'type': 't', 'c': cached_q})}\n\n"
-            buffer = cached_q
+        if history and len(history) > 0:
+            last_msg = history[-1]
+            if last_msg.get("role") in ["ai", "model"]:
+                cached_q = last_msg.get("content", "")
+                if cached_q:
+                    full_response_text = cached_q
+                    # Stream the cached question for frontend display
+                    yield f"data: {json.dumps({'type': 't', 'c': cached_q})}\n\n"
+                    buffer = cached_q
 
     # Process remaining buffer for TTS
     if buffer.strip():
@@ -256,7 +269,7 @@ async def start_interview(session_id: int, db: SessionDep, current_user: Current
 
     safe_thread_id = f"user_{current_user.id}_{session_id}"
     config = {"configurable": {"thread_id": safe_thread_id}}
-    state = _build_base_state(interview)
+    state = _build_base_state(interview, current_user)
 
     interview.status = "in_progress"
     db.commit()
@@ -279,7 +292,7 @@ async def _chat_logic(session_id: int, message: str, db: SessionDep, current_use
     if graph_state:
         new_input = {"chat_history": [{"role": "user", "content": message}]}
     else:
-        bootstrap_state = _build_base_state(interview)
+        bootstrap_state = _build_base_state(interview, current_user)
         persisted_history = _normalize_transcript(interview.transcript)
         bootstrap_state["chat_history"] = persisted_history + [{"role": "user", "content": message}]
         new_input = bootstrap_state
@@ -315,7 +328,7 @@ async def transcribe_and_chat(
 async def end_interview(req: ChatReq, db: SessionDep, current_user: CurrentUser):
     history = [{"role": m.role, "content": m.content} for m in req.history]
     report_req = type('Mock', (), {"chat_history": history, "evaluations": req.evaluations, "language": req.language})
-    feedback_text = generate_report_logic(report_req)
+    feedback_text = await generate_report_logic(report_req)
     
     target_interview = db.query(Interview).filter(Interview.id == int(req.session_id), Interview.user_id == current_user.id).first()
     if target_interview:
