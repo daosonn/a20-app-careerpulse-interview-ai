@@ -20,15 +20,22 @@ class JobMatcherService:
         if not skills:
             return []
 
-        # 1. Thu thập dữ liệu mới
+        # 1. Thu thập dữ liệu mới (Chỉ cào nếu chưa có hoặc ít dữ liệu)
         keyword = current_position or (skills[0] if skills else "Software Engineer")
         try:
-            # Lấy dữ liệu job mới
-            new_jobs_data = await self.crawler.scrape_jobs(keyword, limit=8)
+            # Kiểm tra xem đã có job nào liên quan chưa
+            existing_jobs = rag_service.retrieve_by_text(keyword, limit=3)
             
-            # 2. Lưu THẲNG vào ChromaDB
-            if new_jobs_data:
-                rag_service.add_jobs_to_vector_db(new_jobs_data)
+            if len(existing_jobs) < 3:
+                print(f"Low data for '{keyword}', starting crawler...")
+                # Lấy dữ liệu job mới
+                new_jobs_data = await self.crawler.scrape_jobs(keyword, limit=8)
+                
+                # 2. Lưu THẲNG vào ChromaDB
+                if new_jobs_data:
+                    rag_service.add_jobs_to_vector_db(new_jobs_data)
+            else:
+                print(f"Found {len(existing_jobs)} existing jobs for '{keyword}', skipping crawl.")
                 
         except Exception as e:
             print(f"Matcher Service error: {e}")

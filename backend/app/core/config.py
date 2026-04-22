@@ -26,7 +26,7 @@ class LLMFactory:
         )
 
 # 1. LLM Initializations
-interviewer_llm = LLMFactory.get_llm("gpt-4o-mini", 0.7)
+interviewer_llm = LLMFactory.get_llm("gpt-4o-mini", 0.7).with_config({"tags": ["interviewer"]})
 evaluator_llm = LLMFactory.get_llm("gpt-4o-mini", 0.2)
 
 # 2. Raw Async Client

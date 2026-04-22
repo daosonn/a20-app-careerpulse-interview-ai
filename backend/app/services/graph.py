@@ -95,6 +95,9 @@ async def unified_node(state: InterviewState):
 def route_next(state: InterviewState):
     """Determines the next step based on the phase."""
     if not state.get("current_phase"):
+        # Optimization: Skip profiler if skills are already extracted
+        if state.get("skills_extracted"):
+            return "unified"
         return "profiler"
     
     if state.get("current_phase") == "Closing":
