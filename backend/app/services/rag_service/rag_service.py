@@ -55,6 +55,10 @@ class RAGService:
     def retrieve_recommendations(self, user_skills: List[str], limit: int = 5) -> List[Dict[str, Any]]:
         """Truy xuất job từ ChromaDB dựa trên kỹ năng."""
         query = f"Tìm công việc phù hợp với các kỹ năng: {', '.join(user_skills)}"
+        return self.retrieve_by_text(query, limit)
+
+    def retrieve_by_text(self, query: str, limit: int = 5) -> List[Dict[str, Any]]:
+        """Truy xuất job từ ChromaDB dựa trên đoạn văn bản (CV hoặc query)."""
         results = self.vector_db.similarity_search(query, k=limit)
         
         recommendations = []
@@ -66,9 +70,10 @@ class RAGService:
                 "url": meta.get("url"),
                 "salary": meta.get("salary"),
                 "location": meta.get("location"),
-                "skills": meta.get("skills", "").split(","),
-                "fit_score": 90, # Có thể tính toán dựa trên distance
-                "reason": "Phù hợp với các từ khóa kỹ năng của bạn."
+                "skills": meta.get("skills", "").split(",") if meta.get("skills") else [],
+                "description": doc.page_content, # Trả về nội dung để làm JD
+                "fit_score": 90, 
+                "reason": "Phù hợp với hồ sơ của bạn."
             })
         return recommendations
 

@@ -1,6 +1,8 @@
 import json
 import os
 import uuid
+import re
+import html
 from typing import List, Dict, Any
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -12,37 +14,55 @@ class JobIngestor:
     Hỗ trợ tiền xử lý văn bản và phân đoạn theo ngữ cảnh (Semantic Sectioning).
     """
     def __init__(self):
-        # Text Splitter dự phòng nếu một section quá dài (>1000 ký tự)
+        # Tăng chunk_size để ưu tiên giữ trọn vẹn 1 section trong 1 chunk
+        # Vì _clean_text đã xóa \n, nên ta ưu tiên cắt theo dấu chấm câu.
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000,
-            chunk_overlap=100,
-            separators=["\n\n", "\n", ". ", " ", ""]
+            chunk_size=1500,
+            chunk_overlap=80,
+            separators=[". ", " ", ""]
         )
 
     def _clean_text(self, text: str) -> str:
-        """Làm sạch văn bản: tách các dòng dính lẹo, sửa lỗi khoảng trắng."""
+        """
+        Làm sạch văn bản: kết hợp logic phiên bản trước và yêu cầu mới.
+        """
         if not text: return ""
         
+        # --- LOGIC PHIÊN BẢN TRƯỚC: Sửa lỗi định dạng văn bản cào ---
         # 1. Tách các dòng bị dính bởi dấu gạch đầu dòng (Ví dụ: "-Công việc A-Công việc B")
-        # Tìm các vị trí có dấu "-" hoặc "•" đứng ngay sau một ký tự không phải khoảng trắng
-        text = re.sub(r'([^\s])([•\-\*\+])', r'\1\n\2', text)
+        text = re.sub(r'([^\s])([•\-\*\+])', r'\1 \2', text)
         
         # 2. Đảm bảo có dấu cách sau dấu gạch đầu dòng
         text = re.sub(r'([•\-\*\+])([^\s])', r'\1 \2', text)
         
         # 3. Xử lý các câu bị dính nhau (chữ thường dính chữ hoa: "việc.Tham" -> "việc. Tham")
         text = re.sub(r'([a-z])([A-Z])', r'\1. \2', text)
+
+        # --- LOGIC MỚI: Lọc nội dung và chuẩn hóa ---
+        # 4. Loại bỏ các thẻ HTML
+        text = re.sub(r'<[^>]+>', ' ', text)
         
-        # 4. Loại bỏ khoảng trắng thừa và chuẩn hóa xuống dòng
-        text = re.sub(r' +', ' ', text)
-        text = re.sub(r'\n\s*\n', '\n\n', text)
+        # 5. Giải mã các thực thể HTML (ví dụ &amp; -> &)
+        text = html.unescape(text)
+        
+        # 6. Loại bỏ Emoji và các ký tự đặc biệt/symbols
+        # Giữ lại: Chữ cái (Unicode), số, khoảng trắng và các dấu câu cơ bản
+        text = re.sub(r'[^\w\s.,!?;:()\-/\+]', ' ', text)
+        
+        # 7. Thay thế tất cả khoảng trắng thừa (tab, newline, multiple spaces) bằng 1 space duy nhất
+        text = re.sub(r'\s+', ' ', text)
         
         return text.strip()
 
     def process_json_file(self, file_path: str):
         """Đọc file JSON và nạp vào Vector DB."""
+        # Tự động tìm đường dẫn tuyệt đối dựa trên vị trí file ingestion.py này
         if not os.path.isabs(file_path):
-            file_path = os.path.join(os.getcwd(), file_path)
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            # Đi ngược lên 3 cấp để về thư mục 'backend' (ingestion -> rag_service -> services -> app -> backend)
+            # Tuy nhiên để đơn giản và chính xác hơn, ta tìm thư mục 'raw_data'
+            project_root = os.path.abspath(os.path.join(current_dir, "../../../"))
+            file_path = os.path.join(project_root, file_path.replace("backend/", ""))
 
         if not os.path.exists(file_path):
             print(f"    File not found: {file_path}")
@@ -95,13 +115,25 @@ class JobIngestor:
             "tags": ",".join(meta.get("tags", [])) if meta.get("tags") else ""
         }
 
-        # 2. Định nghĩa các sections quan trọng
-        # Mỗi section được gắn thêm context để embedding model hiểu rõ nội dung đó nói về cái gì
+        # 2. Định nghĩa các sections quan trọng (Bao gồm đầy đủ thông tin từ JSON)
+        # Mỗi section được gắn thêm context để embedding model hiểu rõ nội dung
         sections = [
-            ("overview", f"Thông tin chung vị trí {job_title} tại {company}:\n- Lương: {meta.get('salary')}\n- Kinh nghiệm: {meta.get('experience')}\n- Địa điểm: {meta.get('location')}\n- Lĩnh vực: {meta.get('company_field')}\n- Tags: {', '.join(meta.get('tags', []))}"),
-            ("requirements", f"Yêu cầu tuyển dụng cho vị trí {job_title} (Requirements):\n{self._clean_text(content.get('job_requirement', ''))}"),
-            ("description", f"Mô tả công việc và nhiệm vụ cho vị trí {job_title} tại {company} (Job Description):\n{self._clean_text(content.get('job_description', ''))}"),
-            ("benefits", f"Quyền lợi, chế độ đãi ngộ và môi trường làm việc tại {company} cho vị trí {job_title}:\n{self._clean_text(content.get('job_benefit', ''))}")
+            ("overview", self._clean_text(f"""
+                Thông tin chung vị trí {job_title} tại {company}:
+                - Lương: {meta.get('salary')}
+                - Kinh nghiệm: {meta.get('experience')}
+                - Địa điểm: {meta.get('location')} ({content.get('working_location')})
+                - Quy mô: {meta.get('company_scale')}
+                - Lĩnh vực: {meta.get('company_field')}
+                - Ngành: {meta.get('category')}
+                - Thời gian làm việc: {content.get('working_time')}
+                - Hạn nộp: {meta.get('deadline')}
+                - Cách thức ứng tuyển: {content.get('application_method')}
+                - Tags: {', '.join(meta.get('tags', []))}
+            """)),
+            ("requirements", f"Yêu cầu tuyển dụng cho vị trí {job_title} (Requirements): {self._clean_text(content.get('job_requirement', ''))}"),
+            ("description", f"Mô tả công việc và nhiệm vụ cho vị trí {job_title} tại {company} (Job Description): {self._clean_text(content.get('job_description', ''))}"),
+            ("benefits", f"Quyền lợi, chế độ đãi ngộ và môi trường làm việc tại {company} cho vị trí {job_title}: {self._clean_text(content.get('job_benefit', ''))}")
         ]
 
         documents = []
@@ -124,7 +156,7 @@ class JobIngestor:
             
         return documents
 
-def run_ingestion(file_path: str = "backend/raw_data/detailed_jobs_for_rag.json"):
+def run_ingestion(file_path: str = "raw_data/detailed_jobs_for_rag.json"):
     """Hàm helper để chạy nhanh quá trình nạp dữ liệu."""
     ingestor = JobIngestor()
     ingestor.process_json_file(file_path)
