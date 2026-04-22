@@ -14,6 +14,10 @@ import {
   Smile,
   Zap,
   ArrowRight,
+  Briefcase,
+  MapPin,
+  CheckCircle2,
+  ExternalLink,
 } from 'lucide-react';
 import { apiUrl } from '../../../lib/api';
 import {
@@ -145,6 +149,10 @@ export function SetupSession() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
 
+  const [recommendedJobs, setRecommendedJobs] = useState<any[]>([]);
+  const [isFetchingRecommendations, setIsFetchingRecommendations] = useState(false);
+  const [selectedJobIndex, setSelectedJobIndex] = useState<number | null>(null);
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -162,6 +170,38 @@ export function SetupSession() {
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
+
+  const fetchRecommendations = async (text: string) => {
+    if (!text.trim()) return;
+    setIsFetchingRecommendations(true);
+    try {
+      const response = await authenticatedFetch(apiUrl('/api/v1/interview/recommend-jobs'), {
+        method: 'POST',
+        body: JSON.stringify({ cv_text: text, limit: 3 }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setRecommendedJobs(data);
+        if (data.length > 0) {
+          // Auto-select first job if none selected
+          setSelectedJobIndex(0);
+          setJobDescription(data[0].description);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch recommendations', err);
+    } finally {
+      setIsFetchingRecommendations(false);
+    }
+  };
+
+  // Trigger recommendations when cvText changes (and is long enough)
+  React.useEffect(() => {
+    if (cvText.length > 100 && recommendedJobs.length === 0) {
+      const timer = setTimeout(() => fetchRecommendations(cvText), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cvText]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -317,20 +357,109 @@ export function SetupSession() {
                 </div>
               </div>
 
-              {/* JD */}
+              {/* JD matching */}
               <div>
-                <label className="block font-serif text-lg text-text-primary mb-1">
-                  Job Description (JD)
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block font-serif text-lg text-text-primary">
+                    Vị trí ứng tuyển
+                  </label>
+                  {cvText && (
+                    <button 
+                      type="button" 
+                      onClick={() => fetchRecommendations(cvText)}
+                      className="text-xs text-gold-400 hover:text-gold-300 transition-colors flex items-center gap-1"
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      Tìm lại job phù hợp
+                    </button>
+                  )}
+                </div>
+                
                 <p className="text-sm text-text-muted mb-3 leading-relaxed">
-                  Dán mô tả công việc mục tiêu
+                  {recommendedJobs.length > 0 
+                    ? "Chúng tôi đã tìm thấy các vị trí phù hợp với CV của bạn. Hãy chọn một vị trí để bắt đầu."
+                    : "Tải CV lên để hệ thống tự động tìm kiếm vị trí phù hợp hoặc dán JD thủ công."}
                 </p>
-                <Textarea
-                  value={jobDescription}
-                  onChange={(e) => setJobDescription(e.target.value)}
-                  rows={5}
-                  placeholder="Dán nội dung JD vào đây..."
-                />
+
+                {isFetchingRecommendations ? (
+                  <div className="flex flex-col items-center justify-center py-8 bg-navy-800/50 rounded-xl border border-navy-600 border-dashed">
+                    <Loader2 className="w-8 h-8 text-gold-500 animate-spin mb-3" />
+                    <p className="text-sm text-gold-400 font-medium">Đang tìm kiếm job phù hợp...</p>
+                  </div>
+                ) : recommendedJobs.length > 0 ? (
+                  <div className="space-y-3">
+                    {recommendedJobs.map((job, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => {
+                          setSelectedJobIndex(idx);
+                          setJobDescription(job.description);
+                        }}
+                        className={cn(
+                          "relative p-4 rounded-xl border cursor-pointer transition-all hover:translate-x-1",
+                          selectedJobIndex === idx
+                            ? "bg-gold-500/10 border-gold-500 shadow-lg shadow-gold-500/5"
+                            : "bg-navy-800 border-navy-600 hover:border-gold-500/30"
+                        )}
+                      >
+                        <div className="flex justify-between items-start gap-3">
+                          <div className="min-w-0">
+                            <h4 className={cn(
+                              "font-bold text-sm mb-1 truncate",
+                              selectedJobIndex === idx ? "text-gold-300" : "text-text-primary"
+                            )}>
+                              {job.title}
+                            </h4>
+                            <div className="flex items-center gap-3 text-[11px] text-text-muted">
+                              <span className="flex items-center gap-1">
+                                <Briefcase className="w-3 h-3" />
+                                {job.company}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <MapPin className="w-3 h-3" />
+                                {job.location || "Việt Nam"}
+                              </span>
+                              {job.url && (
+                                <a
+                                  href={job.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="flex items-center gap-1 text-gold-400 hover:text-gold-300 transition-colors ml-1"
+                                >
+                                  <ExternalLink className="w-3 h-3" />
+                                  Chi tiết
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                          {selectedJobIndex === idx && (
+                            <CheckCircle2 className="w-5 h-5 text-gold-400 shrink-0" />
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setRecommendedJobs([]);
+                        setSelectedJobIndex(null);
+                        setJobDescription('');
+                      }}
+                      className="text-[11px] text-text-muted hover:text-gold-400 underline underline-offset-4"
+                    >
+                      Nhập JD thủ công thay thế
+                    </button>
+                  </div>
+                ) : (
+                  <Textarea
+                    value={jobDescription}
+                    onChange={(e) => setJobDescription(e.target.value)}
+                    rows={5}
+                    placeholder="Dán nội dung JD vào đây hoặc để AI tự tìm kiếm từ CV..."
+                  />
+                )}
               </div>
             </Card>
           </section>

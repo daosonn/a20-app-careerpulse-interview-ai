@@ -4,7 +4,7 @@ import httpx
 import json
 import re
 from langchain_openai import ChatOpenAI
-from langchain_community.embeddings import DashScopeEmbeddings
+from langchain_community.embeddings import DashScopeEmbeddings, JinaEmbeddings
 from openai import AsyncOpenAI
 from dotenv import load_dotenv
 
@@ -86,10 +86,16 @@ class LLMFactory:
 interviewer_llm = LLMFactory.get_llm("qwen-plus", 0.7).with_config({"tags": ["interviewer"]})
 evaluator_llm = LLMFactory.get_llm("qwen-turbo", 0.2)
 
-# Embedding model cho RAG
-embedding_model = DashScopeEmbeddings(
-    model="text-embedding-v2", 
-    dashscope_api_key=DASHSCOPE_API_KEY
+# Embedding model cho RAG (Alibaba - Commented out)
+# embedding_model = DashScopeEmbeddings(
+#     model="text-embedding-v2", 
+#     dashscope_api_key=DASHSCOPE_API_KEY
+# )
+
+# Jina AI Embedding Configuration (Sử dụng Model v3 mới nhất)
+embedding_model = JinaEmbeddings(
+    jina_api_key=os.getenv("JINA_API_KEY"),
+    model_name="jina-embeddings-v3"
 )
 
 # Async Client theo mẫu chuẩn
@@ -170,7 +176,7 @@ async def generate_speech_base64_async(text: str, model: str = "qwen3-tts-flash"
         "model": model,
         "input": {
             "text": clean_text,
-            "voice": "Cherry" # Các voice phổ biến: Cherry, Genny, Longxiaochun
+            "voice": "Genny" # Các voice phổ biến: Cherry, Genny, Longxiaochun
         },
         "parameters": {
             "format": "mp3"

@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi.responses import StreamingResponse
-from app.schemas.interview import SetupReq, ChatReq
+from app.schemas.interview import SetupReq, ChatReq, RecommendationReq
 from app.services.graph import app_graph
 from app.services.reporter import generate_report_logic
+from app.services.rag_service.rag_service import rag_service
 from app.core.database import SessionDep
 from app.core.auth import CurrentUser
 from app.models.models import Interview, UserActivity
@@ -97,6 +98,14 @@ async def _transcribe_logic(file: UploadFile) -> str:
     finally:
         if tmp_path and os.path.exists(tmp_path):
             os.unlink(tmp_path)
+
+@router.post("/recommend-jobs")
+async def recommend_jobs(req: RecommendationReq, db: SessionDep, current_user: CurrentUser):
+    try:
+        recommendations = rag_service.retrieve_by_text(req.cv_text, limit=req.limit or 5)
+        return recommendations
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/setup")
 async def setup_interview(req: SetupReq, db: SessionDep, current_user: CurrentUser):

@@ -5,6 +5,10 @@ class ChatMsg(BaseModel):
     role: str
     content: str
 
+class RecommendationReq(BaseModel):
+    cv_text: str
+    limit: Optional[int] = 5
+
 class SetupReq(BaseModel):
     cv_text: str
     jd_text: str
