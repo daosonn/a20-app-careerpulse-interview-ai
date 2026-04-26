@@ -1,4 +1,27 @@
 {
+  "contextFileName": "GEMINI.md",
+  "safeAutomation": {
+    "defaultReadAccess": "allow",
+    "defaultCodeEditAccess": "allow",
+    "safeCommands": [
+      "git status",
+      "git diff",
+      "rg",
+      "cd frontend && npm run lint",
+      "cd frontend && npm run build",
+      "cd frontend && npm run dev",
+      "cd backend && python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000",
+      "cd backend/django_admin && python manage.py check",
+      "bash scripts/setup_hooks.sh"
+    ],
+    "requiresExplicitConfirmation": [
+      "editing .env or credential files",
+      "database drop/truncate/flush",
+      "recursive deletion outside generated temporary artifacts",
+      "production deploys",
+      "force push or git history rewrite"
+    ]
+  },
   "hooks": {
     "BeforeAgent": [
       {

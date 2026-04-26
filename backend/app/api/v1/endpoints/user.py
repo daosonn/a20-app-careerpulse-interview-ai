@@ -16,7 +16,6 @@ from app.core.database import SessionDep
 from app.core.auth import CurrentUser
 from app.models.models import User, Education, ResumeUpload, SuggestedJob, UserActivity
 from app.services.profiler import extract_cv_info_logic
-from app.services.rag_service.matcher import JobMatcherService
 
 router = APIRouter()
 
@@ -34,6 +33,60 @@ def _log_activity(db: SessionDep, user_id: int, event_type: str, details: Option
             created_at=_utcnow(),
         )
     )
+
+
+def _profile_payload(user: User) -> dict:
+    return {
+        "onboarded": user.is_onboarded,
+        "cv_text": user.cv_text,
+        "skills": user.skills,
+        "name": user.name,
+        "full_name": user.full_name,
+        "dob": user.dob,
+        "current_position": user.current_position,
+    }
+
+
+def _preferences_payload(user: User) -> dict:
+    return {
+        field: getattr(user, field)
+        for field in PREF_FIELDS
+    }
+
+
+def _settings_payload(user: User) -> dict:
+    return {
+        field: getattr(user, field)
+        for field in SETTINGS_FIELDS
+    }
+
+
+def _education_payload(entries: list[Education]) -> list[dict]:
+    return [
+        {
+            "id": entry.id,
+            "school": entry.school,
+            "degree": entry.degree,
+            "field": entry.field,
+            "year": entry.year,
+        }
+        for entry in entries
+    ]
+
+
+def _jobs_payload(jobs: list[SuggestedJob]) -> list[dict]:
+    return [
+        {
+            "title": job.title,
+            "company": job.company,
+            "industry": job.industry,
+            "fit": job.fit_score,
+            "reason": job.reason,
+            "url": job.url,
+            "source": job.source,
+        }
+        for job in jobs
+    ]
 
 
 # ================================================================
@@ -92,15 +145,7 @@ async def onboard_user(req: OnboardReq, db: SessionDep, current_user: CurrentUse
 
 @router.get("/profile")
 async def get_user_profile(current_user: CurrentUser):
-    return {
-        "onboarded": current_user.is_onboarded,
-        "cv_text": current_user.cv_text,
-        "skills": current_user.skills,
-        "name": current_user.name,
-        "full_name": current_user.full_name,
-        "dob": current_user.dob,
-        "current_position": current_user.current_position,
-    }
+    return _profile_payload(current_user)
 
 
 @router.put("/profile")
@@ -360,18 +405,47 @@ async def update_settings(req: SettingsReq, db: SessionDep, current_user: Curren
 
 
 # ================================================================
+#  Aggregate profile bundle
+# ================================================================
+
+@router.get("/me")
+async def get_user_bundle(db: SessionDep, current_user: CurrentUser):
+    education = (
+        db.query(Education)
+        .filter(Education.user_id == current_user.id)
+        .order_by(Education.created_at.desc())
+        .all()
+    )
+    suggested_jobs = (
+        db.query(SuggestedJob)
+        .filter(SuggestedJob.user_id == current_user.id, SuggestedJob.is_active == True)
+        .order_by(SuggestedJob.fit_score.desc())
+        .all()
+    )
+    return {
+        "profile": _profile_payload(current_user),
+        "education": _education_payload(education),
+        "preferences": _preferences_payload(current_user),
+        "settings": _settings_payload(current_user),
+        "suggested_jobs": _jobs_payload(suggested_jobs),
+    }
+
+
+# ================================================================
 #  Suggested Jobs (simple heuristic based on profile)
 # ================================================================
 
 @router.get("/suggested-jobs")
-async def get_suggested_jobs(db: SessionDep, current_user: CurrentUser):
+async def get_suggested_jobs(db: SessionDep, current_user: CurrentUser, refresh: bool = False):
     """Lấy danh sách job gợi ý, tự động khớp nếu chưa có dữ liệu."""
     saved_suggestions = db.query(SuggestedJob).filter(
         SuggestedJob.user_id == current_user.id,
         SuggestedJob.is_active == True
     ).all()
     
-    if not saved_suggestions and current_user.skills:
+    if refresh and current_user.skills:
+        from app.services.rag_service.matcher import JobMatcherService
+
         matcher = JobMatcherService(db)
         await matcher.match_and_persist(
             user_id=current_user.id, 

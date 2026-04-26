@@ -3,11 +3,19 @@ from fastapi.responses import StreamingResponse
 from app.schemas.interview import SetupReq, ChatReq, RecommendationReq
 from app.services.graph import app_graph
 from app.services.reporter import generate_report_logic
-from app.services.rag_service.rag_service import rag_service
 from app.core.database import SessionDep
 from app.core.auth import CurrentUser
-from app.models.models import Interview, UserActivity, User
+from app.models.models import Interview, InterviewTurn, UserActivity, User
 from app.core.config import async_client, transcribe_audio_async, generate_speech_base64_async
+from app.services.tts_service import WAV_MIME_TYPE, character_from_phase
+from app.services.interview_flow import (
+    create_initial_flow_state,
+    fill_missing_evaluations,
+    handle_answer_flow,
+    start_flow,
+    wait_for_pending_evaluations,
+)
+from app.services.trace_logger import trace_event
 import base64
 import os
 import tempfile
@@ -69,14 +77,138 @@ def _normalize_transcript(history: Any) -> list[dict[str, str]]:
     if not isinstance(history, list): return []
     normalized: list[dict[str, str]] = []
     for msg in history:
-        if not isinstance(msg, dict): continue
-        role, content = msg.get("role"), msg.get("content")
+        if isinstance(msg, dict):
+            role, content = msg.get("role"), msg.get("content")
+        else:
+            role = getattr(msg, "role", None) or getattr(msg, "type", None)
+            content = getattr(msg, "content", None)
         if not isinstance(role, str) or not isinstance(content, str): continue
-        if role == "model": role = "ai"
+        if role in ("model", "assistant"): role = "ai"
+        if role == "human": role = "user"
         normalized.append({"role": role, "content": content})
     return normalized
 
+def _last_ai_message(history: Any) -> str:
+    for msg in reversed(_normalize_transcript(history)):
+        if msg.get("role") in ("ai", "model"):
+            return msg.get("content", "")
+    return ""
+
+def _evaluation_score(evaluation: Any) -> float | None:
+    if not isinstance(evaluation, dict):
+        return None
+    scores = evaluation.get("scores")
+    if not isinstance(scores, dict):
+        return None
+    keys = ("relevance", "structure", "specificity", "clarity", "confidence")
+    values = []
+    for key in keys:
+        try:
+            values.append(float(scores.get(key, 0) or 0))
+        except (TypeError, ValueError):
+            values.append(0)
+    return sum(values) / len(values)
+
+def _sync_interview_state_from_graph(
+    db: SessionDep,
+    interview_id: int,
+    current_user: User,
+    final_result: dict[str, Any],
+    answered_question: str | None = None,
+    user_message: str | None = None,
+) -> None:
+    if not final_result:
+        return
+
+    interview = db.query(Interview).filter(
+        Interview.id == interview_id,
+        Interview.user_id == current_user.id,
+    ).first()
+    if not interview:
+        return
+
+    final_history = _normalize_transcript(final_result.get("chat_history", []))
+    if final_history:
+        interview.transcript = final_history
+
+    evaluations = final_result.get("evaluations")
+    if isinstance(evaluations, list):
+        interview.evaluations = evaluations
+        scored = [_evaluation_score(evaluation) for evaluation in evaluations]
+        scored = [score for score in scored if score is not None]
+        if scored:
+            interview.score = round(sum(scored) / len(scored))
+
+    if isinstance(final_result.get("pending_questions"), list):
+        interview.pending_questions = final_result.get("pending_questions")
+
+    if user_message:
+        evaluation = evaluations[-1] if isinstance(evaluations, list) and evaluations else None
+        turn_order = db.query(InterviewTurn).filter(
+            InterviewTurn.interview_id == interview.id,
+            InterviewTurn.user_id == current_user.id,
+        ).count() + 1
+        db.add(InterviewTurn(
+            interview_id=interview.id,
+            user_id=current_user.id,
+            turn_order=turn_order,
+            question=answered_question or "",
+            answer=user_message,
+            tip=final_result.get("current_tip") or "",
+            evaluation=evaluation,
+        ))
+
+    current_user.last_activity_at = _utcnow()
+    db.commit()
+
+def _replace_turns_from_history(
+    db: SessionDep,
+    interview: Interview,
+    user_id: int,
+    history: list[dict[str, str]],
+    evaluations: list[dict],
+) -> None:
+    db.query(InterviewTurn).filter(InterviewTurn.interview_id == interview.id).delete(synchronize_session=False)
+
+    turn_order = 1
+    evaluation_index = 0
+    index = 0
+    while index < len(history):
+        message = history[index]
+        role = message.get("role")
+        if role not in ("ai", "model"):
+            index += 1
+            continue
+
+        next_message = history[index + 1] if index + 1 < len(history) else None
+        if not next_message or next_message.get("role") != "user":
+            index += 1
+            continue
+
+        evaluation = evaluations[evaluation_index] if evaluation_index < len(evaluations) else None
+        db.add(InterviewTurn(
+            interview_id=interview.id,
+            user_id=user_id,
+            turn_order=turn_order,
+            question=message.get("content", ""),
+            answer=next_message.get("content", ""),
+            evaluation=evaluation,
+        ))
+        turn_order += 1
+        evaluation_index += 1
+        index += 2
+
+    scored = [_evaluation_score(evaluation) for evaluation in evaluations]
+    scored = [score for score in scored if score is not None]
+    if scored:
+        interview.score = round(sum(scored) / len(scored))
+
 def _build_base_state(interview: Interview, user: User, req: ChatReq | None = None) -> dict[str, Any]:
+    max_question_count = (
+        req.question_count
+        if req and req.question_count
+        else interview.question_count or user.questions_per_session or 5
+    )
     return {
         "cv_content": interview.cv_text or "",
         "jd_content": interview.jd_text or "",
@@ -84,7 +216,7 @@ def _build_base_state(interview: Interview, user: User, req: ChatReq | None = No
         "current_question_count": req.question_count if req and req.question_count else 0,
         "interview_type": interview.interview_type or (req.interview_type if req else "Behavioral"),
         "language": interview.language or (req.language if req else "vi"),
-        "is_stress_test": req.is_stress_test if req else False,
+        "is_stress_test": req.is_stress_test if req else bool(interview.is_stress_test),
         "current_phase": (req.current_phase if req and req.current_phase else None) or "Introduction",
         "skills_extracted": (req.skills_extracted if req and req.skills_extracted else None) or user.skills or [],
         "question_bank": req.question_bank or "" if req else "",
@@ -92,6 +224,7 @@ def _build_base_state(interview: Interview, user: User, req: ChatReq | None = No
         "final_report": "",
         "pending_questions": [{"question": q, "tip": "Phát triển ý dựa trên kinh nghiệm trong CV của bạn.", "model_answer": ""} for q in (interview.predicted_questions or [])],
         "total_question_count": 0,
+        "max_question_count": max_question_count,
         "current_model_answer": "",
         "current_tip": ""
     }
@@ -110,6 +243,8 @@ async def _transcribe_logic(file: UploadFile) -> str:
 @router.post("/recommend-jobs")
 async def recommend_jobs(req: RecommendationReq, db: SessionDep, current_user: CurrentUser):
     try:
+        from app.services.rag_service.rag_service import rag_service
+
         recommendations = rag_service.retrieve_by_text(req.cv_text, limit=req.limit or 5)
         return recommendations
     except Exception as e:
@@ -118,28 +253,58 @@ async def recommend_jobs(req: RecommendationReq, db: SessionDep, current_user: C
 @router.post("/setup")
 async def setup_interview(req: SetupReq, db: SessionDep, current_user: CurrentUser):
     try:
-        try:
-            questions = await _generate_predicted_questions(req)
-        except Exception as e:
-            print(f"Warning: predicted-question generation failed: {e}")
-            questions = _fallback_questions(req.language)
-        
+        initial_state = create_initial_flow_state(req.language, req.question_count)
+        trace_event(None, "interview.setup_request", {
+            "user_id": current_user.id,
+            "interview_type": req.interview_type,
+            "language": req.language,
+            "is_stress_test": req.is_stress_test,
+            "question_count": req.question_count,
+            "cv_text": req.cv_text,
+            "jd_text": req.jd_text,
+        })
         new_interview = Interview(
             user_id=current_user.id,
             cv_text=req.cv_text,
             jd_text=req.jd_text,
             interview_type=req.interview_type,
             language=req.language,
-            predicted_questions=questions,
+            predicted_questions=[],
+            pending_questions=initial_state,
+            is_stress_test=req.is_stress_test,
+            question_count=req.question_count,
             status="setup"
         )
         db.add(new_interview)
         current_user.last_activity_at = _utcnow()
-        db.add(UserActivity(user_id=current_user.id, event_type="interview_setup", details={"type": req.interview_type}))
+        db.add(UserActivity(
+            user_id=current_user.id,
+            event_type="interview_setup",
+            details={
+                "type": req.interview_type,
+                "stress_test": req.is_stress_test,
+                "question_count": req.question_count,
+            },
+        ))
         db.commit()
         db.refresh(new_interview)
-        return {"session_id": new_interview.id, "predicted_questions": questions}
+        trace_event(new_interview.id, "interview.setup_created", {
+            "user_id": current_user.id,
+            "interview_type": req.interview_type,
+            "language": req.language,
+            "is_stress_test": req.is_stress_test,
+            "question_count": req.question_count,
+            "initial_state": initial_state,
+        })
+        return {
+            "session_id": new_interview.id,
+            "sessionId": new_interview.id,
+            "id": new_interview.id,
+            "predicted_questions": [],
+            "plan_status": initial_state["question_plan_status"],
+        }
     except Exception as e:
+        db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/transcribe")
@@ -150,7 +315,15 @@ async def transcribe_audio(file: UploadFile = File(...), current_user: CurrentUs
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-async def _stream_interview_logic(new_input: dict, config: dict, interview_id: int, user_message: str = None):
+async def _stream_interview_logic(
+    new_input: dict,
+    config: dict,
+    interview_id: int,
+    user_message: str = None,
+    db: SessionDep = None,
+    current_user: User = None,
+    answered_question: str = None,
+):
     """
     Streams LangGraph events, extracts LLM tokens for the next question,
     splits into sentences, and generates TTS chunks.
@@ -158,8 +331,8 @@ async def _stream_interview_logic(new_input: dict, config: dict, interview_id: i
     buffer = ""
     sentence_pattern = re.compile(r'(?<=[.!?\n])')
     full_response_text = ""
-    is_capturing_question = True
     final_result = {}
+    tts_sentences: list[str] = []
     
     # 0. Yield user message if provided (for audio transcript sync)
     if user_message:
@@ -178,42 +351,21 @@ async def _stream_interview_logic(new_input: dict, config: dict, interview_id: i
             content = event["data"]["chunk"].content
             if not content: continue
             
-            # Check for the separator we added in interviewer.py
-            if "---BATCH---" in buffer + content:
-                is_capturing_question = False
+            full_response_text += content
+            buffer += content
             
-            if is_capturing_question:
-                clean_content = content
-                
-                # More robust prefix removal for "Next Question:"
-                # If we are at the very beginning and see the prefix, strip it
-                if full_response_text.strip() == "":
-                    # Check if the cumulative buffer starts with the prefix or is part of it
-                    temp_buf = (full_response_text + content).lstrip()
-                    if "Next Question:".startswith(temp_buf) or temp_buf.startswith("Next Question:"):
-                        # If the current chunk is part of the prefix
-                        full_response_text += content
-                        # Don't yield or TTS the prefix
-                        continue
-
-                full_response_text += clean_content
-                buffer += clean_content
-                
-                # Yield token for frontend text display
-                yield f"data: {json.dumps({'type': 't', 'c': clean_content})}\n\n"
-                
-                # Sentence splitting for TTS
-                if any(p in clean_content for p in ".!?\n"):
-                    parts = sentence_pattern.split(buffer)
-                    if len(parts) > 1:
-                        for sentence in parts[:-1]:
-                            s_text = sentence.strip()
-                            # Additional check to avoid sending junk or remaining prefix bits to TTS
-                            if s_text and len(s_text) > 2 and not s_text.startswith("---") and "Next Question" not in s_text:
-                                audio_b64 = await generate_speech_base64_async(s_text)
-                                if audio_b64:
-                                    yield f"data: {json.dumps({'type': 'a', 'c': audio_b64})}\n\n"
-                        buffer = parts[-1]
+            # Yield token for frontend text display when a future interviewer node streams text.
+            yield f"data: {json.dumps({'type': 't', 'c': content})}\n\n"
+            
+            # Sentence splitting for TTS
+            if any(p in content for p in ".!?\n"):
+                parts = sentence_pattern.split(buffer)
+                if len(parts) > 1:
+                    for sentence in parts[:-1]:
+                        s_text = sentence.strip()
+                        if s_text and len(s_text) > 2:
+                            tts_sentences.append(s_text)
+                    buffer = parts[-1]
         
         # 2. Handle Final Output and Metadata
         elif kind == "on_chain_end":
@@ -242,12 +394,24 @@ async def _stream_interview_logic(new_input: dict, config: dict, interview_id: i
         for sentence in parts:
             s_text = sentence.strip()
             if s_text and len(s_text) > 1:
-                audio_b64 = await generate_speech_base64_async(s_text)
-                if audio_b64:
-                    yield f"data: {json.dumps({'type': 'a', 'c': audio_b64})}\n\n"
+                tts_sentences.append(s_text)
 
     # Send metadata at the very end
     if final_result:
+        if db and current_user:
+            try:
+                _sync_interview_state_from_graph(
+                    db,
+                    interview_id,
+                    current_user,
+                    final_result,
+                    answered_question=answered_question,
+                    user_message=user_message,
+                )
+            except Exception as e:
+                db.rollback()
+                print(f"Warning: failed to persist interview stream state: {e}")
+
         payload = {
             "type": "m", # metadata
             "tip": final_result.get("current_tip"),
@@ -256,6 +420,12 @@ async def _stream_interview_logic(new_input: dict, config: dict, interview_id: i
             "should_end": final_result.get("current_phase") == "Closing"
         }
         yield f"data: {json.dumps(payload)}\n\n"
+
+    tts_character = character_from_phase(final_result.get("current_phase") if final_result else None)
+    for sentence in tts_sentences:
+        audio_b64 = await generate_speech_base64_async(sentence, character=tts_character)
+        if audio_b64:
+            yield f"data: {json.dumps({'type': 'a', 'c': audio_b64, 'mime_type': WAV_MIME_TYPE, 'character': tts_character})}\n\n"
     
     yield "data: [DONE]\n\n"
 
@@ -267,15 +437,8 @@ async def start_interview(session_id: int, db: SessionDep, current_user: Current
     interview = db.query(Interview).filter(Interview.id == session_id, Interview.user_id == current_user.id).first()
     if not interview: raise HTTPException(status_code=404, detail="Session not found")
 
-    safe_thread_id = f"user_{current_user.id}_{session_id}"
-    config = {"configurable": {"thread_id": safe_thread_id}}
-    state = _build_base_state(interview, current_user)
-
-    interview.status = "in_progress"
-    db.commit()
-
     return StreamingResponse(
-        _stream_interview_logic(state, config, session_id),
+        start_flow(interview, db, current_user),
         media_type="text/event-stream"
     )
 
@@ -283,25 +446,8 @@ async def _chat_logic(session_id: int, message: str, db: SessionDep, current_use
     interview = db.query(Interview).filter(Interview.id == session_id, Interview.user_id == current_user.id).first()
     if not interview: raise HTTPException(status_code=404, detail="Session not found")
 
-    safe_thread_id = f"user_{current_user.id}_{session_id}"
-    config = {"configurable": {"thread_id": safe_thread_id}}
-
-    snapshot = await app_graph.aget_state(config=config)
-    graph_state = dict(snapshot.values) if snapshot and getattr(snapshot, "values", None) else {}
-
-    if graph_state:
-        new_input = {"chat_history": [{"role": "user", "content": message}]}
-    else:
-        bootstrap_state = _build_base_state(interview, current_user)
-        persisted_history = _normalize_transcript(interview.transcript)
-        bootstrap_state["chat_history"] = persisted_history + [{"role": "user", "content": message}]
-        new_input = bootstrap_state
-
-    current_user.last_activity_at = _utcnow()
-    db.commit()
-
     return StreamingResponse(
-        _stream_interview_logic(new_input, config, session_id, message),
+        handle_answer_flow(interview, message, db, current_user),
         media_type="text/event-stream"
     )
 
@@ -320,24 +466,107 @@ async def transcribe_and_chat(
     try:
         text = await _transcribe_logic(file)
         if not text: raise HTTPException(status_code=400, detail="Could not transcribe audio")
+        trace_event(session_id, "stt.transcribe_and_chat", {
+            "user_id": current_user.id if current_user else None,
+            "filename": file.filename,
+            "transcript": text,
+        })
         return await _chat_logic(session_id, text, db, current_user)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/end")
 async def end_interview(req: ChatReq, db: SessionDep, current_user: CurrentUser):
-    history = [{"role": m.role, "content": m.content} for m in req.history]
-    report_req = type('Mock', (), {"chat_history": history, "evaluations": req.evaluations, "language": req.language})
-    feedback_text = await generate_report_logic(report_req)
-    
-    target_interview = db.query(Interview).filter(Interview.id == int(req.session_id), Interview.user_id == current_user.id).first()
-    if target_interview:
-        target_interview.transcript = history
-        target_interview.evaluations = req.evaluations
-        target_interview.final_report = feedback_text
-        target_interview.status = "completed"
-        target_interview.ended_at = _utcnow()
-    
+    try:
+        session_id = int(req.session_id)
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=400, detail="Invalid session_id")
+
+    target_interview = db.query(Interview).filter(
+        Interview.id == session_id,
+        Interview.user_id == current_user.id,
+    ).first()
+    if not target_interview:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    trace_event(target_interview.id, "interview.end_requested", {
+        "user_id": current_user.id,
+        "request_history_count": len(req.history),
+        "request_evaluations_count": len(req.evaluations),
+        "status_before": target_interview.status,
+    })
+
+    await wait_for_pending_evaluations(target_interview.id)
+    db.refresh(target_interview)
+    fill_missing_evaluations(db, target_interview)
+
+    request_history = [{"role": m.role, "content": m.content} for m in req.history]
+    persisted_history = _normalize_transcript(target_interview.transcript)
+    history = request_history or persisted_history
+
+    request_evaluations = [item for item in req.evaluations if isinstance(item, dict)]
+    persisted_evaluations = target_interview.evaluations if isinstance(target_interview.evaluations, list) else []
+    persisted_evaluations = [item for item in persisted_evaluations if isinstance(item, dict)]
+    evaluations = persisted_evaluations if len(persisted_evaluations) >= len(request_evaluations) else request_evaluations
+
+    # Generate feedback report, but never block completing the session.
+    try:
+        report_req = type('Mock', (), {
+            "chat_history": history,
+            "evaluations": evaluations,
+            "language": req.language,
+        })
+        trace_event(target_interview.id, "report.prompt", {
+            "history": history,
+            "evaluations": evaluations,
+            "language": req.language,
+        })
+        feedback_text = await generate_report_logic(report_req)
+        trace_event(target_interview.id, "report.result", {
+            "feedback": feedback_text,
+        })
+    except Exception as e:
+        print(f"Warning: report generation failed: {e}")
+        trace_event(target_interview.id, "report.failed_fallback", {"error": str(e)})
+        feedback_text = (
+            "Buổi phỏng vấn đã hoàn thành. Báo cáo chi tiết tạm thời không khả dụng — vui lòng thử lại sau."
+            if req.language == "vi"
+            else "Interview completed. Detailed feedback is temporarily unavailable — please try again later."
+        )
+
+    target_interview.transcript = history
+    target_interview.evaluations = evaluations
+    target_interview.final_report = feedback_text
+    target_interview.status = "completed"
+    target_interview.ended_at = _utcnow()
+    current_user.last_activity_at = _utcnow()
+
+    existing_turn_count = db.query(InterviewTurn).filter(InterviewTurn.interview_id == target_interview.id).count()
+    if history and existing_turn_count == 0:
+        _replace_turns_from_history(db, target_interview, current_user.id, history, evaluations)
+
     db.commit()
-    audio_base64 = await generate_speech_base64_async(feedback_text)
+
+    # TTS for feedback — skip silently if unavailable
+    try:
+        audio_base64 = await generate_speech_base64_async(
+            feedback_text,
+            trace_context={
+                "session_id": target_interview.id,
+                "event": "tts.final_report_audio",
+                "character": "Ms. Linh",
+            },
+        )
+    except Exception as e:
+        print(f"Warning: TTS generation failed: {e}")
+        trace_event(target_interview.id, "tts.final_report_failed", {"error": str(e)})
+        audio_base64 = None
+
+    trace_event(target_interview.id, "interview.end_completed", {
+        "status": target_interview.status,
+        "history_count": len(history),
+        "evaluations_count": len(evaluations),
+        "has_audio": bool(audio_base64),
+    })
+
     return {"feedback": feedback_text, "audio_base64": audio_base64}

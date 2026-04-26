@@ -16,5 +16,6 @@ class InterviewState(TypedDict):
     final_report: str
     pending_questions: list[dict] # list of {"question", "tip", "model_answer"}
     total_question_count: int
+    max_question_count: int
     current_model_answer: str
     current_tip: str

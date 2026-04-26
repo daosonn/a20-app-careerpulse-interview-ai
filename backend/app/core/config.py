@@ -44,17 +44,51 @@ async def transcribe_audio_async(file_path: str) -> str:
     return transcript.text
 
 # 4. TTS (Text-to-Speech) Centralized Helper
-async def generate_speech_base64_async(text: str, model: str = "tts-1") -> str:
-    """Helper for OpenAI TTS conversion to Base64."""
-    if not text: return ""
+async def generate_speech_base64_async(
+    text: str,
+    model: str = "gpt-4o-mini-tts",
+    character: str | None = None,
+    provider: str | None = None,
+    trace_context: dict | None = None,
+) -> str:
+    """Helper for interview TTS conversion to Base64 WAV."""
+    if not text:
+        return ""
     try:
-        response = await openai_async_client.audio.speech.create(
-            model=model,
-            voice="nova",
-            input=text
+        from app.services.tts_service import synthesize_interview_tts_base64
+
+        result = await synthesize_interview_tts_base64(
+            character or "Ms. Linh",
+            text,
+            provider=provider or os.getenv("INTERVIEW_TTS_PROVIDER", "auto"),
+            openai_model=model,
         )
-        return base64.b64encode(response.content).decode('utf-8')
+        if trace_context:
+            from app.services.trace_logger import trace_event
+
+            trace_event(trace_context.get("session_id"), trace_context.get("event", "tts.generated"), {
+                **trace_context,
+                "text": text,
+                "provider": result.provider,
+                "model": result.model,
+                "voice": result.voice,
+                "character": result.character,
+                "mime_type": result.mime_type,
+                "fallback_reason": result.fallback_reason,
+                "audio_base64_length": len(result.audio_base64),
+            })
+        return result.audio_base64
     except Exception as e:
+        if trace_context:
+            from app.services.trace_logger import trace_event
+
+            trace_event(trace_context.get("session_id"), trace_context.get("event", "tts.failed"), {
+                **trace_context,
+                "text": text,
+                "character": character or "Ms. Linh",
+                "model": model,
+                "error": str(e),
+            })
         print(f"TTS Error: {e}")
         return ""
 

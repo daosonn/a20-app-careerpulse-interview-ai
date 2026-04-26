@@ -27,6 +27,9 @@ export interface SessionData {
   status: string;
   isStressTest?: boolean;
   predictedQuestions: string[];
+  planStatus?: 'pending' | 'ready' | 'failed';
+  questionPlan?: Array<Record<string, unknown>>;
+  questionCount?: number;
   /** Populated once the session is completed and summarized by the backend. */
   summary?: string;
   /** Populated once the session is completed. */
@@ -43,6 +46,18 @@ export interface InterviewTurn {
   phaseName?: string;
   tip?: string;
   evaluation?: InterviewTurnResult['evaluation'];
+  questionType?: 'warmup' | 'main' | 'candidate_qa';
+  isWarmup?: boolean;
+  attempt?: number;
+  gateResult?: {
+    pass: boolean;
+    reason: string;
+    retry_prompt?: string;
+    confidence?: number;
+    attempt_delta?: number;
+  };
+  evaluationStatus?: 'pending' | 'ready' | 'missing' | 'fallback';
+  skippedAfterRetries?: boolean;
 }
 
 export interface SessionSummary {

@@ -81,12 +81,33 @@ class Interview(Base):
     score = Column(Integer, default=0)
     status = Column(String, default="setup")  # setup, in_progress, completed
     predicted_questions = Column(JSON)
-    predicted_questions = Column(JSON)
     pending_questions = Column(JSON) # To survive session interruptions
+    is_stress_test = Column(Boolean, default=False)
+    question_count = Column(Integer, default=5)
     created_at = Column(DateTime, default=utcnow, nullable=False)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
     ended_at = Column(DateTime, nullable=True)
     owner = relationship("User", back_populates="interviews")
+    turns = relationship("InterviewTurn", back_populates="interview", cascade="all, delete-orphan")
+
+
+class InterviewTurn(Base):
+    __tablename__ = "interview_turns"
+
+    id = Column(Integer, primary_key=True, index=True)
+    interview_id = Column(Integer, ForeignKey("interviews.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    turn_order = Column(Integer, nullable=False)
+    question = Column(Text, default="")
+    answer = Column(Text, default="")
+    tip = Column(Text, default="")
+    evaluation = Column(JSON)
+    audio_meta = Column(JSON)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
+
+    interview = relationship("Interview", back_populates="turns")
+    user = relationship("User")
 
 
 class ResumeUpload(Base):

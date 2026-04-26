@@ -1,7 +1,6 @@
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, JSON, ForeignKey, Boolean
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
-import datetime
 import os
 from typing import Annotated, Generator
 from fastapi import Depends
@@ -11,14 +10,29 @@ from fastapi import Depends
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DEFAULT_SQLITE_PATH = os.path.join(BASE_DIR, 'data', 'interview_coach.db')
 
-if os.getenv("VERCEL") and not os.getenv("DATABASE_URL"):
-    # Vercel filesystem is read-only except /tmp.
-    DEFAULT_SQLITE_PATH = "/tmp/interview_coach.db"
 
-DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DEFAULT_SQLITE_PATH}")
+def _normalize_database_url(raw_url: str | None) -> str:
+    if raw_url:
+        normalized = raw_url.strip()
+        if normalized.startswith("postgres://"):
+            return normalized.replace("postgres://", "postgresql+psycopg2://", 1)
+        if normalized.startswith("postgresql://"):
+            return normalized.replace("postgresql://", "postgresql+psycopg2://", 1)
+        return normalized
+
+    if os.getenv("VERCEL"):
+        raise RuntimeError(
+            "DATABASE_URL is required on Vercel. Configure a managed Postgres "
+            "database instead of using ephemeral /tmp SQLite storage."
+        )
+
+    return f"sqlite:///{DEFAULT_SQLITE_PATH}"
+
+
+DATABASE_URL = _normalize_database_url(os.getenv("DATABASE_URL"))
 
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
-engine = create_engine(DATABASE_URL, connect_args=connect_args)
+engine = create_engine(DATABASE_URL, connect_args=connect_args, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -64,6 +78,20 @@ def _migrate_add_columns(engine_ref):
         "interviews": [
             ("updated_at", "DATETIME"),
             ("ended_at", "DATETIME"),
+            ("pending_questions", "JSON"),
+            ("is_stress_test", "BOOLEAN DEFAULT 0"),
+            ("question_count", "INTEGER DEFAULT 5"),
+        ],
+        "suggested_jobs": [
+            ("url", "VARCHAR"),
+            ("source", "VARCHAR DEFAULT 'auto'"),
+            ("is_active", "BOOLEAN DEFAULT 1"),
+            ("created_at", "DATETIME"),
+            ("updated_at", "DATETIME"),
+        ],
+        "interview_turns": [
+            ("audio_meta", "JSON"),
+            ("updated_at", "DATETIME"),
         ],
     }
 
@@ -90,12 +118,16 @@ def init_db():
         if data_dir and not os.path.exists(data_dir):
             os.makedirs(data_dir, exist_ok=True)
     Base.metadata.create_all(bind=engine)
-    _migrate_add_columns(engine)
+    if DATABASE_URL.startswith("sqlite"):
+        _migrate_add_columns(engine)
 
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
     try:
         yield db
+    except Exception:
+        db.rollback()
+        raise
     finally:
         db.close()
 

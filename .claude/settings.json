@@ -1,4 +1,46 @@
 {
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Grep(**)",
+      "Glob(**)",
+      "LS(**)",
+      "Edit(**)",
+      "MultiEdit(**)",
+      "Write(.claude/**)",
+      "Write(.codex/**)",
+      "Write(.gemini/**)",
+      "Write(.agent/**)",
+      "Write(scripts/**)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(rg:*)",
+      "Bash(find:*)",
+      "Bash(cd frontend && npm run lint:*)",
+      "Bash(cd frontend && npm run build:*)",
+      "Bash(cd frontend && npm run dev:*)",
+      "Bash(cd backend && python -m uvicorn app.main:app:*)",
+      "Bash(cd backend/django_admin && python manage.py check:*)",
+      "Bash(cd backend/django_admin && python manage.py migrate --plan:*)",
+      "Bash(bash scripts/setup_hooks.sh:*)"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(**/*service-account*.json)",
+      "Read(**/*credential*)",
+      "Bash(rm -rf:*)",
+      "Bash(del /s:*)",
+      "Bash(Remove-Item -Recurse:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean -fd:*)",
+      "Bash(git push --force:*)",
+      "Bash(*drop database*)",
+      "Bash(*truncate table*)",
+      "Bash(*manage.py flush*)",
+      "Bash(*firebase deploy*)",
+      "Bash(*vercel --prod*)"
+    ]
+  },
   "hooks": {
     "UserPromptSubmit": [
       {
