@@ -13,6 +13,8 @@ chroma_db/
 
 venv/
 .env
+.venv/
+
 __pycache__/
 .ai-log/
 .vite/

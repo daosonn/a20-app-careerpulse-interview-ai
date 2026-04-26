@@ -22,6 +22,8 @@ class User(Base):
 
     cv_text = Column(Text)
     skills = Column(JSON)
+    tools = Column(JSON)
+    projects = Column(JSON)
     is_onboarded = Column(Boolean, default=False)
     full_name = Column(String)
     dob = Column(String)
@@ -138,6 +140,7 @@ class SuggestedJob(Base):
     fit_score = Column(Integer, default=0)
     reason = Column(Text, default="")
     url = Column(String)
+    deadline = Column(String)
     source = Column(String, default="auto")  # auto, admin, imported
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=utcnow, nullable=False)
