@@ -1,0 +1,1535 @@
+[
+    {
+        "url": "https://www.topcv.vn/viec-lam/ai-engineer/2118468.html",
+        "scraped_at": "2026-04-26T15:17:12.901361",
+        "metadata": {
+            "category": "AI",
+            "job_title": "AI Engineer",
+            "company_name": "CÔNG TY CỔ PHẦN CÔNG NGHỆ & TRUYỀN THÔNG VIỆT NAM",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "21 VSIP II, Đường số 1, KCN Việt Nam - Singapore 2, Phường Hoà Phú, Thành phố Thủ Dầu Một, Tỉnh Bình Dương, Việt Nam",
+            "salary": "Thoả thuận",
+            "location": "Hồ Chí Minh",
+            "experience": "1 năm",
+            "deadline": "10/05/2026",
+            "tags": [
+                "1 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Tuổi 22 - 28",
+                "Nghỉ thứ 7",
+                "AI Engineer",
+                "IT - Phần mềm",
+                "Điện / Điện tử / Điện lạnh",
+                "Công nghệ kỹ thuật"
+            ]
+        },
+        "content": {
+            "job_description": "·      Nghiên cứu, phát triển và triển khai các ứng dụng trí tuệ nhân tạo (AI) trong lĩnh vực Smart City và Smart Factory.·      Xây dựng, huấn luyện, tối ưu và triển khai các mô hình AI/ML/DL cho các bài toán như Computer Vision, NLP và Gen AI.·      Xây dựng, huấn luyện, tối ưu và triển khai các mô hình AI phục vụ nhận diện, phân tích dữ liệu hình ảnh và ngôn ngữ.·      Nghiên cứu thuật toán xử lý hình ảnh từ Camera IP, camera trên Robot, Drone, UAVs và các nguồn dữ liệu thực tế.·      Triển khai các mô hình AI trên các nền tảng như NVIDIA Jetson, Raspberry Pi và các hệ thống nhúng (Embedded Systems).·      Tích hợp các mô hình AI với các nền tảng IoT, hệ thống giám sát, điều khiển hoặc các hệ thống phần mềm liên quan.·      Tối ưu hiệu năng mô hình, tốc độ xử lý, khả năng suy luận thời gian thực và độ ổn định khi vận hành thực tế.·      Phối hợp với các bộ phận phần mềm, phần cứng, IoT và vận hành để triển khai, kiểm thử và cải tiến sản phẩm.·      Viết tài liệu kỹ thuật, mô tả giải pháp và kiến trúc hệ thống liên quan đến AI.·      Nghiên cứu, đề xuất và áp dụng các công nghệ mới phù hợp với định hướng phát triển sản phẩm của công ty.",
+            "job_requirement": "·      Tốt nghiệp Đại học các chuyên ngành Trí tuệ nhân tạo/ Khoa học máy tính/ Công nghệ thông tin hoặc các chuyên ngành kỹ thuật có liên quan.·      Computer Vision: Hiểu biết và có kinh nghiệm triển khai các mô hình xử lý ảnh (Object Detection, Segmentation, Tracking, Face Recognition) đặc biệt là xử lý trên luồng dữ liệu camera thời gian thực (RTSP/Stream).·      NLP & Gen AI: Có kiến thức về Xử lý ngôn ngữ tự nhiên (NLP), các mô hình ngôn ngữ lớn (LLMs), kỹ thuật RAG và sử dụng các thư viện như LangChain, HuggingFace để xây dựng Chatbot/Trợ lý ảo.·      Edge Computing: Có kinh nghiệm triển khai mô hình AI xuống các thiết bị biên (Edge Devices) như NVIDIA Jetson, Raspberry Pi hoặc các dòng vi xử lý nhúng.·      Thành thạo sử dụng Git để quản lý mã nguồn.·      Có kinh nghiệm làm việc trên môi trường Linux/Ubuntu.·      Biết sử dụng Docker/Container.·      Ưu tiên những ứng viên đã từng làm trong các dự án Smart Home, IoT và Smart Factory.·      Ít nhất 01 năm kinh nghiệm ở vị trí tương đương.·      Khả năng đọc hiểu tài liệu tiếng Anh tốt.",
+            "job_benefit": "·      Lương cạnh tranh theo năng lực.·      Cơ hội được đào tạo và phát triển chuyên môn sâu trong môi trường làm việc năng động, khuyến khích đổi mới và sáng tạo.·      Đóng bảo hiểm và các chế độ theo luật đầy đủ.·      Bảo hiểm tai nạn 24/7.·      Lương tháng 13.·      Thưởng KPI hàng quý.·      Phụ cấp cơm trưa 50.000đ/ngày.·      Chế độ thăm hỏi ốm đau, hiếu hỉ, các ngày lễ Tết …·      Du lịch, hội thao, tất niên … hàng năm·      Khám sức khỏe định kỳ bệnh viện quốc tế Becamex.",
+            "working_location": "- Hồ Chí Minh: Nguyễn Thị Minh Khai (Q1 cũ), Phường Bến Thành (Quận 1 cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:00)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/ai-engineer/1697630.html",
+        "scraped_at": "2026-04-26T15:17:32.960460",
+        "metadata": {
+            "category": "AI",
+            "job_title": "AI Engineer",
+            "company_name": "Toshiba Software Development (Vietnam) Co., Ltd.",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "16th Floor, VIT Building, 519 Kim Ma Str., Ba Dinh Dist., Hanoi, Vietnam",
+            "salary": "Thoả thuận",
+            "location": "Hà Nội",
+            "experience": "2 năm",
+            "deadline": "10/05/2026",
+            "tags": [
+                "2 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Nghỉ thứ 7",
+                "AI Engineer"
+            ]
+        },
+        "content": {
+            "job_description": "Job DescriptionWe are looking for excellent engineers who can research & develop AI solutions. You will be given a chance to work on different real-world problems in various business domains of Toshiba using the latest technologies. You will sharpen your skills by constantly sharing with other senior members in our team or collaborating with experts in Toshiba R&D groups in Japan. The working environment is open, flexible, collaborative, encouraging, and excellence-oriented. Senior candidates with proven leadership & management skills will have opportunities for leadership roles.",
+            "job_requirement": "Education & ExperiencesBachelor or higher in information and communication technology, related engineering, or mathematics.Approximately 2 years of experience working on real AI projects in an industry environment.Technical SkillsAt least 6 months experience in LLM, GenAI. Demonstrated practical experience in developing Generative AI/LLM applications through real and impactful projects. Strong analytical skills and mindset.Solid background in Maths and Computer Science.Proficient in software engineering skills and fluent in one of the following programming languages: Python, C++, Java (Python is most preferred).Good foundation and practical experience related to deep learning, machine learning, or data science.Experience with LLMOps/MLOps and cloud-based development is preferred.Ability to read and apply research papers quickly to related problems.Proficient in writing technical reports and presenting technical problems (in English).",
+            "job_benefit": "Salary: Negotiable salary according to ability. Up to 35M GrossHigh Remuneration Package. Salary package up to 15 months / year, including 02 bonus incentive and 01 bonus100% salary in probation periodFull Social, Medical & Unemployment InsuranceWork in well - equipped and professional IT environment and IT community;To be trained and/or instructed by Japanese Specialists in Vietnam as well as in Japan and others;Join to learn Technical certificates, such as Microsoft Azure certificates, AWS, ... with company members with development-oriented support, exam funding, practice environment setup and study costs.Professional working environment with clear processes and goalsMany onsite job opportunities in JapanParticipate in many large projects with diverse technologies of Digital Solutions, IoT, Infrastructure System, Energy System, ... in the worldCareer path development orientation is clear and consulted by leaders and managersProfessional Training Tech Skills and Soft Skills programJoin Company Trip, Team Building, Clubs ... at luxury restaurants and resorts in the country.Subsidize for Japanese language proficiency test certificates and technical certificates.",
+            "working_location": "- Hà Nội: VIT Tower, 519 Kim Mã, Phường Giảng Võ (quận Ba Đình cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:00)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/ai-engineer/2118422.html",
+        "scraped_at": "2026-04-26T15:18:14.821995",
+        "metadata": {
+            "category": "AI",
+            "job_title": "AI Engineer",
+            "company_name": "FPT Software",
+            "company_scale": "10000+ nhân viên",
+            "company_field": "Tài chính",
+            "company_address": "Tòa nhà FPT Building, số 17 Duy Tân, Cầu Giấy, Hà Nội",
+            "salary": "Thoả thuận",
+            "location": "Gia Lai",
+            "experience": "2 năm",
+            "deadline": "10/05/2026",
+            "tags": [
+                "2 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Tiếng Anh Đọc hiểu",
+                "Nghỉ thứ 7",
+                "Bảo hiểm xã hội",
+                "Bảo hiểm sức khỏe",
+                "AI Engineer",
+                "IT - Phần mềm",
+                "Điện toán đám mây (Cloud)"
+            ]
+        },
+        "content": {
+            "job_description": "Design, implement, and optimize generative AI models for various applications.Stay up-to-date on the latest generative AI research and translate those advancements into practical solutions.Collaborate with researchers, data scientists, and software engineers to integrate generative AI models into production systems.Evaluate and analyze the performance of generative AI models, ensuring accuracy, efficiency, and adherence to ethical guidelines.Clearly document your work, including research findings, technical details, and model performance metrics.Effectively communicate complex technical concepts to both technical and non-technical audiences, using strong written and verbal English communication skills",
+            "job_requirement": "Very good educational background, preferably in the fields of computer science or engineering.Expertise in LLM & NLP with proven experience in handling production-level models and demonstrating the ability to evaluate such modelsProven experience in designing, implementing, and optimizing generative AI modelsIn-depth understanding of deep learning architectures and machine learning techniques relevant to generative AI.Experience working with large datasets and cloud computing platforms.Familiarity with generative AI services on at least one of the following cloud platforms: Azure (Azure AI, Cognitive Services), GCP (AI Platform, Vertex AI), or AWS (Amazon SageMaker, AWS AI Services).Experience with Langchain, leveraging its capabilities to enhance generative AI applications.Excellent written and verbal communication skills in English, with the ability to explain technical concepts clearly and concisely.Strong problem-solving skills and a passion for innovation.Ability to work independently and as part of a cross-functional team.Strong English communication skills to effectively collaborate with a diverse team and communicate complex technical concepts to stakeholders.",
+            "job_benefit": "Salary range: NegotiateRelocation Bonus up to 100MFPT Care insurance plan tailored for FPT employeesAttractive annual summer vacation allowanceSponsored training courses for personal growth and up to 100% coverage for certification costsGlobal and inclusive workplace with monthly cross-cultural eventsInternational exposure and career growth across global locationsWork-life balance benefits with a flexible leave policy and annual health check-ups to support employee well-being",
+            "working_location": "- Gia Lai: Tòa nhà FPT Software, số 12 Đại Lộ Khoa học tỉnh Gia Lai, Việt Nam, Phường Quy Nhơn Nam (Thành phố Quy Nhơn cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:00)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/ai-engineer-fullstack/2116054.html",
+        "scraped_at": "2026-04-26T15:19:03.990610",
+        "metadata": {
+            "category": "AI",
+            "job_title": "AI Engineer (Fullstack)",
+            "company_name": "Công ty Văn hóa và Truyền thông 1980Books",
+            "company_scale": "25-99 nhân viên",
+            "company_field": "In ấn / Xuất bản",
+            "company_address": "nhà 20H2 ngõ 6 Trần Kim Xuyến, Yên Hòa, Cầu Giấy, Hà Nội",
+            "salary": "13 - 18 triệu",
+            "location": "Hà Nội",
+            "experience": "3 năm",
+            "deadline": "09/05/2026",
+            "tags": [
+                "3 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "AI Engineer",
+                "IT - Phần mềm",
+                "IT - Phần cứng và máy tính",
+                "An ninh mạng"
+            ]
+        },
+        "content": {
+            "job_description": "1. Mục tiêu vai tròPhát triển và vận hành hệ sinh thái sản phẩm số (app + web) tích hợp AI tạo sinh, đặc biệt là các ứng dụng dựa trên LLM, phục vụ ebook, audiobook và elearning.2. Trách nhiệm chínhA. Phát triển AI (Core)Thiết kế, xây dựng và tối ưu ứng dụng AI dựa trên LLM (GPT, Claude…)Xây dựng hệ thống RAG, vector database, xử lý ngữ cảnh (context)Phát triển AI agent (tool, memory, reasoning logic)→ Đây là core năng lực LLM hiện đạiB. LangChain / AI WorkflowXây dựng và vận hành workflow LangChain (chain, agent, memory)Quản lý pipeline AI, theo dõi hiệu suất, tối ưu latency và costTích hợp AI vào hệ thống backend / API / sản phẩmC. Mobile App DevelopmentPhát triển ứng dụng mobile (Flutter / React Native / iOS / Android)Tích hợp AI vào trải nghiệm người dùng (chat, recommendation, voice…)Tối ưu hiệu năng app khi sử dụng API AID. Web Platform (Ebook / Elearning)Xây dựng và quản lý website:Ebook platformAudiobook systemElearning (course, LMS)Tối ưu UX, tốc độ tải và hệ thống backendE. System Integration & ScalingThiết kế kiến trúc hệ thống AI end-to-endTriển khai cloud (AWS/GCP), CI/CD, monitoringĐảm bảo hệ thống ổn định và mở rộng",
+            "job_requirement": "Thành thạo Python / JS (Node.js)Kinh nghiệm với LLM, LangChain hoặc tương tựHiểu RAG, embeddings, vector DBCó kinh nghiệm phát triển mobile appCó khả năng xây dựng API và backendƯu tiên Ứng viên có từ 3 năm kinh nghiệm vị trí tương đươngKinh nghiệm AI Agent / multi-agent systemĐã triển khai sản phẩm AI thực tếHiểu MLOps, Docker, cloudCó kinh nghiệm sản phẩm nội dung (ebook, edtech)",
+            "job_benefit": "Mức lương thưởng hấp dẫn theo năng lực làm việcLà “AI lead tương lai” nếu phát triển tốtĐóng BHXH, BHYT, BHTN theo quy định nhà nướcThưởng các ngày lễ, Tết, thưởng tháng lương thứ 13.Tham gia teambuilding, du lịch hàng nămMôi trường làm việc chuyên nghiệp, văn minhReview tăng lương 1 lần/năm",
+            "working_location": "- Hà Nội: 20h2, ngõ 6 Trần Kim Xuyến, Yên Hòa, Phường Yên Hòa (quận Cầu Giấy cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:00)\n                                                            Và 2 ngày thứ 7 xen kẽ/tháng",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/ai-engineer-tai-ha-noi-luong-upto-35-trieu/2113812.html",
+        "scraped_at": "2026-04-26T15:19:47.651560",
+        "metadata": {
+            "category": "AI",
+            "job_title": "AI Engineer Tại Hà Nội (Lương Upto 35 Triệu)",
+            "company_name": "CÔNG TY TNHH NGÔI SAO DŨNG CẢM",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "37 Lê Văn Lương, Thanh Xuân, Hà Nội, Việt Nam",
+            "salary": "Tới 35 triệu",
+            "location": "Hà Nội",
+            "experience": "3 năm",
+            "deadline": "08/05/2026",
+            "tags": [
+                "3 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Tiếng Anh Đọc hiểu",
+                "Nghỉ thứ 7",
+                "Bảo hiểm sức khỏe",
+                "Khám sức khỏe định kỳ",
+                "AI Engineer",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Phát triển và triển khai các tính năng AI cho web applications cho hệ thống dữ liệu và các công cụ nội bộ của công ty.Xây dựng các giải pháp AI/ML phục vụ tự động hóa cho công cụ nội bộ và sản phẩm.Phát triển các ứng dụng Generative AI như chatbot, hoặc automation systems.Xây dựng pipeline từ data processing → model training → deployment → monitoring cho các AI services.Triển khai và vận hành các AI models trong môi trường production thông qua APIs hoặc backend services.Phối hợp với các team Data, Backend và Product để tích hợp AI vào hệ thống và quy trình vận hành.Theo dõi và cải thiện hiệu quả, độ chính xác và độ ổn định của các mô hình ML/AI.",
+            "job_requirement": "Có 3+ năm kinh nghiệm phát triển AI/ML systems hoặc data-driven applications.Có kinh nghiệm với các framework machine learning / deep learning như PyTorch, TensorFlow hoặc tương tự. Hiểu biết về Deep Learning là một lợi thế.Có kinh nghiệm xây dựng predictive models hoặc recommendation models vào vận hành.Có kinh nghiệm triển khai AI models vào production systems.Có kinh nghiệm làm việc với database và data pipelines.Hiểu biết về backend systems, APIs hoặc cloud infrastructure là một lợi thế.Có kinh nghiệm với Generative AI / LLM applications là một lợi thế.Kỹ năng ngoại ngữ (Tiếng Anh) tốt.",
+            "job_benefit": "Lương thưởng và chế độ phúc lợiMức lương cạnh tranh lên đến 35M gross.Thưởng cố định tháng lương 13.Thưởng chia sẻ lợi nhuận theo kết quả kinh doanh và hiệu suất làm việc (Tổng thu nhập lên tới 14 – 20 tháng lương/ năm).Thưởng các dịp lễ Tết: Thưởng bằng tiền mặt hoặc hiện vật tùy theo từng dịp trong năm.Chăm sóc sức khỏe: Bảo hiểm sức khỏe PVI sau khi lên chính thức, khám sức khỏe định kỳ hàng năm.Trang thiết bị làm việc: Cung cấp đầy đủ công cụ, thiết bị phục vụ công việc.Hoạt động gắn kết: Du lịch 2 lần/ năm và có chính sách hỗ trợ du lịch cho người thân, Teambonding phòng ban hàng quý, Team building hàng năm và nhiều sự kiện nội bộ sôi động.Cơ hội học hỏi và phát triển Xét tăng lương định kỳ hàng năm, gắn với hiệu quả công việc và năng lực cá nhân.Lộ trình phát triển nghề nghiệp rõ ràng, cơ hội thăng tiến minh bạch.Nền tảng học tập đa dạng: Cung cấp tài khoản học tập trên LinkedIn Learning, Coursera,...Ngân sách đào tạo hàng năm: Hỗ trợ từ 5–15M/người/năm nhằm phát triển chuyên môn và kỹ năng.cho công việc.Các chương trình đào tạo Kỹ năng nền tảng, chuyên môn cho toàn tổ chức.Môi trường làm việcKhông gian làm việc hiện đại hơn 1.000m2, bao gồm khu sinh hoạt chung, các phòng họp, khu vực làm việc và pantry tiện nghi.Được tham gia nhiều CLB như bóng đá, cầu lông, Pickleball, ...Môi trường trẻ trung – năng động – gắn kết, đề cao tinh thần đồng đội và sự chủ động.",
+            "working_location": "- Hà Nội: 37 Lê Văn Lương, Phường Thanh Xuân (quận Thanh Xuân cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:30)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/ky-su-ai-agent/2113377.html",
+        "scraped_at": "2026-04-26T15:21:19.615436",
+        "metadata": {
+            "category": "AI",
+            "job_title": "Kỹ Sư AI AGENT",
+            "company_name": "CÔNG TY TNHH TÍCH HỢP HỆ THỐNG NHT",
+            "company_scale": "25-99 nhân viên",
+            "company_field": "Viễn thông",
+            "company_address": "98 Nguyễn Đình Tựu, Phường An Khê, Tp Đà Nẵng",
+            "salary": "15 - 18 triệu",
+            "location": "Hà Nội và 2 nơi khác",
+            "experience": "1 năm",
+            "deadline": "07/05/2026",
+            "tags": [
+                "1 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "AI Engineer",
+                "Viễn thông",
+                "Công nghệ kỹ thuật"
+            ]
+        },
+        "content": {
+            "job_description": "1.1.Xây dựng và triển khai AI Agent nội bộ\n-Tham gia phát triển AI Agent phục vụ các nghiệp vụ nội bộ: tra cứu tài liệu kỹ thuật, hỗ trợ kỹ sư, hỗ trợ quản lý dự án, tổng hợp thông tin, báo cáo.\n-Thiết kế logic hoạt động của Agent theo workflow thực tế của doanh nghiệp (không chỉ chatbot hỏi - đáp).\n-Ứng dụng LLM để hiểu ngữ cảnh, phân tích yêu cầu và đưa ra phản hồi phù hợp cho người dùng nội bộ.\n1.2.Ứng dụng AI để khai thác dữ liệu và tài liệu nội bộ\n-Xây dựng hệ thống giúp AI đọc - hiểu - tìm kiếm thông tin trong: hồ sơ dự án, thuyết minh kỹ thuật, tiêu chuẩn, tài liệu nội bộ, file PDF/Word/Excel.\n-Tổ chức và khai thác dữ liệu nội bộ phục vụ cho AI Agent hoạt động chính xác và ổn định.\n-Phối hợp cải tiến chất lượng dữ liệu để nâng cao hiệu quả AI.\n1.3.Phát triển backend cho hệ thống AI\n-Thiết kế, xây dựng và tối ưu backend/API phục vụ AI Agent và các ứng dụng nội bộ.\n-Đảm bảo hệ thống ổn định, dễ mở rộng, dễ bảo trì, phù hợp môi trường doanh nghiệp.\n-Phối hợp với các bộ phận kỹ thuật khác để tích hợp AI vào hệ thống hiện có.",
+            "job_requirement": "Tốt nghiệp các ngành: \n+Công nghệ Thông tin\n+Khoa học Máy tính\n+Trí tuệ Nhân tạo\n+Điện - Điện tử / Tự động hóa (có nền tảng lập trình)\n-Có nền tảng backend development.\n-Thành thạo Python, Git, RESTful API.\n-Có hiểu biết về LLM, AI Agent, Prompt Engineering, luồng hoạt động của hệ thống AI.\n-Có tư duy xây hệ thống cho người dùng thật, không chỉ demo.\n-Tư duy logic, chủ động, có khả năng làm việc nhóm tốt.\nƯU TIÊN NẾU CÓ\n-Đã từng xây dựng hoặc thử nghiệm AI Agent / chatbot / hệ thống AI nội bộ.\n-Có kinh nghiệm với các framework hỗ trợ AI Agent hoặc RAG (LangChain, LlamaIndex hoặc tương đương).\n-Có hiểu biết hoặc đam mê IoT, hệ thống kỹ thuật, ELV, thiết bị nhúng (ESP32).\n-Có tư duy kỹ sư triển khai, hiểu bài toán doanh nghiệp và vận hành.",
+            "job_benefit": "-Mức lương 15.000.0000 - 18.000.000 VND.-Được tham gia xây dựng hệ thống AI thật, phục vụ hoạt động thực tế của doanh nghiệp.-Làm việc trực tiếp với đội kỹ sư nhiều kinh nghiệm trong môi trường kỹ thuật - dự án.-Cơ hội phát triển lâu dài theo hướng AI Engineer / AI System Architect.-Môi trường làm việc linh hoạt, đề cao tư duy hệ thống và hiệu quả thực tế.",
+            "working_location": "- Hà Nội: (Tất cả phường)\n                                                            - Đà Nẵng: (Tất cả phường)\n                                                            - An Giang: Đặc khu Phú Quốc (Thành phố Phú Quốc cũ)",
+            "working_time": null,
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/ai-engineer/2060947.html",
+        "scraped_at": "2026-04-26T15:21:41.326565",
+        "metadata": {
+            "category": "AI",
+            "job_title": "AI Engineer",
+            "company_name": "Công ty TNHH Đầu Tư & Công Nghệ AVG",
+            "company_scale": "25-99 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Tầng 3, Tòa nhà Stellar, 25 Lê Văn Thiêm, Thanh Xuân Trung, Thanh Xuân, Hà Nội",
+            "salary": "10 - 20 triệu",
+            "location": "Hà Nội",
+            "experience": "2 năm",
+            "deadline": "07/05/2026",
+            "tags": [
+                "2 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Nghỉ thứ 7",
+                "AI Engineer"
+            ]
+        },
+        "content": {
+            "job_description": "Thiết kế & Huấn luyện: Nghiên cứu, huấn luyện và tối ưu các mô hình AI cho các tác vụ: làm đẹp khuôn mặt (skin retouching, makeup), biến đổi khuôn mặt (face swap, age progression), và thay đổi trang phục/kiểu tóc (virtual try-on).Generative Image Pipeline: Sử dụng thành thạo các công cụ và mô hình tạo ảnh như Z-image, Banana, Stable Diffusion (XL/1.5), Flux.1, Mid Journey.Thực hiện huấn luyện (fine-tuning) mô hình hoặc tìm kiếm/tối ưu các LoRA, Checkpoint để tạo ra các bộ ảnh profile nhân vật chất lượng cao, nhất quán.Generative Video Pipeline:Ứng dụng các mô hình gen video hiện đại như Wan, LTX-Video, Stable Video Diffusion (SVD), CogVideoX để sản xuất nội dung.Huấn luyện model để thực hiện các dạng video ngắn: thay mặt (face-swap), thay đầu hoặc chuyển đổi từ ảnh sang video (Image-to-Video) dựa trên phôi video có sẵn.Triển khai & Tối ưu: Sử dụng thành thạo các nền tảng/công cụ điều khiển chuyển động như Kling AI, Banana, Kling Motion Control, Runway Gen-3, Luma Dream Machine.Tối ưu hiệu suất mô hình để đảm bảo thời gian phản hồi nhanh, tiêu tốn ít tài nguyên và có khả năng chạy trên mobile/web.",
+            "job_requirement": "Có từ 2 năm kinh nghiệm trong lĩnh vực Computer Vision hoặc AI/Deep Learning.Có kinh nghiệm về các kiến trúc mô hình như GAN, UNet, Transformer và đặc biệt là Diffusion Models.Kỹ năng Gen-AI:Có kinh nghiệm xử lý dữ liệu ảnh, xây dựng pipeline huấn luyện mô hình (training & inference).Am hiểu về hệ sinh thái Open Source (Hugging Face, Civitai) để tùy biến các mô hình tạo ảnh/video.Ưu tiên: Ứng viên đã có sản phẩm thực tế về Face beautification, Virtual try-on, 3D face modeling hoặc các ứng dụng tạo nội dung số bằng AI.",
+            "job_benefit": "Mức thu nhập cạnh tranh, lương cơ bản hàng tháng được thỏa thuận dựa trên năng lực và kinh nghiệm của ứng viên.Cơ hội tham gia phát triển các sản phẩm mobile app thị trường toàn cầu, từ giai đoạn sớm.Remote 100%, thời gian làm việc linh hoạt, đánh giá dựa trên kết quả.",
+            "working_location": "- Hà Nội: Golden Palace, Mễ Trì, Phường Từ Liêm (quận Nam Từ Liêm cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:30 đến 18:00)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/data-quality-analyst-japanese/2111497.html",
+        "scraped_at": "2026-04-26T15:22:01.253727",
+        "metadata": {
+            "category": "AI",
+            "job_title": "Data Quality Analyst - Japanese",
+            "company_name": "Công ty TNHH GEAR INC VN",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "- Hai Bà Trưng, Hà Nội",
+            "salary": "Thoả thuận",
+            "location": "Hà Nội",
+            "experience": "1 năm",
+            "deadline": "06/05/2026",
+            "tags": [
+                "1 năm kinh nghiệm",
+                "Cao Đẳng trở lên",
+                "Data Labeling (Gán nhãn dữ liệu)"
+            ]
+        },
+        "content": {
+            "job_description": "Job SummaryThe Data Quality Analyst - Japanese position aims to ensure the consistent and high-quality execution of content moderation policies, providing feedback to enhance accuracy, minimize errors, and contribute to a positive online environment.QualificationsReview the implementation & efficiency of quality and inspection systems;Plan, conducted & monitored testing and inspection of materials and products to ensure the quality of products;Investigate customer's claims and non-conformance issues;Analyze data to identify areas for improvement in the quality systems;Develop, recommend, and monitor corrective and preventative actions;Evaluate audit findings and implement appropriate corrective action.",
+            "job_requirement": "Key ResponsibilitiesGood English skills in reading and gathering information from foreign customers' requirements;B2 English level required (Able to understand/read documents).Japanese language proficiency (N2 or above preferred). Excellent verbal and written communication skills in both English and Japanese, with the ability to express ideas clearly and concisely.Have at least 1-year experience in BPO service (such as: data entry, content moderator, customer support,...) and service analysis;Be detail-oriented with strong analytical skills;Proficient skills with MS Office and Google Drive;Willingness to handle multi-projects;Having good communication skills is an advantage;Able to work on Holidays is preferable.",
+            "job_benefit": "1. Salary and BenefitsAttractive salary;Attractive bonus, benefits and annual salary review;Premium Healthcare and Mental Health Care service for you, 100% covered by the company;Extra bonus per personal events (Wedding, Funeral, Hospitalization, Newborn baby) and a very cute baby box for staff who are going to welcome a new baby angel to the world;Annual health check;Paid leave (12 days/year).2. Working EnvironmentInternational, fun, and professional working environment: Working closely with both experienced Vietnamese and foreign experts;Free drinks (coffee, tea, etc.)Laptop/computer and other equipment is provided.Training and career development opportunities;Free in-house gym and game room for everyone. We love board games, video games, PS5;",
+            "working_location": "- Hà Nội: Tower 1 Times City, Phường Vĩnh Tuy (quận Hai Bà Trưng, quận Hoàng Mai cũ)",
+            "working_time": "- Operating hours: Monday through Sunday.\n- Work in a maximum of 40 hours per week (5 shift/week with night shift required).\n- Availability on weekends, holidays.",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/nhan-vien-xu-ly-du-lieu-hinh-anh-3-thang/1289512.html",
+        "scraped_at": "2026-04-26T15:22:20.505737",
+        "metadata": {
+            "category": "AI",
+            "job_title": "Nhân Viên Xử Lý Dữ Liệu Hình Ảnh (3 Tháng)",
+            "company_name": "Công ty TNHH Kaii Soft",
+            "company_scale": "1-9 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "42 Giải Phóng, P.4, Q.Tân Bình",
+            "salary": "7 - 10 triệu",
+            "location": "Hồ Chí Minh",
+            "experience": "Dưới 1 năm",
+            "deadline": "06/05/2026",
+            "tags": [
+                "Dưới 1 năm kinh nghiệm",
+                "Trung cấp trở lên",
+                "Nghỉ thứ 7",
+                "Data Labeling (Gán nhãn dữ liệu)"
+            ]
+        },
+        "content": {
+            "job_description": "Thực hiện vẽ và phân vùng hình ảnh (2D Segmentation) theo yêu cầu và hướng dẫn của dự án.Xử lý, gắn nhãn và kiểm tra dữ liệu hình ảnh đảm bảo đúng tiêu chuẩn kỹ thuật.Đảm bảo chất lượng và tiến độ công việc theo KPI được giao.Phối hợp với team QC để chỉnh sửa, tối ưu các lỗi liên quan đến phân vùng dữ liệu.Báo cáo tiến độ công việc hằng ngày/tuần cho quản lý trực tiếp.Tuân thủ quy trình bảo mật và quy định làm việc của công ty.Tham gia các buổi training, họp chuyên môn nhằm nâng cao kỹ năng và hiệu suất làm việc.",
+            "job_requirement": "Ưu tiên ứng viên đã có kinh nghiệm vẽ 2D Segmentation (phân vùng hình ảnh 2D).Sử dụng cơ bản máy tính và các công cụ hỗ trợ xử lý hình ảnh.Cẩn thận, tỉ mỉ, có khả năng tập trung cao khi làm việc với dữ liệu hình ảnh.Kiên trì, chăm chỉ, chủ động trong công việc.Tinh thần trách nhiệm tốt, đảm bảo tiến độ và chất lượng theo KPI được giao.Có khả năng làm việc độc lập và phối hợp nhóm khi cần.",
+            "job_benefit": "Được đào tạo bài bản về quy trình và kỹ thuật 2D Segmentation trước khi làm việc chính thức.Mức lương cứng: 7.000.000 – 8.000.000 VNĐ/tháng (tùy năng lực và kinh nghiệm).Tham gia BHXH đầy đủ trên 100% lương theo quy định của pháp luật.Thưởng theo hiệu suất và thưởng vượt KPI.Được cung cấp đầy đủ công cụ, trang thiết bị phục vụ công việc.Môi trường làm việc ổn định, có cơ hội nâng cao kỹ năng và phát triển chuyên môn.",
+            "working_location": "- Hồ Chí Minh: Phường Thạnh Mỹ Tây (quận Bình Thạnh cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 09:00 đến 18:00)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/leader-ai-engineer/2106763.html",
+        "scraped_at": "2026-04-26T15:25:29.078650",
+        "metadata": {
+            "category": "AI",
+            "job_title": "Leader AI Engineer",
+            "company_name": "CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ AMCARE",
+            "company_scale": "10-24 nhân viên",
+            "company_field": "Dược phẩm / Y tế / Công nghệ sinh học",
+            "company_address": "Thôn Lộc Hà, Xã Đông Anh, Thành Phố Hà Nội, Việt Nam",
+            "salary": "35 - 40 triệu",
+            "location": "Hà Nội",
+            "experience": "3 năm",
+            "deadline": "05/05/2026",
+            "tags": [
+                "3 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Tuổi 25 - 30",
+                "AI Engineer",
+                "Thương mại điện tử"
+            ]
+        },
+        "content": {
+            "job_description": "Nghiên cứu, thiết kế và phát triển các mô hình AI tiên tiến, tập trung vào các lĩnh vực như xử lý ngôn ngữ tự nhiên (NLP), thị giác máy tính (Computer Vision), học tăng cường (Reinforcement Learning), hoặc các lĩnh vực khác tùy thuộc vào dự án.Thu thập, làm sạch và chuẩn bị dữ liệu cho việc huấn luyện mô hình.Triển khai các mô hình AI đã phát triển lên các hệ thống sản xuất.Theo dõi và đánh giá hiệu suất của các mô hình AI đã triển khai, và thực hiện các điều chỉnh cần thiết.Làm việc cộng tác với các nhà khoa học dữ liệu, kỹ sư phần mềm và các chuyên gia khác để phát triển các giải pháp AI.Viết tài liệu kỹ thuật chi tiết và báo cáo về các kết quả nghiên cứu và phát triển.Cập nhật kiến thức về các xu hướng mới nhất trong lĩnh vực AI và áp dụng chúng vào công việc.",
+            "job_requirement": "Tốt nghiệp Đại học trở lên chuyên ngành Khoa học Máy tính, Kỹ thuật Máy tính, hoặc các ngành liên quan.Có ít nhất 3 năm kinh nghiệm làm việc trong lĩnh vực AI, đặc biệt là trong việc phát triển và triển khai các mô hình học sâu (Deep Learning).Có kiến thức vững chắc về các thuật toán và kỹ thuật AI, bao gồm học sâu, học máy, xử lý ngôn ngữ tự nhiên, thị giác máy tính, hoặc các lĩnh vực khác.Kinh nghiệm làm việc với các framework học sâu như TensorFlow, PyTorch, Keras.Kinh nghiệm về các ngôn ngữ lập trình như Python, và các thư viện liên quan như NumPy, Pandas.Kinh nghiệm làm việc với các bộ dữ liệu lớn và các công cụ quản lý dữ liệu.Có khả năng đọc hiểu và viết tài liệu kỹ thuật.Có khả năng làm việc độc lập và làm việc nhóm tốt.Có khả năng tư duy logic và giải quyết vấn đề tốt.",
+            "job_benefit": "Lương : 35.000.000-40.000.000 (Thỏa thuận theo năng lực)Thưởng theo hiệu quả công việc, thưởng lễ Tết, thưởng nóng.Cơ hội làm việc trong môi trường thẩm mỹ cao cấp, chuyên nghiệp.Được cập nhật và tiếp cận các công nghệ quản lý và chăm sóc khách hàng mới.Chế độ BHXH, BHYT, BHTN đầy đủ theo quy định pháp luật.",
+            "working_location": "- Hà Nội: 219 Trung Kính - Yên Hoà, Phường Cầu Giấy (quận Cầu Giấy cũ)",
+            "working_time": "Thứ 2 - Thứ 7 (từ 08:30 đến 17:30)\n                                                            8h30-17h30 \nThứ 2 - Thứ 7 \nNghỉ chủ nhật - Nghỉ 2 chiều thứ 7 trong tháng \n+ 1 ngày phép",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/ai-engineer-ky-su-ai-fresher-up/1747443.html",
+        "scraped_at": "2026-04-26T15:26:04.916333",
+        "metadata": {
+            "category": "AI",
+            "job_title": "AI Engineer - Kỹ Sư AI (Fresher Up)",
+            "company_name": "SonatGame Studio",
+            "company_scale": "25-99 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Tầng 10, tòa nhà The West Tower, 265 Cầu Giấy, Hà Nội",
+            "salary": "Thoả thuận",
+            "location": "Hà Nội",
+            "experience": "1 năm",
+            "deadline": "09/05/2026",
+            "tags": [
+                "1 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Tiếng Anh Đọc hiểu",
+                "Nghỉ thứ 7",
+                "AI Engineer",
+                "IT - Phần cứng và máy tính",
+                "IT - Phần mềm",
+                "Game"
+            ]
+        },
+        "content": {
+            "job_description": "Tại Sonat Game, chúng tôi tin rằng dữ liệu và công nghệ là nền tảng để mở rộng quy mô sản phẩm và phát triển bền vững. Là một AI Engineer thuộc phòng Business Intelligence. Bạn sẽ chịu trách nhiệm thiết kế, huấn luyện và triển khai các mô hình AI/ML nhằm cá nhân hóa trải nghiệm người dùng và tối ưu hóa hiệu quả kinh doanh trong game và ứng dụng di động, bạn sẽ làm việc chặt chẽ với các nhóm Product, Data, Business Intelligence (BI) và Engineering để đưa các giải pháp AI vào thực tiễn.Trách nhiệm chính của AI Engineer Fresher/JuniorTham gia phát triển, thử nghiệm các mô hình Machine Learning và Deep Learning phục vụ các bài toán vận hành, phân tích hành vi người dùng, phân loại content, dự đoán xu hướng...Hỗ trợ làm sạch, phân tích và trực quan hóa dữ liệu.Thực hiện thử nghiệm các thuật toán AI trên tập dữ liệu thực tế.Viết tài liệu kỹ thuật và báo cáo kết quả mô hình.Học tập và áp dụng các kiến thức mới trong lĩnh vực AI vào dự án nội bộ.",
+            "job_requirement": "Kiến thứcTốt nghiệp chuyên ngành Khoa học Máy tính, Kỹ thuật phần mềm, Toán – Tin, Công nghệ thông tin hoặc các lĩnh vực liên quanCó kinh nghiệm từ 1 năm trong lĩnh vực AI/ML hoặc các dự án Machine Learning ở quy mô production.Nắm vững xác suất thống kê, đại số tuyến tính, vi phân – tích phân, tối ưu hóa.Có kiến thức về phân tích dữ liệu, tiền xử lý dữ liệu, trực quan hóa dữ liệu.Kỹ năngThành thạo Python, Pandas, NumPy, SQL.Có kinh nghiệm với TensorFlow / PyTorch / Scikit-learn / Hugging Face.Kinh nghiệm triển khai mô hình trên cloud platform (GCP, AWS, Azure) và container hóa bằng Docker/Kubernetes.Hiểu A/B Testing, causal inference và đánh giá model trong môi trường thực tế.Có khả năng thiết kế pipeline AI/ML từ data → training → deployment.Kinh nghiệm trong Recommendation Systems, LTV prediction, Churn prediction, User Segmentation là lợi thế lớn.Có kinh nghiệm làm việc với LLM (fine-tuning, RAG) và triển khai qua LangChain/API framework; từng sử dụng nền tảng MLOps như Vertex AI, SageMaker là lợi thế.Kỹ năng tư duy hệ thống, xử lý vấn đề chủ động và tối ưu hoá hiệu suất mô hìnhCó khả năng viết tài liệu, báo cáo và truyền đạt kết quả phân tíchThái độTư duy sản phẩm và định hướng ứng dụng thực tếCẩn thận, có trách nhiệm với dữ liệu và hệ thốngChủ động phát hiện vấn đề và đề xuất hướng cải tiếnCó tinh thần học hỏi, cầu tiến, sẵn sàng tiếp cận công nghệ mớiLàm việc tốt trong môi trường tốc độ caoGắn bó lâu dài và mong muốn phát triển chuyên sâu trong lĩnh vực dữ liệu",
+            "job_benefit": "THU NHẬPMức lương: Lên tới 35M/thángNhận 100% lương cứng, xét tăng lương 2 lần/năm theo quy định của công tyThu nhập dựa theo kết quả và hiệu suất công việcCƠ HỘI PHÁT TRIỂNMở rộng, nâng cao kiến thức và kỹ năng chuyên mônTrải nghiệm thực chiến tại các dự án toàn cầu đang chạyCó lộ trình phát triển sự nghiệp được cá nhân hóa rõ ràngMÔI TRƯỜNG LÀM VIỆCTrải nghiệm môi trường quốc tế năng động, chuyên nghiệpHưởng 100% đãi ngộ chăm sóc đời sống hàng ngàyCHÍNH SÁCH PHÚC LỢICông ty đóng đầy đủ các loại Bảo hiểm theo quy định của pháp luật (BHXH, BHYT, BH thất nghiệp,..)Được khám sức khỏe tổng quát định kì miễn phí tại bệnh viện: Hồng Ngọc, Thu Cúc, Vinmec.Chế độ cưới hỏi/đám hiếu, quà ngày Lễ/ Tết và các chế độ phúc lợi khác.Thưởng Tết dương, 8/3, 30/4-1/5, Trung thu, giữa năm, 2/9, 20/10, Giáng sinh.Chia sẻ thành quả liên tục, không giới hạn dựa trên performance.Thời gian làm việc hành chính:Từ Thứ 2 - Thứ 6. Nghỉ Thứ 7, Chủ NhậtSáng: 8:30 - 12:00, Chiều: 13:15 - 17:45",
+            "working_location": "- Hà Nội: Tòa nhà The West, 265 Cầu Giấy, Dịch Vọng, Phường Cầu Giấy (quận Cầu Giấy cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:30 đến 17:45)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/ai-intern/1939859.html",
+        "scraped_at": "2026-04-26T15:37:25.270686",
+        "metadata": {
+            "category": "AI",
+            "job_title": "AI Intern",
+            "company_name": "Công ty Cổ phần Công nghệ Tài chính Goline",
+            "company_scale": "25-99 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Tòa Nhà Kim Ánh, 78 Duy Tân, Cầu Giấy, Hà Nội",
+            "salary": "Từ 3 triệu",
+            "location": "Hà Nội",
+            "experience": "Không yêu cầu",
+            "deadline": "06/05/2026",
+            "tags": [
+                "Không yêu cầu kinh nghiệm",
+                "Đại Học trở lên",
+                "AI Engineer"
+            ]
+        },
+        "content": {
+            "job_description": "● Implement, package, and serve AI models for real-world applications.● Research, experiment with, and apply LLM frameworks (LangChain, LlamaIndex, etc.) to financial market use cases.● Build AI agents capable of querying market/ticker information and generating strategy insights.● Design and integrate backtesting workflows to evaluate strategies.● Conduct quantitative trading research: Develop and test alpha signals using statistical methods and ML techniques; study factor models, time-series forecasting, and portfolio optimization; evaluate performance via rigorous backtesting and risk-adjusted metrics (Sharpe, drawdown, etc.).● Collaborate with mentors to improve technical and problem-solving skills.● Internship duration: 3 months.",
+            "job_requirement": "● Knowledge of data structure and algorithm;● Ability to use Python, Linux;● Mathematical mindset;● Preferred knowledge in machine learning;● Ability to comprehend and analyze English technical papers/reports on AI;● Availability for full-time internship.SUBMIT APPLICATION● Timeline:1. Round 1: CV Submissions2. Round 2: Online Testing3. Round 3: In-person Interviews",
+            "job_benefit": "●\tSupport of 3.000.000 VND/month; \n●\tInterns certification; \n●\tMentorship by AI and financial experts; \n●\tNecessary equipments are provided; \n●\tEnjoy company summer trip and other team building activities held monthly and quarterly; \n●\tProfessional, creative and dynamic working environment; \n●\tWork five days per week from Monday to Friday. \n●\tChances to be hired after internship if the performance is good.",
+            "working_location": "- Hà Nội: Tòa Nhà Kim Ánh, 78 Duy Tân, Phường Cầu Giấy (quận Cầu Giấy cũ)",
+            "working_time": null,
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/mobile-web-developer-c-maui-2-nam-kinh-nghiem-lam-viec-tai-dong-da-hn-phuc-loi-tot-thu-nhap-cao/2093626.html",
+        "scraped_at": "2026-04-26T15:39:59.646727",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Mobile & Web Developer (C#, MAUI) - 2 Năm Kinh Nghiệm - Làm Việc Tại Đống Đa, HN - Phúc Lợi Tốt, Thu Nhập Cao",
+            "company_name": "Công ty Cổ phần Quốc tế Việt Nam Nhật Bản",
+            "company_scale": "25-99 nhân viên",
+            "company_field": "Dược phẩm / Y tế / Công nghệ sinh học",
+            "company_address": "Tầng 12, Tòa nhà Icon4, 243A Đê La Thành, Đống Đa, Hà Nội",
+            "salary": "Thoả thuận",
+            "location": "Hà Nội",
+            "experience": "2 năm",
+            "deadline": "06/05/2026",
+            "tags": [
+                "2 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Tiếng Nhật JLPT N5",
+                "Nghỉ thứ 7",
+                "Thiết bị: Máy tính",
+                "Mobile Developer",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Phát triển và bảo trì ứng dụng Mobile (Maurin) cho khách hàng Nhật Bản.Sử dụng Maui cho Android và C#Thiết kế, phát triển và tích hợp REST API giữa Mobile App và Backend.Tạo detailed design và thực hiện UTPhối hợp với team để hoàn thành dự án đúng tiến độ.",
+            "job_requirement": "Kinh nghiệm:2–5 năm kinh nghiệm phát triển phần mềm.Có kinh nghiệm với Android (MAUI).Có kinh nghiệm Web/Win application bằng C# / .NET là 1 lợi thế.Kiến thức kỹ thuật:Thành thạo ngôn ngữ C#Thành thạo Visual Studio, Android Studio.Hiểu biết về SQL Server / Oracle.Kỹ năng:Tư duy logic tốt, khả năng phân tích và giải quyết vấn đề.Có tinh thần học hỏi và làm việc nhóm.",
+            "job_benefit": "Môi trường làm việc thân thiện, cơ hội phát triển lâu dài.Được hỗ trợ học công nghệ mới, tiếng Nhật và kỹ năng chuyên môn.Cơ hội đi công tác dài hạn tại Nhật Bản.",
+            "working_location": "- Hà Nội: Tòa ICON4, 243A Đê La Thành, Phường Đống Đa (quận Đống Đa cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 00:00 đến 00:00)\n                                                            Thứ 2~ thứ 6. Nghỉ thứ 7, chủ nhật, các ngày lễ tết theo quy định của nhà nước",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/lap-trinh-vien-fullstack-java-angular-2-nam-kinh-nghiem-manh-ve-java-lam-viec-tai-nghia-do-ha-noi/2112409.html",
+        "scraped_at": "2026-04-26T15:40:38.518011",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Lập Trình Viên Fullstack (Java & Angular) - 2 Năm Kinh Nghiệm ( Mạnh Về Java ) - Làm Việc Tại Nghĩa Đô, Hà Nội",
+            "company_name": "CÔNG TY TNHH GIẢI PHÁP CÔNG NGHỆ MIGI",
+            "company_scale": "25-99 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Số nhà 19, ngách 1/37 phố Văn Hội, Phường Đức Thắng, Quận Bắc Từ Liêm, Thành phố Hà Nội, Việt Nam",
+            "salary": "12 - 25 triệu",
+            "location": "Hà Nội",
+            "experience": "2 năm",
+            "deadline": "07/05/2026",
+            "tags": [
+                "2 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Nam",
+                "Nghỉ thứ 7",
+                "Fullstack Developer",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "• Tham gia phân tích, thiết kế, và cải tiến chức năng cho các sản phẩm dịch vụ của công ty và khách hàng;• Phối hợp làm việc với team để nâng cao chất lượng công việc, đưa ra ý tưởng cải tiến sản phẩm;• Nghiên cứu, tìm hiểu các công nghệ mới, giúp đỡ các team members để hoàn thành tiến độ công việc;• Onsite làm việc với khách hàng khi có yêu cầu dự án;• Tham gia vào các hoạt động và chương trình training của Công ty;• Thực hiện Nội quy Công ty.",
+            "job_requirement": "Có từ 1.5 - 3 năm kinh nghiệm ở vị trí Fullstack (mạnh về Java);Tốt nghiệp Đại học chuyên ngành Công nghệ Thông tin, kỹ thuật phần mềm hoặc các ngành liên quan;Không tuyển sinh viên chưa tốt nghiệp (bắt buộc);Có kinh nghiệm, kiến thức về: Java Core, Java Springboot (BE), Angular (FE), Oracle (DB),MySQL, PostgreSQLHiểu và áp dụng tốt các nguyên lý chung và cách làm tốt nhất trong thiết kế và lập trình, nhưSOLID, Design Pattern,...Có kinh nghiệm xử lý hệ thống với dữ liệu lớn, viết câu lệnh SQL truy vấn, sử dụng cache,message queue để tối ưu hiệu năng;Chăm chỉ, nhanh nhẹn, chủ động trong công việc;Sẵn sàng học hỏi và có trách nhiệm cao trong công việc.",
+            "job_benefit": "• Lương cứng 12.000.000 VNĐ – 25.000.000 VNĐ/ tháng + Lương tháng thứ 13;• Làm việc trong môi trường thoải mái, thân thiện, không OT, người hướng dẫn có chuyên môn cao;• Giờ làm việc linh động, môi trường làm việc thoải mái thân thiện;• Đánh giá định kỳ 2 lần/năm, xét tăng lương theo năng lực;• Đóng bảo hiểm và các chế độ đảm bảo quyền lợi người lao động;• Định hướng phát triển kỹ năng cho nhân viên;• Nhiều chương trình training, du lịch, team buiding tháng/quý/năm;• Tham gia CLB Bóng đá. Bi-a và CLB Tiếng Anh của Công ty, ...",
+            "working_location": "- Hà Nội: Số 1 Phùng Chí Kiên - Nghĩa Đô, Phường Nghĩa Đô (quận Bắc Từ Liêm, quận Cầu Giấy cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:30 đến 17:30)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/lap-trinh-vien-mobile-ios-android/2109004.html",
+        "scraped_at": "2026-04-26T15:42:14.034490",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Lập Trình Viên Mobile IOS/Android",
+            "company_name": "Công ty Cổ phần MISA",
+            "company_scale": "3000+ nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Tầng 9 tòa nhà Technosoft ngõ 15 Duy Tân, Dịch Vọng Hậu, Cầu Giấy, Hà Nội",
+            "salary": "Tới 35 triệu",
+            "location": "Hà Nội",
+            "experience": "1 năm",
+            "deadline": "05/05/2026",
+            "tags": [
+                "1 năm kinh nghiệm",
+                "Cao Đẳng trở lên",
+                "Tuổi 22 - 28",
+                "Nghỉ thứ 7",
+                "Bảo hiểm xã hội",
+                "Khám sức khỏe định kỳ",
+                "Mobile Developer",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Tập đoàn MISA, thành lập năm 1994, là doanh nghiệp CNTT hàng đầu Việt Nam với hơn 500.000 khách hàng đơn vị, tổ chức (trong đó: 44.500 đơn vị HCSN và 20.000 cơ sở giáo dục trên toàn quốc) và gần 3,5 triệu cá nhân, hiện diện tại 22 quốc gia. MISA tiên phong phát triển Agentic AI và nền tảng AIaaS, cung cấp giải pháp số hóa cho doanh nghiệp, hộ kinh doanh và chính phủ giúp tối ưu vận hành, nâng cao hiệu quả và giảm tải thủ công cho tổ chức. Sứ mệnh của MISA là đồng hành cùng chính phủ, doanh nghiệp và cá nhân trong hành trình chuyển đổi số, khẳng định vị thế công nghệ Việt Nam trên quốc tế.Mô tả công việcPhát triển các sản phẩm của công ty trên nền tảng iOS/Android/FlutterTìm hiểu, nghiên cứu các công nghệ mới theo định hướng phát triển của công ty",
+            "job_requirement": "Tối thiểu 1 năm kinh nghiệm lập trình Android/IOS, nắm được căn bản về OOPSử dụng thành thạo các công cụ lập trình như Android Studio, XcodeThành thạo một trong các ngôn ngữ Java core/Android/Objective-C/SwiftNắm vững các UI control, layout, có khả năng customize và tối ưu giao diệnCó kinh nghiệm lập trình giao tiếp giữa mobile và serverCó kinh nghiệm làm việc với database SQLite hoặc Core Data.Cẩn thận, ham học hỏi, tinh thần trách nhiệm cao trong công việc",
+            "job_benefit": "Nền tảng vững chắc cho phát triển sự nghiệp, thăng tiến, quyền lợiLương cứng cạnh tranh. Thưởng năng suất dựa trên kết quả công việc từ 2 tháng lương.Đánh giá review lương 2 lần/năm, thưởng sáng kiến...Trợ cấp cơm trưa + gửi xe miễn phíHuấn luyện “Hổ tướng”: chương trình đào tạo quản lý tài năng, bệ phóng trở thành Chiến tướng tinh nhuệGiải thưởng “Gấu vàng\": nơi tôn vinh những tài năng xuất sắc nhấtGói chăm sóc sức khỏe toàn diện tại Medlatec, cháy hết mình tại các CLB theo sở thích, chương trình teambuilding, du lịch định kỳTiên phong công nghệ, uy tínMISA là doanh nghiệp CNTT xuất sắc nhất khu vực Châu Á - Châu Đại Dương. Tiên phong xuất khẩu giải pháp SaaSTOP đầu doanh nghiệp CNTT tăng trưởng liên tục với quy mô nhân sự tăng 20%/năm, doanh thu tăng 15%/nămHội tụ hơn 4000 nhân tài cùng khát vọng đưa sản phẩm công nghệ “Make In Vietnam” vươn tầm quốc tếXây dựng niềm tin với 500.000 khách hàng là cơ quan nhà nước, doanh nghiệp, hộ kinh doanh và 3.5 triệu khách hàng cá nhân tại Việt Nam và 22 quốc gia trên thế giới.Hơn 100 giải thưởng trong ngành CNTT trong nước và quốc tếMôi trường thân thiện, chia sẻ, đồng hànhKết nối tài năng: tập trung phát triển những con người có chung lý tưởng, mục tiêu, cùng trao giá trị và nhận thành côngTư duy đột phá: môi trường tôn trọng sự khác biệt và đề cao sáng tạo, MISA-er được tự do phát triển các ý tưởng tiến bộ, cải tiến công việcCông nghệ cao: trang bị máy tính làm việc, tối ưu hiệu suất công việc bằng ứng dụng công nghệ, phần mềm tự động (AMIS, Jira, Power BI, AI Marketing,...)Nơi làm việc hạnh phúc: MISA mong muốn tạo một môi trường làm việc để bạn luôn cảm thấy hạnh phúc",
+            "working_location": "- Hà Nội: Tầng 2, Toà N03T1, Khu đô thị Ngoại giao đoàn, Phường Xuân Đỉnh (quận Bắc Từ Liêm cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:30)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/fullstack-engineer-ky-su-fullstack-luong-tu-1-500-2-000-thuong-hieu-qua-cong-viec/2104890.html",
+        "scraped_at": "2026-04-26T15:42:50.371963",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Fullstack Engineer (Kỹ Sư Fullstack) - Lương Từ 1.500$ - 2.000$ + Thưởng Hiệu Quả Công Việc",
+            "company_name": "CÔNG TY TNHH CỐ VẤN TÂM LÝ GIAO DỊCH S.T.E.P",
+            "company_scale": "10-24 nhân viên",
+            "company_field": "Tư vấn",
+            "company_address": "84a Nguyễn Cửu Vân, Phường Gia Định, TP Hồ Chí Minh, Việt Nam",
+            "salary": "1,500 - 2,000 USD",
+            "location": "Hồ Chí Minh",
+            "experience": "3 năm",
+            "deadline": "04/05/2026",
+            "tags": [
+                "3 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Thưởng hiệu quả làm việc",
+                "Fullstack Developer",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Phát triển các tính năng chính của sản phẩm (frontend + backend)Xây dựng giao diện người dùng phức tạp, tối ưu trải nghiệmPhát triển API và xử lý logic backendTham gia xây dựng nền tảng web và hệ thống đa nền tảngThiết kế và chia nhỏ module hệ thốngTối ưu hiệu năng và chất lượng codePhối hợp với team Product, Design và Backend",
+            "job_requirement": "Bắt buộcFrontend (trọng tâm):Thành thạo ReactSử dụng tốt: TypeScript; State management (Redux / Zustand...); Component-based architecture; Vite / WebpackCó kinh nghiệm với UI phức tạp: Drag & drop; Dashboard / biểu đồ; UI cấu hìnhBackend (ít nhất 1 ngôn ngữ):Java / Rust / Go / C++Có khả năng: Thiết kế API; Xử lý dữ liệu; Xây dựng logic nghiệp vụHiểu cách hoạt động giữa frontend và backendKỹ năng: Hiểu HTTP, REST, WebSocket, JSON, data flowTư duy hệ thống, biết chia moduleCode sạch, có cấu trúcĐiểm cộngKinh nghiệm mobile (React Native / Flutter)Từng làm platform (admin, CMS, SaaS, editor)Kinh nghiệm data visualization (chart, trading UI, dashboard)Hiểu realtime systems (WebSocket, push)Từng làm fintech / trading / data platformXây dựng component library / low-code system",
+            "job_benefit": "Mức lương: 1.500 – 2.000 USDLàm việc trực tiếp với sản phẩm thực tế, có độ phức tạp caoMôi trường trẻ, linh hoạt, tập trung vào năng lựcCơ hội phát triển lên Senior / Tech LeadReview lương định kỳ + thưởng hiệu suất",
+            "working_location": "- Hồ Chí Minh: 84a, Nguyễn Cửu Vân, Phường Gia Định (quận Bình Thạnh cũ)",
+            "working_time": null,
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/senior-backend-engineer-rust-go-c-luong-tu-1-500-2-000-thuong-hieu-qua-cong-viec/2104876.html",
+        "scraped_at": "2026-04-26T15:43:09.339010",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Senior Backend Engineer (Rust/Go/C++) - Lương Từ 1.500$ - 2.000$ + Thưởng Hiệu Quả Công Việc",
+            "company_name": "CÔNG TY TNHH CỐ VẤN TÂM LÝ GIAO DỊCH S.T.E.P",
+            "company_scale": "10-24 nhân viên",
+            "company_field": "Tư vấn",
+            "company_address": "84a Nguyễn Cửu Vân, Phường Gia Định, TP Hồ Chí Minh, Việt Nam",
+            "salary": "1,500 - 2,000 USD",
+            "location": "Hồ Chí Minh",
+            "experience": "2 năm",
+            "deadline": "04/05/2026",
+            "tags": [
+                "2 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Thưởng hiệu quả làm việc",
+                "Backend Developer",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Thiết kế và phát triển kiến trúc cho hệ thống lõi\nXây dựng nền tảng xử lý hiệu năng cao, hệ thống phân tán và đa tiến trình\nThiết kế kiến trúc đa ngôn ngữ (Python kết hợp Rust/Go/C++)\nTối ưu hiệu năng, độ ổn định và các luồng xử lý quan trọng\nXây dựng các thành phần hệ thống dùng chung (core modules, SDK, engine)\nTham gia xây dựng hệ thống CI/CD, release và version control\nThực hiện review kỹ thuật và kiến trúc\nPhối hợp với các team để triển khai hệ thống thực tế",
+            "job_requirement": "Có kinh nghiệm với ít nhất 1 trong các ngôn ngữ: Rust / Go / C++ \nCó kinh nghiệm làm việc với Python trong dự án thực tế \nNắm vững kiến thức về system design, xử lý đa luồng (multithreading/concurrency) \nHiểu các nguyên lý tối ưu hiệu năng (memory, CPU cache, data structure,...) \nCó kinh nghiệm làm việc với hệ thống production là một lợi thế \nĐIỂM CỘNG\nRust: PyO3, maturin, FFI (ownership/lifetime), build Python package \nGo: goroutine, channel, worker system, gRPC \nC++: C++11/14/17, tối ưu bộ nhớ, pybind11 \nKinh nghiệm distributed systems, microservices, scheduler \nTừng làm trong lĩnh vực tài chính, trading, dữ liệu time-series \nHiểu về Parquet, Arrow, SIMD, profiling/tối ưu hiệu năng",
+            "job_benefit": "Mức lương cạnh tranh: 1.500 – 2.000 USD Tham gia xây dựng hệ thống kỹ thuật có độ phức tạp cao Môi trường kỹ thuật chuyên sâu, định hướng product & engineering Cơ hội phát triển lên Tech Lead / Architect Thưởng hiệu suất, review lương định kỳ",
+            "working_location": "- Hồ Chí Minh: 84a, Nguyễn Cửu Vân, Phường Gia Định (quận Bình Thạnh cũ)",
+            "working_time": null,
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/tts-cong-nghe-thong-tin-fulltime-co-moc-co-luong/2109114.html",
+        "scraped_at": "2026-04-26T16:21:53.647890",
+        "metadata": {
+            "category": "Software",
+            "job_title": "TTS Công Nghệ Thông Tin Fulltime (Có Mộc+Có Lương)",
+            "company_name": "CÔNG TY TNHH CÔNG NGHỆ PHẦN MỀM NASANI",
+            "company_scale": "1000+ nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Lầu 1 Tòa nhà Saigon ICT, Lô 46 Công viên phần mềm Quang Trung, Phường Trung Mỹ Tây, TP Hồ Chí Minh, Việt Nam",
+            "salary": "4 - 15 triệu",
+            "location": "Hồ Chí Minh",
+            "experience": "Không yêu cầu",
+            "deadline": "06/05/2026",
+            "tags": [
+                "Không yêu cầu kinh nghiệm",
+                "Trung cấp trở lên",
+                "Thưởng hiệu quả làm việc",
+                "Team building",
+                "Software Engineer"
+            ]
+        },
+        "content": {
+            "job_description": "Tiếp nhận thông tin khách hàngTư vấn, báo giá, triển khai phần mềm Website cho khách hàngTư vấn về bố cục, màu sắc, chức năng của trang WebsiteLên ý tưởng, lên bảng Demo WebsiteTương tác với bộ phận Kỹ Thuật giúp khách hàng có trang Website hoàn chỉnhTest Website cho khách trước khi bàn giaoHỗ trợ chăm sóc khách hàngCác công việc khác theo sắp xếp của công ty",
+            "job_requirement": "Không yêu cầu kinh nghiệmLàm việc giờ hành chính (8h-17h), từ thứ 2 đến sáng thứ 7Sẵn sàng đi làmNhiệt tình, vui vẻ, ham học hỏiKỹ năng làm việc nhóm và giải quyết vấn đề",
+            "job_benefit": "Được hỗ trợ mộc thực tập sau 2 tháng làm việcĐược lên nhân viên chính thức nếu làm việc tốtThực tập có lươngĐược đào tạo khi vào làm việc",
+            "working_location": "- Hồ Chí Minh: tòa nhà Sài Gòn ICT, Công viên phần mềm Quang Trung, Trung Mỹ Tây, Phường Trung Mỹ Tây (Quận 12 cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:00)\n                                                            Thứ 7 (từ 08:00 đến 12:00)\n                                                            thứ 7 ( 8h-12h)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/chuyen-vien-phat-trien-ung-dung-lap-trinh/2081290.html",
+        "scraped_at": "2026-04-26T16:25:09.523268",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Chuyên Viên Phát Triển Ứng Dụng (Lập Trình)",
+            "company_name": "CÔNG TY CỔ PHẦN PHÁT TRIỂN BẤT ĐỘNG SẢN VĂN PHÚ",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "Bất động sản",
+            "company_address": "Số 104 Thái Thịnh, Phường Trung Liệt, Quận Đống Đa, Thành phố Hà Nội, Việt Nam",
+            "salary": "Thoả thuận",
+            "location": "Hà Nội",
+            "experience": "5 năm",
+            "deadline": "08/05/2026",
+            "tags": [
+                "5 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Nghỉ thứ 7",
+                "Bảo hiểm xã hội",
+                "Bảo hiểm sức khỏe",
+                "Mobile Developer"
+            ]
+        },
+        "content": {
+            "job_description": "Tham gia phát triển các chức năng phần mềm theo yêu cầu nghiệp vụPhối hợp với BA và các bên liên quan để phân tích, làm rõ yêu cầuThiết kế luồng xử lý, lập trình và tối ưu mã nguồnBảo trì, nâng cấp hệ thống hiện có; xử lý lỗi và cải tiến tính năngQuản lý mã nguồn bằng Git và cập nhật tài liệu kỹ thuậtHỗ trợ vận hành hệ thống và xử lý sự cố phát sinhPhối hợp đảm bảo hệ thống hoạt động ổn định, đáp ứng nhu cầu người dùng",
+            "job_requirement": "Tốt nghiệp CNTT, Có tối thiểu 5 năm kinh nghiệm trong Khoa học máy tính hoặc ngành liên quanCó kiến thức về lập trình hướng đối tượng, cấu trúc dữ liệuLàm việc được với ít nhất 1 nền tảng backend: .NET / Java / NodeJSCó hiểu biết frontend: ReactJS / Angular / VueJSNắm được kiến thức cơ bản về CSDL và APIĐọc hiểu tài liệu kỹ thuật, làm việc nhóm tốtCó kinh nghiệm thực tập/dự án là lợi thế",
+            "job_benefit": "Thời gian làm việc: 8h15 - 17h30 (Thứ 2 - Thứ 6) nghỉ thứ 7, chủ nhậtBảo hiểm sức khỏe Bảo ViệtKhám sức khỏe định kỳCơm trưa miễn phíPhòng tập YogaThưởng Lễ, Tết, Lương tháng 13Du lịch định kỳ",
+            "working_location": "- Hà Nội: 104 Thái Thịnh, Phường Đống Đa (quận Đống Đa cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:15 đến 17:30)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/backend-developer-nodejs/2118254.html",
+        "scraped_at": "2026-04-26T17:06:14.681213",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Backend Developer (Nodejs)",
+            "company_name": "Công ty TNHH Unstatic",
+            "company_scale": "10-24 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Tầng 19, số 266 Đội Cấn, Phường Liễu Giai, Quận Ba Đình, Hà Nội",
+            "salary": "Tới 35 triệu",
+            "location": "Hà Nội",
+            "experience": "3 năm",
+            "deadline": "10/05/2026",
+            "tags": [
+                "3 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Nghỉ thứ 7",
+                "Bảo hiểm xã hội",
+                "Bảo hiểm sức khỏe",
+                "Software Engineer",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Trực tiếp chịu trách nhiệm thiết kế, xây dựng và tối ưu hóa hệ thống Backend.Phát triển các tính năng và ứng dụng cốt lõi có khả năng tích hợp linh hoạt trên Mobile, Desktop và Web. Đặc biệt, bạn sẽ tập trung vào việc xử lý các bài toán về khả năng mở rộng (scalability) để đáp ứng lượng truy cập lớn từ thị trường quốc tế.Cập nhật những xu hướng công nghệ mới nhất và chia sẻ lại với các thành viên trong team.Đóng góp vào trong từng khâu phát triển sản phẩm (Lên ý tưởng, thực hiện, release)Phát triển code structured, đã được test, dễ đọc và dễ maintain.Làm việc trong một team Agile.Hỗ trợ phát triển và mentor các developers khác trong team khi cần thiết.Tham gia vào các buổi review code để đảm bảo chất lượng code và bổ sung kiến thức cho các thành viên khác.",
+            "job_requirement": "Từ 3-4 năm kinh nghiệm, thành thạo các công nghệ và ngôn ngữ lập trình backend (NodeJS, Typescript).Có kiến thức sâu và kinh nghiệm với các SQL/NoSQL database như Postgres, MySQL, MongoDB, Firestore, Redis...Kinh nghiệm làm việc với cloud infrastructure như GCP, AWS, Cloudflare.Có kiến thức về distributed system và các kiến trúc như microservices, event-driven, ...Có khả năng làm việc trong môi trường năng động, liên tục release theo phương pháp Agile.Có kinh nghiệm xây dựng các web service scalable.Có kinh nghiệm tối ưu performance, profiling và debug ứng dụng.",
+            "job_benefit": "Mức lương và phúc lợi hấp dẫn:Mức lương upto 35M/tháng.Thử việc nhận 100% lương.Lương tháng 13, thưởng lễ, Tết, thâm niên.Review lương hàng năm.Bảo hiểm y tế, bảo hiểm xã hội, bảo hiểm sức khỏe cá nhân (PTI).Hỗ trợ ăn trưa 500.000 VND/tháng.Các quyền lợi khác:Miễn phí gửi xe, snacks & drinks tại văn phòng.Du lịch công ty, team building, sinh nhật.Hoạt động Well-being 1 tháng/lần (các hoạt động chăm sóc sức khỏe thể chất và tinh thần).Happy Lunch vào Trưa thứ 4, Teabreak vào chiều Thứ 3 hoặc chiều Thứ 5 hàng tuần.Các chế độ khác theo đúng Luật lao động hiện hành.Môi trường làm việc:‍Môi trường product trẻ trung năng động, sáng tạo cao.Sản phẩm xây dựng ra cho khách hàng quốc tế 100%, hiện có hơn 1.5 triệu người sử dụng trên toàn cầu.Thời gian làm việc: ‍Chấm công/làm việc linh hoạt từ 08h00 - 09h30, miễn đủ 8 tiếng, đảm bảo hiệu suất và tiến độ công việcLàm việc từ thứ 2 đến thứ 6 hàng tuần, nghỉ trưa từ 12h00 - 13h30, thứ 4 nghỉ trưa từ 12h00 - 14h00.",
+            "working_location": "- Hà Nội: tòa Ladeco, số 266 Đội Cấn, Phường Ngọc Hà (quận Ba Đình cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:30)\n                                                            Chấm công/làm việc linh hoạt từ 08h00 - 09h30, miễn đủ 8 tiếng, đảm bảo hiệu suất và tiến độ công việc",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/middle-senior-net-developer-web-mobile/1412112.html",
+        "scraped_at": "2026-04-26T17:06:36.245793",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Middle/ Senior .NET Developer (Web & Mobile)",
+            "company_name": "CELLPHONES",
+            "company_scale": "1000+ nhân viên",
+            "company_field": "Thương mại điện tử",
+            "company_address": "350 Võ Văn Kiệt, Cô Giang, Quận 1, Tp. Hồ Chí Minh, Việt Nam",
+            "salary": "1,000 - 1,700 USD",
+            "location": "Hồ Chí Minh",
+            "experience": "3 năm",
+            "deadline": "10/05/2026",
+            "tags": [
+                "3 năm kinh nghiệm",
+                "Cao Đẳng trở lên",
+                "Backend Developer",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Tech StackCore SystemsBackend: .NET Core 6+, REST APIs, EF CoreDatabase: SQL Server, MongoDB, RedisMessage Queue: Kafka, RabbitMQInfrastructure: Docker, Kubernetes, RancherFrontend: Flutter (Mobile & Web)DevOps & MonitoringVersion Control: GitLabCI/CD: Jenkins, GitHub ActionsMonitoring: ELK Stack, New RelicMÔ TẢ CÔNG VIỆCPhát triển hệ thống:Thiết kế và phát triển các microservices cho hệ thống ERP.Xây dựng REST APIs hỗ trợ ứng dụng web và mobile.Tối ưu hóa hiệu năng và khả năng mở rộng của hệ thống.Thiết kế database và tối ưu hóa truy vấn.Phát triển nghiệp vụ:Tự động hóa và tối ưu hóa quy trình nghiệp vụ.Tích hợp giữa các phân hệ ERP, đảm bảo dữ liệu đồng nhất và chính xác.Vai trò dẫn dắt:Thực hiện code review và hướng dẫn thành viên trong nhóm.Phân tích yêu cầu và đề xuất giải pháp kỹ thuật.Nghiên cứu và áp dụng công nghệ mới vào hệ thống.Xây dựng coding standards và các best practices.",
+            "job_requirement": "3-5 năm kinh nghiệm phát triển với .NET Core và C#.Thành thạo thiết kế RESTful APIs.Hiểu biết sâu về thiết kế và tối ưu hóa database.Kinh nghiệm làm việc với microservices architecture.Nắm vững OOP, Design Patterns, và Clean Architecture.Ưu tiên:Kinh nghiệm với Docker, Kubernetes, Kafka/RabbitMQ, hoặc Redis.Triển khai CI/CD pipeline.Hiểu biết hoặc từng làm việc với ERP systems và business process automation.Lợi thế:Kinh nghiệm phát triển reporting & analytics.Hiểu biết về Flutter.Kinh nghiệm với các nền tảng cloud như GCBKỹ năng mềm:Tư duy giải quyết vấn đề nhạy bén.Kỹ năng giao tiếp và làm việc nhóm hiệu quả.Chủ động, sáng tạo trong công việc.Làm việc tốt dưới áp lực cao.",
+            "job_benefit": "Chế độ đãi ngộMức thu nhập từ trên 23 triệuThăng tiến theo tăng trưởng công ty và khả năng chuyên mônĐược hưởng đầy đủ chính sách theo quy định: BHXH, BHYT, các phúc lợi khác theo luật Lao động (Tham gia BHXH dựa trên mức LCB của vị trí)Được hưởng Gói Bảo hiểm nâng caoThưởng năm ttừ1,5-5 thángĐào tạo - Phát triểnCơ hội làm việc với nhiều dự án quan trọng và thăng tiến sự nghiệp cùng với sự phát triển của Công tyĐược nghiên cứu, đào tạo và làm việc với các công nghệ / hệ thống tiên tiếnĐược công ty tạo điều kiện và hỗ trợ khi tham gia các khóa đào tạo, phát triển năng lực.Môi trường làm việcLàm việc và phát triển tại một trong những hệ thống thuộc Top hệ thống bán lẻ công nghệ.Môi trường trẻ trung, năng động, coi trọng năng lực và khả năng sáng tạo với nhiều dự án đa dạngTham gia nhiều hoạt động thiện nguyện cùng Công ty và các tổ chức thiện nguyện khácTham gia CLB thể thao: Bóng đá, cầu lông, chạy bộ....",
+            "working_location": "- Hồ Chí Minh: Phường Cầu Ông Lãnh (Quận 1 cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:30 đến 17:30)\n                                                            Thứ 7 làm việc online",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/java-developer-spring-boot-frontend-frameworks/2118509.html",
+        "scraped_at": "2026-04-26T17:06:57.979703",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Java Developer - Spring Boot & Frontend Frameworks",
+            "company_name": "Công ty Cp Công nghệ và Truyền thông Dagoras",
+            "company_scale": "25-99 nhân viên",
+            "company_field": "Marketing / Truyền thông / Quảng cáo",
+            "company_address": "Tầng 6 Số 80 Duy Tân, phường Dịch Vọng Hậu, quận Cầu Giấy, Hà Nội",
+            "salary": "Thoả thuận",
+            "location": "Hà Nội",
+            "experience": "1 năm",
+            "deadline": "10/05/2026",
+            "tags": [
+                "1 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Tiếng Anh Đọc hiểu",
+                "Fullstack Developer",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Thiết kế, phát triển và duy trì các ứng dụng web sử dụng Java (Spring Boot) cho backend và các framework frontend (ReactJS/Angular/VueJS).Xây dựng và tối ưu RESTful APIs, đảm bảo hiệu năng, bảo mật và khả năng mở rộng.Làm việc với cơ sở dữ liệu (MySQL, PostgreSQL, MongoDB...).Tham gia phân tích yêu cầu, thiết kế hệ thống và review code.Tích hợp các dịch vụ bên thứ ba (payment, authentication, AI APIs...).Ứng dụng các công cụ AI (như ChatGPT, Copilot...) để tăng hiệu suất phát triển và tối ưu code.Phối hợp với các team UI/UX, QA, DevOps để đảm bảo chất lượng sản phẩm.",
+            "job_requirement": "Tốt nghiệp các trường:Đại học Bách Khoa,Đại học Quốc gia, HV Bưu Chính, HV Mật mã (Ưu tiên, không bắt buộc)Có từ 1–3+ năm kinh nghiệm phát triển phần mềm (junior–mid level),frontend với ReactJS / Angular / VueJS.Thành thạo Java Core, Spring Boot, Spring MVCHiểu biết về HTML, CSS, JavaScript/TypeScript, Git, CI/CD, DockerKinh nghiệm làm việc với database và ORM (Hibernate/JPA).Có kinh nghiệm hoặc tư duy sử dụng AI trong công việc (code generation, debugging, automation...).Kỹ năng tư duy logic, giải quyết vấn đề tốt.Có khả năng đọc hiểu tài liệu tiếng Anh.",
+            "job_benefit": "Mức lương: thỏa thuận theo năng lực   Nghỉ phép 12 ngày/năm, nghỉ ốm, thai sản, hiếu hỉ theo quy định của Luật Lao động và BHXH.Du lịch hàng năm, team building, các hoạt động nội bộ.Có lộ trình phát triển nghề nghiệp lâu dài",
+            "working_location": "- Hà Nội: Mạc Thái Tông, Phường Cầu Giấy (quận Cầu Giấy cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:30)\n                                                            + 2 ngày thứ 7/tháng",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/fullstack-developer-nodejs-reactjs/2119168.html",
+        "scraped_at": "2026-04-26T17:07:20.405333",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Fullstack Developer (Nodejs+Reactjs)",
+            "company_name": "CÔNG TY CỔ PHẦN DAC DATA TECHNOLOGY VIỆT NAM",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Tầng 2, tòa nhà Hong Kong Tower 243A Đường La Thành, Đống Đa, Hà Nội",
+            "salary": "Thoả thuận",
+            "location": "Hà Nội",
+            "experience": "3 năm",
+            "deadline": "10/05/2026",
+            "tags": [
+                "3 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Software Engineer",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Participate in the development and optimization of web and mobile systems for eCommerce enterprise clients Build and maintain backend (API, business logic) using NodeJS and NestJS. Develop frontend web applications with NextJS and ReactJS, and mobile apps with React Native. Design, develop, and integrate RESTful APIs. Work with databases such as MongoDB and Redis. Deploy and operate systems on AWS (ECS, EKS) and Docker Container. Collaborate with other teams to translate business requirements into technical solutions. Participate in code reviews to ensure engineering quality. Propose improvements to development processes and optimize system performance.",
+            "job_requirement": "MUST HAVE Bachelor’s degree in Computer Science, Software Engineering, or related field. At least 3 years of experience developing web/mobile applications with NodeJS, NestJS, NextJS, ReactJS, React Native. Proficient in Typescript/JavaScript. Experience in designing and building RESTful APIs. Proficient with MongoDB, Redis, or similar database management systems. Experience deploying systems on AWS and Docker Container. Ability to write clean, maintainable code with unit tests/integration tests.   NICE TO HAVE Experience working on large-scale, high-traffic systems, especially in the eCommerce domain. Familiarity with technologies such as ECS, EKS, CI/CD, Cloud Infrastructure. Good English communication skills, able to communicate directly with clients. Ability to self-learn and read technical documentation in English. Proactive, responsible, able to work under pressure and tight deadlines. Strong logical thinking, strong teamwork and independent working skills",
+            "job_benefit": "1/ Career path improvement Work, learn and develop with young and talented colleagues who are passionate and have big vision Challenge yourself with new technologies and hot tech trends in the world Participate in training programs on technical skills, soft skills and working methods Be advised and share about career paths and self-development. 2/ Income Salary: Negotiable. Twice-a-year bonus Probation: 100% salary Performance review: Every January Japanese, TOEIC allowance; Technical Certificates allowance 3/ Healthcare Social insurance, health insurance, and unemployment insurance under the insurance law. Fully covered all types of insurance as prescribed. Annual health checkups at prestigious hospitals. Women care regimen: Women physiological rest: 8 hours/month; Postpartum rest for female staff with children under 2-year-old: 1h/day Premium health insurance (Bao Viet Tokio Marine) for yourself; and your family (for level Leader & Manager) 4/ Company activities Annual company trips, various exciting events at the most luxurious hotels twice a year Monthly allowance for team activities  Happy hours & daily fruits Working time: 8:00 – 17:00 (Monday – Friday), Days Off: Saturday – Sunday and holidays, Tet in accordance with Vietnam Labor Law",
+            "working_location": "- Hà Nội: HongKong Tower, 243A Đê La Thành, Phường Láng (quận Đống Đa cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:00)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/vuejs-developer/2118175.html",
+        "scraped_at": "2026-04-26T17:07:47.332440",
+        "metadata": {
+            "category": "Software",
+            "job_title": "VueJS Developer",
+            "company_name": "CÔNG TY CỔ PHẦN TINASOFT VIỆT NAM",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Tầng 4, Tòa nhà Ellipse Tower, số 110 Đường Trần Phú, Phường Mộ Lao, Quận Hà Đông, Hà Nội",
+            "salary": "Tới 22 triệu",
+            "location": "Hà Nội",
+            "experience": "3 năm",
+            "deadline": "10/05/2026",
+            "tags": [
+                "3 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Frontend Developer"
+            ]
+        },
+        "content": {
+            "job_description": "Tham gia phát triển các dự án Web sử dụng VueJSXây dựng giao diện người dùng (UI) theo thiết kế từ FigmaLàm việc với API (RESTful) từ BackendTối ưu hiệu năng, đảm bảo trải nghiệm người dùng mượt màPhối hợp với BA, UI/UX, Backend để hoàn thiện sản phẩmTham gia review code, đóng góp cải tiến chất lượng sản phẩm",
+            "job_requirement": "Có 3–4 năm kinh nghiệm làm FrontendThành thạo JavaScript (ES6+), HTML5, CSS3Có kinh nghiệm làm việc với VueJS (Vue 2 hoặc Vue 3)Hiểu rõ Component, Lifecycle, Vue Router, Vuex/PiniaCó kinh nghiệm làm việc với RESTful APIBiết sử dụng Git (Git flow, resolve conflict)Có tư duy logic tốt, chủ động trong công việcƯu tiên:Có kinh nghiệm với TypeScriptĐã từng làm việc với NuxtJSCó kiến thức về UI/UX, responsive design",
+            "job_benefit": "Mức lương cạnh tranh upto 22M + review định kỳ 2-4 lần/nămThưởng dự án, thưởng lễ TếtĐược tham gia các dự án thực tế, công nghệ mớiMôi trường trẻ, năng động, hỗ trợ phát triểnBHXH, nghỉ phép theo quy định",
+            "working_location": "- Hà Nội: 110 Trần Phú Hà Đông, Phường Hà Đông (quận Hà Đông cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:30 đến 18:00)\n                                                            Thứ 7 làm các tuần lẻ",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/nestjs-developer/2118185.html",
+        "scraped_at": "2026-04-26T17:08:09.672077",
+        "metadata": {
+            "category": "Software",
+            "job_title": "NestJS Developer",
+            "company_name": "CÔNG TY CỔ PHẦN TINASOFT VIỆT NAM",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Tầng 4, Tòa nhà Ellipse Tower, số 110 Đường Trần Phú, Phường Mộ Lao, Quận Hà Đông, Hà Nội",
+            "salary": "Tới 22 triệu",
+            "location": "Hà Nội",
+            "experience": "3 năm",
+            "deadline": "10/05/2026",
+            "tags": [
+                "3 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Backend Developer",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Phát triển hệ thống Backend sử dụng NestJS (NodeJS)Thiết kế và xây dựng RESTful API / MicroservicesLàm việc với cơ sở dữ liệu (MySQL, PostgreSQL, MongoDB)Tối ưu hiệu năng, bảo mật hệ thốngTích hợp với các hệ thống bên thứ 3 (Payment, Notification,…)Phối hợp với Frontend, BA, DevOps để triển khai sản phẩmTham gia review code, cải tiến chất lượng hệ thống",
+            "job_requirement": "Có 3–4 năm kinh nghiệm Backend (NodeJS)Thành thạo NestJS frameworkNắm vững JavaScript / TypeScriptHiểu rõ RESTful API, Authentication (JWT, OAuth2)Có kinh nghiệm làm việc với Database (SQL/NoSQL)Sử dụng tốt Git (Git flow, resolve conflict)Có tư duy hệ thống, khả năng xử lý logic tốtƯu tiên:Có kinh nghiệm với Microservices, DockerHiểu biết về Message Queue (Kafka, RabbitMQ)Có kinh nghiệm deploy (AWS, GCP, CI/CD)Có kiến thức về bảo mật (OWASP)",
+            "job_benefit": "Thu nhập lên tới 22M Review lương 2–4 lần/năm theo hiệu quả công việc (không giới hạn nếu thể hiện tốt)Tham gia các dự án thực tế, sản phẩm có quy mô, định hướng công nghệ rõ ràngMôi trường trẻ, thoải mái, đề cao sự chủ động và phát triển cá nhânĐược hỗ trợ học tập, nâng cao kỹ năng chuyên mônĐóng BHXH đầy đủ, nghỉ phép theo quy định + các chế độ phúc lợi khác",
+            "working_location": "- Hà Nội: 110 Trần Phú Hà Đông, Phường Hà Đông (quận Hà Đông cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:30 đến 18:00)\n                                                            Thứ 7 làm các tuần lẻ",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/mobile-game-developer/2117867.html",
+        "scraped_at": "2026-04-26T17:08:31.143241",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Mobile Game Developer",
+            "company_name": "CÔNG TY TNHH SUPERCENT VIỆT NAM",
+            "company_scale": "25-99 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Tầng 9, Tòa nhà cirCO, 222 Điện Biên Phủ, Phường Xuân Hòa, TP Hồ Chí Minh, Việt Nam",
+            "salary": "Thoả thuận",
+            "location": "Hồ Chí Minh",
+            "experience": "3 năm",
+            "deadline": "10/05/2026",
+            "tags": [
+                "3 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Tiếng Anh Đọc hiểu",
+                "Tiếng Hàn Đọc hiểu",
+                "Nghỉ thứ 7",
+                "Bảo hiểm xã hội",
+                "Bảo hiểm sức khỏe",
+                "Mobile Developer",
+                "Game",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Develop various types of games using Unity and C# for Playable AdsAnalyze new trends to design games that are loved by the majority of users, and implement them quicklyParticipate in ideation and content creation to produce engaging Playable AdsOptimize game performance to ensure a smooth and enjoyable user experienceMô tả công việcPhát triển đa dạng thể loại game bằng Unity và C# để sử dụng làm Playable Ads Phân tích xu hướng mới nhất để thiết kế game được yêu thích bởi đại đa số người dùng, và lập trình nó nhanh chóngTham gia vào quá trình lên ý tưởng và tìm kiếm nội dung nhằm tạo ra các Playable Ads hấp dẫn. Tối ưu hóa hiệu suất game và mang đến trải nghiệm mượt mà cho người chơi.",
+            "job_requirement": "At least 3 years of experience in mobile game development using Unity and C#Passionate about games and frequently plays gamesStrong understanding of data structures and algorithmsSkilled in optimization and debugging on mobile devicesAble to communicate and collaborate effectively with cross-functional teams (e.g., Design, Art, QA, etc.)Yêu cầuCó từ 3 năm kinh nghiệm phát triển game mobile sử dụng Unity và C#.Yêu thích và thường xuyên chơi game.Hiểu biết tốt về cấu trúc dữ liệu và thuật toán.Có khả năng tối ưu và debug trên mobile devices.Giao tiếp và teamwork hiệu quả với các team khác nhau  (như Design , Art , QA ...)",
+            "job_benefit": "100% salary during the probation period13th Salary, Annual Performance Bonus12 annual leave + 3 extra sick leave days per year (full salary) and 120-mins menstrual leave for women per month1 extra company anniversary day off (full salary)Only work from Mon-Fri, off Sat & SunFull SHUI as Vietnamese Law + Premium Private Medical Insurance and annual health checkBe well-equipped with new working equipment (Macbook, Monitor..)Monthly birthday’s Party, monthly Team dinner, weekly SeminarCompany trip, YEPGreat allowance (Free Snack, Coffee and drinks / Free Parking, etc)Holiday Bonus, Birthday BonusGlobal and professional working environment.Have an extra opportunity to work onsite in Korea and chance to become the leader of a dynamic and growing company.Lý do bạn nên làm ở Supercent100% lương trong thời gian thử việcLương tháng 13, thưởng hiệu suất12 ngày phép năm + 3 ngày nghỉ ốm (hưởng nguyên lương) mỗi năm, và 120 phút nghỉ kỳ kinh nguyệt mỗi tháng dành cho nhân viên nữ1 ngày nghỉ hưởng lương nhân dịp kỷ niệm thành lập công tyLàm việc thứ Hai – thứ Sáu, nghỉ thứ Bảy & Chủ Nhật Đóng full BHXH, BHYT, BHTN theo luật Việt Nam + Bảo hiểm sức khỏe tư nhân cao cấp và khám sức khỏe định kỳ hằng nămTrang bị thiết bị làm việc mới: MacBook, màn hình..Birthday party, team dinner hằng tháng, seminar hằng tuần..Company trip, Year-End Party Phúc lợi hấp dẫn: snack, trà, cafe, nước ngọt miễn phí, đậu xe miễn phí, v.v.Bonus lễ, Bonus sinh nhậtMôi trường làm việc quốc tế, chuyên nghiệp, trẻ trungCơ hội làm việc onsite tại Hàn Quốc và trở thành leader của một công ty đang phát triển mạnh mẽ",
+            "working_location": "- Hồ Chí Minh: Tầng 9, Toà nhà cirCO, 222 Điện Biên Phủ, Phường Xuân Hòa (Quận 3 cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 00:00 đến 00:00)\n                                                            Only work from Mon-Fri, off Sat & Sun",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/android-developer/2118011.html",
+        "scraped_at": "2026-04-26T17:08:53.701929",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Android Developer",
+            "company_name": "Công ty TNHH Dịch vụ công nghệ TP",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Tầng 2 Tòa Rivera Park, 69 Vũ Trọng Phụng, Thanh Xuân, Hà Nội",
+            "salary": "Thoả thuận",
+            "location": "Hà Nội",
+            "experience": "2 năm",
+            "deadline": "10/05/2026",
+            "tags": [
+                "2 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Mobile Developer"
+            ]
+        },
+        "content": {
+            "job_description": "Phát triển ứng dụng trên nền tảng Android\nTham gia trải nghiệm sản phẩm, hiểu người dùng để đưa ra những đề xuất trong sản phẩm\nLàm việc cùng đội dự án phát triển, sửa lỗi và bảo trì sản phẩm (Fix bug and Maintain)\nHệ thống hóa và tối ưu hóa sản phẩm\nTham gia Code Review và đào tạo cho các thành viên trong team\nTự Test chất lượng sản phẩm trước khi Release\nBáo cáo tiến độ và tình trạng công việc trực tiếp tới quản lý dự án",
+            "job_requirement": "Kiến thức bắt buộc:\nCó từ 2 năm kinh nghiệm làm Android\nCó kiến thức chuyên sâu về Lập trình Android: Lập trình UI; Activity, Fragment, Service, Broadcast; Database, sử dụng được Room Database\nThành thạo ngôn ngữ lập trình Kotlin\nCó kiến thức chuyên sâu về Dragger & Hilt\nCó kiến thức chuyên sâu về Networking, sử dụng thành thạo Retrofit\nNắm vững kiến thức multiple threads, Kotlin Coroutine, Flow\nNắm vững kiến thức của Android Jetpack: Data Binding, Lifecycles, LiveData, Room, ViewModel, WorkManager\nCó kinh nghiệm làm việc với các sản phẩm của Firebase: FCM, Firebase Remote Config là một lợi thế\nCó kinh nghiệm với design pattern MVVM\nKỹ năng\nGiải quyết vấn đề: Problem solving, Design thinking.\nGiao tiếp & làm việc nhóm, lắng nghe và truyền đạt thông tin.\nHọc hỏi và tự học tốt; tổ chức và quản lý thời gian.\nTố chất\nTư duy logic\nTư duy hệ thống\nTỉ mỉ, cẩn thận",
+            "job_benefit": "Thử việc 02 tháng hưởng 100% mức lương chính thức.\nCó cơ hội trở thành nhân viên chính thức và được tiếp cận các công cụ tốt nhất thị trường.\nThu nhập không giới hạn: Lương cứng + thưởng KPI, thưởng dự án, lương tháng 13, thưởng Tết,\nThu nhập lên tới 15 – 18 tháng lương/năm.\nThưởng và review lương 2 lần/năm.\nKhám sức khỏe định kỳ hàng năm.\nTrợ cấp tiền ăn trưa khi là nhân viên thử việc.\nDu lịch hàng năm, dã ngoại hàng quý 4 lần/năm, được hỗ trợ du lịch cùng người thân.\nHưởng đầy đủ các chế độ bảo hiểm theo quy định của nhà nước khi là nhân viên chính thức.\n3 Lý do bạn chọn TP Entertainment:\n1 là bạn có cơ hội phát triển bản thân thần tốc:\nMôi trường TP Entertainment luôn phát huy hết điểm mạnh và khả năng sáng tạo của bạn, nhờ đó bạn có cơ hội được tỏa sáng.\nĐược làm việc và hướng dẫn trực tiếp bởi Leader giàu kinh nghiệm.\n2 là bạn có cơ hội tăng thu nhập không giới hạn:\nNhững đóng góp của bạn luôn được công ty ghi nhận rõ ràng nhờ đó thu nhập của bạn được cải thiện nhanh chóng và không giới hạn.\n3 là môi trường làm việc lý tưởng:\nVăn hoá công ty đậm đà sâu sắc với 4 giá trị cốt lõi: Hiệu quả, sáng tạo, lấy khách hàng là trung tâm, nhân văn. \nLàm việc tại công ty công nghệ hàng đầu về Mobile app với môi trường trẻ trung, năng động, thân thiện, sáng tạo.\nDu lịch hàng năm, dã ngoại hàng quý cùng người thân (4 lần/năm)",
+            "working_location": "- Hà Nội: Tầng 2 tháp A, Toà nhà Rivera Park, 69 Vũ Trọng Phụng, Phường Thanh Xuân (quận Thanh Xuân cũ)",
+            "working_time": null,
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/full-stack/2118357.html",
+        "scraped_at": "2026-04-26T17:09:14.785273",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Full Stack",
+            "company_name": "CÔNG TY TRÁCH NHIỆM HỮU HẠN NANYANG BIOLOGICS VIỆT NAM",
+            "company_scale": "10-24 nhân viên",
+            "company_field": "Dược phẩm / Y tế / Công nghệ sinh học",
+            "company_address": "Hà Nội",
+            "salary": "20 - 30 triệu",
+            "location": "Hà Nội",
+            "experience": "3 năm",
+            "deadline": "10/05/2026",
+            "tags": [
+                "3 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Nghỉ thứ 7",
+                "Fullstack Developer",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "About UsNanyang Biologics (NYB) is a biotechnology company leveraging AI to revolutionize drug discovery and develop innovative therapeutics inspired by nature. Through advancing AI-driven solutions in the pharmaceutical industry, we address the complex and costly challenges of discovering effective treatments for difficult diseases.Our TeamWith a global track record of delivering projects with leading companies across the USA, India, Japan, Singapore, etc., our team of experts based in Vietnam and Singapore works collaboratively across functions and leverages global expertise to drive innovation and excellence.Who We Are Looking ForNYB is hiring a Senior Full Stack Engineer to help design and build a scalable, secure SaaS platform that runs AI/ML workloads, interactive pipelines, and no-code/low-code workflows for scientific users. You’ll work closely with ML researchers, product managers, and customers to turn scientific workloads into reliable production services.",
+            "job_requirement": "Roles and ResponsibilitiesAs a Full Stack Engineer, your primary responsibilities will include:Design, develop and maintain frontend and backend services for a multi-tenant SaaS platform.Build intuitive job/pipeline submission UIs (including no-code/low-code pipeline builders) and programmatic APIs.Integrate and operationalize AI/ML models and GPU-backed workloads (containerized model images, model versioning, result provenance).Implement asynchronous job orchestration, batch processing, queueing, retries and autoscaling.Ensure secure data handling, encryption, access control and tenant isolation.Develop and document REST/GraphQL APIs consumed by internal and external clients.Implement CI/CD, observability (logs/metrics/tracing), and automated testing for reliability.Troubleshoot production issues and optimize performance and cost of cloud resources.Collaborate with cross-functional teams to gather requirements, shape product features, and deliver customer-facing functionality.Qualifications3+ years full-stack experience building production web applications.Assist with AI/ML projects and integrate models into apps.Develop user interfaces using React and Next.js (TypeScript preferred).Support backend development with Python (FastAPI) or Node.js/NestJS.Work with Docker and Kubernetes for application deployment.Gain experience with cloud platforms (AWS/GCP/Azure).Experience with databases (SQL and NoSQL) and data modeling.Contribute to no-code/low-code interfaces and workflows.Participate in CI/CD processes and infrastructure-as-code practices.Basic English proficiencyNice-to-haveHands-on experience with MLOps tooling (MLflow, Argo, Kubeflow, Step Functions).Experience with GPU compute stacks, CUDA, Conda, or packaging complex scientific toolchains.Background working with scientific users (bioinformatics, computational chemistry, or similar).Prior experience in multi-tenant SaaS or enterprise security (SSO/SAML, data isolation).",
+            "job_benefit": "BenefitsWe provide a dynamic, fast-paced, and collaborative environment where problem-solving and agility are at the heart of what we do. Along with a competitive salary, we foster a culture that values ambition, confidence, and humility, consistently pushing the boundaries of innovation. If you're excited about working in a young, talented tech company and want to explore the world of AI and pharmaceuticals, we encourage you to apply.Competitive salaryWorkplace: This role is based in our Hanoi office, located in the vibrant Old Quarter.Build a professional network through collaborations with pharmaceutical companies, industry leaders, and academic experts.Work on impactful projects that address critical challenges in drug discovery and healthcare.",
+            "working_location": "- Hà Nội: 45-47 Trần Xuân Soạn, Phường Hoàn Kiếm (quận Hoàn Kiếm cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 09:00 đến 17:00)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/senior-backend-developer-golang-net-core/2022221.html",
+        "scraped_at": "2026-04-26T17:09:33.275133",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Senior Backend Developer (Golang / .Net Core)",
+            "company_name": "CÔNG TY TNHH TRUYỀN HÌNH FPT",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "Marketing / Truyền thông / Quảng cáo",
+            "company_address": "Hồ Chí Minh",
+            "salary": "Thoả thuận",
+            "location": "Hồ Chí Minh",
+            "experience": "3 năm",
+            "deadline": "10/05/2026",
+            "tags": [
+                "3 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Nghỉ thứ 7",
+                "Backend Developer",
+                "Phát thanh / Truyền hình"
+            ]
+        },
+        "content": {
+            "job_description": "Phát triển, vận hành và tối ưu hệ thống Backend sử dụng Golang và/hoặc .NET Core.Phân tích yêu cầu, thiết kế và áp dụng Design Patterns phù hợp nhằm đảm bảo khả năng mở rộng, bảo trì và hiệu suất hệ thống.Thiết kế và phát triển RESTful API, gRPC, tích hợp với Frontend và các dịch vụ bên thứ ba.Tham gia xây dựng và cải tiến kiến trúc Microservices, tập trung vào scalability, reliability và performance.Làm việc với các hệ quản trị cơ sở dữ liệu SQL (PostgreSQL, MySQL và SQL Server); NoSQL (MongoDB, Redis và ScyllaDB)Sử dụng và tối ưu các thư viện ORM như GORM, Entity Framework.Quản lý version deployment, migration và schema của database.Đóng gói, triển khai và vận hành ứng dụng trên môi trường Docker và Kubernetes.Tích hợp và vận hành các công cụ giám sát và quan sát hệ thống, đặc biệt là OpenTelemetry.Tuân thủ và cải tiến quy trình phát triển phần mềm, đảm bảo chất lượng và tiến độ sản phẩm.",
+            "job_requirement": "Tốt nghiệp Đại học chuyên ngành Công nghệ Thông tin hoặc lĩnh vực liên quan.Tối thiểu 03 năm kinh nghiệm phát triển Backend với Golang và/hoặc .NET Core.Có kinh nghiệm làm việc với RESTful API, Microservices và Docker.Có kinh nghiệm làm việc với Container Orchestration, ưu tiên Kubernetes.Có kinh nghiệm thiết kế API, tối ưu cơ sở dữ liệu và áp dụng caching.Hiểu biết tốt về Linux system, networking, concurrency và hiệu năng hệ thống.Ưu tiên ứng viên:Có kinh nghiệm System Design cho các hệ thống quy mô vừa và lớn.Có kinh nghiệm hoặc hiểu biết về Message Broker như Kafka, RabbitMQ, NATS.Có kinh nghiệm vận hành Observability stack trong môi trường production (OpenTelemetry, Jaeger, Prometheus, Grafana, ELK Stack,…).",
+            "job_benefit": "Thu nhập cạnh tranh, bao gồm lương tháng 13, thưởng và các chế độ phúc lợi khác.Làm việc trong môi trường năng động, chuyên nghiệp với nhiều cơ hội thăng tiến.Được trang bị đầy đủ công cụ, thiết bị làm việc.Tham gia các hoạt động văn hóa doanh nghiệp đa dạng: Teambuilding, Ngày hội văn hóa, Câu lạc bộ nội bộ...Hưởng đầy đủ chế độ phúc lợi theo Luật Lao động (BHXH, BHYT, BHTN, ngày phép năm), khám sức khỏe định kỳ, nghỉ mát hàng năm và gói bảo hiểm sức khỏe chuyên biệt FPT Care.Được tham gia các khóa đào tạo nâng cao nghiệp vụ thường xuyên.Hưởng các gói ưu đãi cước khi sử dụng dịch vụ của FPT Play.",
+            "working_location": "- Hồ Chí Minh: Tòa nhà FPT, lô L29B-31B-33B, Đường Tân Thuận, KCX Tân Thuận, Phường Tân Thuận (Quận 7 cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:30)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/middle-java-developer/2118965.html",
+        "scraped_at": "2026-04-26T17:09:56.654466",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Middle Java Developer",
+            "company_name": "Chi Nhánh Công Ty Cổ Phần Phần Mềm Quốc Tế 3S Huế Tại Đà Nẵng",
+            "company_scale": "25-99 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Tầng 2 - 267 Hoàng Diệu - Bình Hiên - Hải Châu - Đà Nẵng",
+            "salary": "Tới 20 triệu",
+            "location": "Đà Nẵng",
+            "experience": "3 năm",
+            "deadline": "10/05/2026",
+            "tags": [
+                "3 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Nghỉ thứ 7",
+                "Backend Developer",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Tham gia phát triển và bảo trì các dự án trên nền tảng JavaĐảm bảo chất lượng code và tiến độ của dự ánLàm việc với team để phân tích yêu cầu và thiết kế giải pháp kỹ thuậtTham gia vào các hoạt động học tập và chia sẻ để nâng cao kiến thức",
+            "job_requirement": "Có kinh nghiệm từ 03 năm làm việc với JavaThành thạo Jakarta EE/J2EE (EJB, JPA, JSF, JAX-RS/WS).Thành thạo SQL Server/Oracle/PostgresqlSử dụng thành thạo gitCó kinh nghiệm cải thiện performanceCó kiến thức và kinh nghiệm về  DDD (Domain-driven design) là 1 lợi thếCó kiến thức và kinh nghiệm về TypeScript, Jquery, HTML5, CSS, Javascript là lợi thế",
+            "job_benefit": "Mức offer: upto 20MLương thưởng tháng 13, thưởng Lễ, TếtThưởng dự án, thưởng cá nhân theo năng lực sau mỗi dự ánReview career path định kỳ 1 lần/năm. Có định hướng career path rõ ràng.Khám sức khỏe định kỳ hàng năm và được đóng BHXH, BHYT, BHTN đầy đủ theo luật địnhHàng năm có chế độ nghỉ mát cùng công tyCác events: Company Trip, Happy Hour, Halloween, Christmas, Family Day…Làm việc môi trường năng động. Tiếp cận với nhiều công nghệ mới, luôn được hỗ trợ nhiệt tình.",
+            "working_location": "- Đà Nẵng: 267 Hoàng Diệu, Phường Hải Châu (quận Hải Châu cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:30)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/fullstack-java-developer/2118424.html",
+        "scraped_at": "2026-04-26T17:10:59.961153",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Fullstack Java Developer",
+            "company_name": "FPT Software",
+            "company_scale": "10000+ nhân viên",
+            "company_field": "Tài chính",
+            "company_address": "Tòa nhà FPT Building, số 17 Duy Tân, Cầu Giấy, Hà Nội",
+            "salary": "Thoả thuận",
+            "location": "Gia Lai",
+            "experience": "3 năm",
+            "deadline": "10/05/2026",
+            "tags": [
+                "3 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Nghỉ thứ 7",
+                "Bảo hiểm sức khỏe",
+                "Khám sức khỏe định kỳ",
+                "Fullstack Developer",
+                "IT - Phần mềm",
+                "Viễn thông"
+            ]
+        },
+        "content": {
+            "job_description": "Design and implement software solutions using Java and related technologies.Develop programs or scripts according to specifications and coding standards.Analyze, review, and test code to ensure accuracy, performance, and quality.Perform integrated testing to guarantee system reliability and security.Build and validate software components for completeness and functionality.Ensure code is robust, efficient, and maintainable.Manage Java application development and contribute throughout the full software development lifecycle.Collaborate with developers, QA, testers, project managers, and stakeholders.Provide technical support and troubleshoot existing applications.Participate in all phases: requirement analysis → coding → testing",
+            "job_requirement": "Must-have:Bachelor’s degree in Information Technology or related fields (Electronics/Telecommunications, etc.).At least 3 years of experience in Fullstack Java development.Proficiency in Java Spring Boot, Angular, RESTful APIs, MySQL, MongoDB.Strong knowledge of HTML, CSS, JavaScript, jQuery.Understanding of web servers, application servers, microservices, and cloud platforms.Knowledge of software design patterns, best practices, and testing frameworks.Ability to work independently and as part of a team.Excellent communication, collaboration, and problem-solving skills.",
+            "job_benefit": "Salary range: NegotiateRelocation Bonus up to 100MFPT Care insurance plan tailored for FPT employeesAttractive annual summer vacation allowanceSponsored training courses for personal growth and up to 100% coverage for certification costsGlobal and inclusive workplace with monthly cross-cultural eventsInternational exposure and career growth across global locationsWork-life balance benefits with a flexible leave policy and annual health check-ups to support employee well-being",
+            "working_location": "- Gia Lai: Tòa nhà FPT Software, số 12 Đại Lộ Khoa học tỉnh Gia Lai, Việt Nam, Phường Quy Nhơn Nam (Thành phố Quy Nhơn cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:00)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/php-laravel-developer/1288622.html",
+        "scraped_at": "2026-04-26T17:11:18.249515",
+        "metadata": {
+            "category": "Software",
+            "job_title": "PHP Laravel Developer",
+            "company_name": "Công ty cổ phần BEE TECH ASIA",
+            "company_scale": "10-24 nhân viên",
+            "company_field": "IT - Phần cứng",
+            "company_address": "Tòa B, TTTM Hà Thành, 102 Thái Thịnh, Trung Liệt, Đống Đa, Hà Nội",
+            "salary": "8 - 18 triệu",
+            "location": "Hà Nội",
+            "experience": "1 năm",
+            "deadline": "04/05/2026",
+            "tags": [
+                "1 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Từ 26 tuổi trở xuống",
+                "Nam",
+                "Nghỉ thứ 7",
+                "Backend Developer",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Phát triển, thử nghiệm và duy trì các ứng dụng web dựa trên PHP Duy trì, mở rộng và triển khai các tính năng mới theo yêu cầu của dự ánLập mô hình cả lĩnh vực kinh doanh cũ và mớiPhối hợp với nhóm đa chức năng và Người quản lý dự án hoặc Khách hàng để mang lại kết quả chất lượng cao.Thực hiện theo các nhiệm vụ khác do quản lý giaoKhắc phục sự cố, gỡ lỗi và giải quyết kịp thời các lỗi và sự cố phần mềmCung cấp sự cố vấn và hướng dẫn cho nhiều thành viên cấp dưới hơn",
+            "job_requirement": "• Có từ 1 năm kinh nghiệm dự án thực tế dự án PHP trở lên • Có kinh nghiệm với framework Laravel • Có kinh nghiệm với Next、React• Có kinh nghiệm với VueJS • Nắm vững OOP • Có kiến thức về HTML/CSS/JS • Có kiến thức về SQL(Mysql, Oracle, Postgresql,...), GIT/SVN • Nắm vững kiến thức về MVC, WebService, RESTful API • Nhanh nhẹn, tư duy logic tốt, có tinh thần cầu tiến trong công việc",
+            "job_benefit": "• Thời gian làm việc: 8h00 – 17h30 hoặc 8:30 - 18:00 (Trưa nghỉ 1,5 giờ) thứ 2 đến thứ 6 hàng tuần • Mức lương: Thỏa thuận phù hợp theo năng lực • Môi trường Open & Flat luôn mong muốn tạo mọi điều kiện, sân chơi riêng cho nhân viên để có thể phát huy năng lực • Thưởng tháng lương 13, thưởng theo dự án, thưởng nóng, thưởng nhân viên xuất sắc, Thưởng thâm niên,...• Xét điều chỉnh lương 2 lần/năm • Nghỉ lễ theo lịch của nhà nước (30/4-1/5, giỗ tổ, lễ tết,...) • Bảo hiểm xã hội, bảo hiểm y tế, bảo hiểm thất nghiệp theo quy định",
+            "working_location": "- Hà Nội: 102 Thái Thịnh, Phường Đống Đa (quận Đống Đa cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:30)\n                                                            Thứ 2 - Thứ 6 (từ 08:30 đến 18:00)\n                                                            Có thể chọn 1 trong 2 khung giờ làm việc",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/tp-hcm-php-developer-senior-luong-thuong-canh-tranh/2117416.html",
+        "scraped_at": "2026-04-26T17:12:07.184022",
+        "metadata": {
+            "category": "Software",
+            "job_title": "TP. HCM - PHP Developer (Senior) - Lương Thưởng Cạnh Tranh",
+            "company_name": "CÔNG TY TNHH CÔNG NGHỆ CLOUDGO",
+            "company_scale": "25-99 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "1.02 Lầu 1, toà nhà Việt Nam Business Centre, 57-59 Hồ Tùng Mậu, phường Bến Nghé , quận 1, Thành phố Hồ Chí Minh",
+            "salary": "Thoả thuận",
+            "location": "Hồ Chí Minh",
+            "experience": "2 năm",
+            "deadline": "09/05/2026",
+            "tags": [
+                "2 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Bảo hiểm xã hội",
+                "Team building",
+                "Du lịch hàng năm",
+                "Backend Developer",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Phát triển, customize các module trên nền tảng CRM CloudGO theo yêu cầu dự án triển khai cho khách hàng.Phân tích yêu cầu, thiết kế giải pháp kỹ thuật và triển khai tính năng theo đặc tả.Xây dựng và bảo trì REST API, tích hợp với các hệ thống bên ngoài (ERP, WMS, Website Ecommerce, Call Center, SMS...).Review code, đảm bảo clean code và tối ưu performance theo coding standard của team.Kiểm tra, xử lý issue kỹ thuật và hỗ trợ kỹ thuật cho các team liên quan (QA, Support, triển khai).Báo cáo tiến độ công việc cho PM.",
+            "job_requirement": "Từ 02 đến 05 năm kinh nghiệm lập trình PHP.Có kinh nghiệm phát triển hệ thống nghiệp vụ phức tạp (CRM, ERP, quản lý kho, đơn hàng, workflow...).Có kinh nghiệm tối ưu hệ thống, tư duy xây dựng kiến trúc hệ thống chịu tải tốt.Có kinh nghiệm xây dựng hoặc tích hợp REST API / Webhook.Tư duy logic, khả năng phân tích và giải quyết vấn đề tốt.Ưu tiên:Kinh nghiệm ứng dụng Claude Code để hỗ trợ lập trình và tối ưu code.Thuần thục các ngôn ngữ & framework khác như Node.js, Flutter.Có kỹ năng System Admin / Devops (LAMP, Docker, K8s).",
+            "job_benefit": "Lương thoả thuận cạnh tranh và tương xứng với năng lực. Chính sách review và điều chỉnh thu nhập định kỳ hàng năm, ghi nhận xứng đáng theo đóng góp.Chế độ phúc lợi, đãi ngộ: miễn phí gửi xe, bếp “nhà” ngay tại công ty, thưởng Lễ, Tết, quà tặng sinh nhật, thưởng nhân viên xuất sắc, các chương trình đào tạo chuyên môn, kỹ năng hàng tuần, chương trình “Happy Hour”, các hoạt động teambuilding, company trip, các hoạt động văn hoá, sự kiện hấp dẫn của công ty (đá bóng, cầu lông, chạy bộ, chiến dịch Marketing có giải thưởng,…)Được làm việc với các doanh nghiệp, tập đoàn trong và ngoài nước ở nhiều lĩnh vực khác nhauĐược học hỏi, đào tạo và tham gia vào các dự án lớnMôi trường làm việc trẻ trung, thân thiện, năng động khuyến khích nhân viên đề xuất và áp dụng các ý tưởng sáng tạo vào công việc.Các chế độ khác theo quy định nhà nước (BHXH, 12 ngày phép – nghỉ lễ, Tết)",
+            "working_location": "- Hồ Chí Minh: 13 đường 37 Khu đô thị Vạn Phúc, Phường Hiệp Bình (Thành phố Thủ Đức cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:30 đến 17:30)\n                                                            Thứ 7 (từ 09:00 đến 12:00)\n                                                            Sáng Thứ 7 cách tuần",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/backend-developer-intern-java-php-python-node-js/2117104.html",
+        "scraped_at": "2026-04-26T17:13:28.590388",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Backend Developer Intern (Java/PHP/Python/Node.Js)",
+            "company_name": "Công ty Cổ phần Chứng khoán Phú Hưng",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "Chứng khoán",
+            "company_address": "Phú Mỹ Hưng Tower, số 08 Hoàng Văn Thái, Phường Tân Phú, Quận 7, TP. HCM",
+            "salary": "2 - 2.4 triệu",
+            "location": "Hồ Chí Minh",
+            "experience": "Không yêu cầu",
+            "deadline": "09/05/2026",
+            "tags": [
+                "Không yêu cầu kinh nghiệm",
+                "Đại Học trở lên",
+                "Tiếng Anh Đọc hiểu",
+                "Nghỉ thứ 7",
+                "Backend Developer",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Responsibilities:Assist in designing, coding, testing, and debugging APIs and Socket services, including eKYC GW, PHS Middleware services, and Market Data gateway.Work closely with senior engineers and cross-functional teams to understand project requirements and contribute to high-quality solutions.Participate in code reviews to learn and ensure adherence to best practices and coding standards.Assist in writing unit tests and automation script tests, and contribute to deploying automation testing in internal projects to ensure the functionality and performance of software projects.",
+            "job_requirement": "Qualifications:Bachelor’s degree (or final-year student) in Information Technology or a related field.Basic knowledge of Java/PHP/Python/Node.js, RESTful API, NestJS, ReactJS.Experience with version control systems (e.g., Git, Gitflow, GitLab).Understanding of database management systems (SQL, NoSQL, MongoDB, Redis, MySQL).Familiarity with Linux, Docker, ExpressJS framework, WebSockets, and Microservices technology.Intermediate English language skills (written and verbal).Preferably available for full-time internship.",
+            "job_benefit": "Full-time internship allowance: 2.000000 VND/month and parking fee support: 400.000 VND/month.Participate in company training programs (professional skills, communication skills).Support for internship certification stamping (if required).Opportunity to join team-building activities, internal events, and other company recreational activities.Dynamic and professional working environment, with opportunities to work and learn about investment knowledge directly from industry experts in the securities sector.",
+            "working_location": "- Hồ Chí Minh: Tầng 21, Phú Mỹ Hưng Tower, 08 Hoàng Văn Thái, Phường Tân Mỹ (Quận 7 cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:00)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/fullstack-developer/1776281.html",
+        "scraped_at": "2026-04-26T17:14:28.152549",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Fullstack Developer",
+            "company_name": "CÔNG TY CỔ PHẦN CÔNG NGHỆ AN NINH MẠNG QUỐC GIA VIỆT NAM",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Yên Mỹ, Hưng Yên",
+            "salary": "Thoả thuận",
+            "location": "Hà Nội",
+            "experience": "2 năm",
+            "deadline": "09/05/2026",
+            "tags": [
+                "2 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Tuổi 25 - 35",
+                "Nam",
+                "Tiếng Anh Đọc hiểu",
+                "Nghỉ thứ 7",
+                "Bảo hiểm xã hội",
+                "Bảo hiểm sức khỏe",
+                "Software Engineer",
+                "An ninh mạng",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "- Xây dựng hệ thống chiến lược nhằm tăng hiệu quả dự án- Xây dựng hệ thống hỗ trợ nghiệp vụ có khả năng vận hành với quy mô lớn- Tham gia vào phát triển các dự án từ giai đoạn Basic Design, Detail Design, Development, Release",
+            "job_requirement": "- Tốt nghiệp đại học chuyên ngành Khoa học máy tính, Kỹ thuật phần mềm, Hệ thống thông tin hoặc các chuyên ngành liên quan.- Sử dụng thành thạo ngôn ngữ lập trình java , Python, DBMS và nosql.- Có ít nhất 2 năm kinh nghiệm phát triển ứng dụng với vai trò là lập trình viên công nghệ backend.- Có ít nhất 1-2 năm kinh nghiệm tham gia vị trí Team Lead Project- Có kinh nghiệm trong việc thiết kế API, thiết kế CSDL, và kiến trúc về phần mềm.- Hiểu biết về các ngôn ngữ lập trình backend và FE khác là một lợi thế- Có kinh nghiệm làm việc với kiến trúc hệ thống về Micro services và công cụ Devops như K8S, CI/CD- Có hiểu biết về SOLID, Clean code, Design patten",
+            "job_benefit": "Mức lương: Thỏa thuận, tùy theo năng lực. Thưởng quý, Thưởng Năm Được xét tăng lương 02 lần/ 01 năm.Được đào tạo về các nội dung chuyên môn.Chế độ nghỉ mát hàng năm, khám sức khỏe hàng nămCác hoạt động gắn kết khác: Thank-you party; Team building, Sinh nhật Công ty; Du lịch...Được đóng bảo hiểm y tế, bảo hiểm xã hội và các chế độ phúc lợi khác.Được hưởng chế độ chăm sóc sức khỏe cao cấp PTI.Được vận hành, sử dụng các trang thiết bị hiện đại.Môi trường làm việc thân thiện, trẻ trung, chia sẻ, kết nối.Và nhiều chế độ đãi ngộ đặc biệt khác.",
+            "working_location": "- Hà Nội: Nguyễn Tuân, Phường Thanh Xuân (quận Thanh Xuân cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:30)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/software-developer/2116067.html",
+        "scraped_at": "2026-04-26T17:14:50.730666",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Software Developer",
+            "company_name": "CÔNG TY CỔ PHẦN DỊCH VỤ CÔNG NGHỆ TIN HỌC HPT",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Lô E2a-3 Đường D1, Khu Công Nghệ Cao, Phường Long Thạnh Mỹ, Thành phố Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam",
+            "salary": "15 - 27 triệu",
+            "location": "Hà Nội",
+            "experience": "1 năm",
+            "deadline": "09/05/2026",
+            "tags": [
+                "1 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Nghỉ thứ 7",
+                "Software Engineer",
+                "IT - Phần mềm",
+                "IT - Phần cứng và máy tính"
+            ]
+        },
+        "content": {
+            "job_description": "·       Thu thập, phân tích và làm rõ yêu cầu nghiệp vụ của khách hàng trong lĩnh vực ngân hàng·       Lập trình, tùy chỉnh, triển khai các hệ thống BackEnd sử dụng Javascript/HTML/CSS và các tool sẵn có của Hệ thống nền tang (chiếm khoảng 50-70% thời lượng DEV)·       Lập trình phần Addon sử dụng Framework Next.JS theo yêu cầu của nghiệp vụ ·       Tích hợp với các hệ thống backend khác thông qua API đã được tài liệu hóa. ·       Đọc hiểu tài liệu URD/BRD/SRS…,  ·       Tham gia quản lý và điều phối công việc của các bạn DEV CTV trong các dự án·       Phối hợp với PM, PO, DEV team để đảm bảo tiến độ và chất lượng dự án.",
+            "job_requirement": "·       1-3 năm kinh nghiệm trong mảng lập trình·       Có kiến thức tốt về: React (Next JS / Node JS / React JS); JavaScript; HTML/CSS.·       Có kiến thức về các công nghệ, ứng dụng, nền tảng sau là một lợi thế (không bắt buộc):Java.Database Oracle, MSSQL, PostgreSQLReact Native / Flutter.·       Có tư duy hệ thống, có năng lực nắm bắt yêu cầu thổng thể của TechLead·       Có kinh nghiệm traning đào tạo cho các Member.·       Thành thạo xây dựng tài liệu kỹ thuật.·       Sử dụng tốt các công cụ: Git, Git, GitHub, Docker, Jira, Postman...·       Kỹ năng giao tiếp, phân tích, quản lý công việc và làm việc nhóm tốt.",
+            "job_benefit": "·       Làm việc 5 ngày/tuần·       Được tham gia các dự án quan trọng trong mảng tài chính ngân hàng·       Được làm việc và được đào tạo bởi chuyên gia giàu kinh nghiệm·       Phát triển năng lực qua từng dự án·       Được làm việc trong môi trường chuyên nghiệp·       Thay đổi mức thu nhập theo năng lực tương xứng",
+            "working_location": "- Hà Nội: Tầng 10, Tòa nhà Việt, Số 1 Thái Hà, Phường Đống Đa (quận Đống Đa cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:30 đến 17:30)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/lap-trinh-vien-net-thu-nhap-hap-dan-tu-10-trieu-tro-len-tren-1-nam-kinh-nghiem-lap-trinh-net-ha-noi/2115958.html",
+        "scraped_at": "2026-04-26T17:15:32.102023",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Lập Trình Viên .NET - Thu Nhập Hấp Dẫn, Từ 10 Triệu Trở Lên - Trên 1 Năm Kinh Nghiệm Lâp Trình NET - Hà Nội",
+            "company_name": "Công ty cổ phần Onenet",
+            "company_scale": "25-99 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Tầng 2, Tòa Mỹ Đình Plaza 2, Số 2 Nguyễn Hoàng, Phường Nam Từ Liêm 2, Hà Nội, Việt Nam",
+            "salary": "Từ 10 triệu",
+            "location": "Hà Nội",
+            "experience": "1 năm",
+            "deadline": "09/05/2026",
+            "tags": [
+                "1 năm kinh nghiệm",
+                "Cao Đẳng trở lên",
+                "Tiếng Anh Giao tiếp cơ bản",
+                "Nghỉ thứ 7",
+                "Bảo hiểm xã hội",
+                "Bảo hiểm sức khỏe",
+                "Backend Developer",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Lập trình phát triển các dự án, sản phẩm lớn dựa trên nền tảng công nghệ, gồm: C#.NET, HTML5/JS, WCF/REST-full, MSSQL Server/Oracle.Báo cáo công việc định kỳ cho trưởng nhóm.Trao đổi cụ thể trong quá trình phỏng vấn.",
+            "job_requirement": "Nam/Nữ. Tốt nghiệp cao đẳng trở lên.Kinh nghiệm lập trình .Net trên 1 năm.Kinh nghiệm/ Am hiểu về Javascript, CSS, HTML.Ưu tiên kinh nghiệm lập trình trên nền tảng MSSQL Server/OracleNắm được các nguyên tắc lập trình hướng đối tượng.Có khả năng đọc và hiểu tài liệu tiếng Anh cơ bảnCó khả năng làm việc tập trung để đáp ứng kịp tiến độ và làm việc dưới áp lực cao.Cẩn thận, trung thực, hoà đồng.",
+            "job_benefit": "Lương cứng 10.000.000 đồng/tháng trở lên (Thỏa thuận theo năng lực ứng viên)Thời gian làm việc: 8h00 – 12h00 và 13h30 – 17h30 (Thứ 2 – Thứ 6)Hưởng ít nhất 13 tháng lương/năm, và các khoản thưởng Tết, thưởng năng suất, thưởng hoàn thành theo dự án và thưởng cá nhân tiêu biểu.Đảm bảo đầy đủ chế độ BHXH, BHYT, nghỉ phép theo quy định của nhà nước.Hưởng chế độ phúc lợi hàng năm của Công ty cho bản thân và gia đình: du lịch, hiếu hỷ....Thường xuyên được tham gia các lớp đào tạo nâng cao kỹ năng chuyên môn và nghề nghiệp.Công ty tạo mọi điều kiện để nhân viên có cơ hội thăng tiến phát huy tốt nhất khả năng của mình, giúp nhân viên tìm được vị trí công việc phù hợp với năng lực.Môi trường làm việc trẻ trung, hòa đồng và gắn kết.",
+            "working_location": "- Hà Nội: Tầng 2, Tòa Mỹ Đình Plaza 2, Phường Từ Liêm (quận Nam Từ Liêm cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 12:00)\n                                                            Thứ 2 - Thứ 6 (từ 13:30 đến 17:30)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/data-analyst-intern-research-web3/2117389.html",
+        "scraped_at": "2026-04-26T17:39:43.476683",
+        "metadata": {
+            "category": "Data",
+            "job_title": "Data Analyst Intern (Research Web3)",
+            "company_name": "Công Ty TNHH Cyclops Technology",
+            "company_scale": "10-24 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Toà VNT, ngõ 19 Nguyễn Trãi, Hà Nội",
+            "salary": "3 - 5 triệu",
+            "location": "Hà Nội",
+            "experience": "Không yêu cầu",
+            "deadline": "09/05/2026",
+            "tags": [
+                "Không yêu cầu kinh nghiệm",
+                "Đại Học trở lên",
+                "Nghỉ thứ 7",
+                "Signing bonus",
+                "Thưởng hiệu quả làm việc",
+                "Data Analyst",
+                "Tài chính"
+            ]
+        },
+        "content": {
+            "job_description": "Thu thập, xử lý, phân tích dữ liệu on-chain/off-chain về các dự án DeFi và blockchain;\nThiết kế và lựa chọn các chỉ số phù hợp với mục tiêu nghiên cứu, sử dụng data để hỗ trợ diễn giải, lập luận trong các bài nghiên cứu chuyên sâu về mô hình tài chính, kĩ thuật của các dự án DeFi và blockchain (nghiên cứu về cơ chế và đánh giá cơ hội, rủi ro)",
+            "job_requirement": "Sinh viên năm 3, năm 4 hoặc mới tốt nghiệp các ngành Công nghệ tài chính, Kinh tế, Tài chính, Khoa học máy tính, Công nghệ thông tin hoặc các ngành liên quan.Có kiến thức cơ bản về kinh tế và tài chính. Có kinh nghiệm làm việc trong các lĩnh vực liên quan đến blockchain / DeFi là một lợi thế lớn.Có khả năng sử dụng SQL (hoặc công cụ truy vấn dữ liệu tương đương) để tự viết truy vấn, kiểm tra và khai thác dữ liệu.Có tư duy phân tích dữ liệu, biết sử dụng dữ liệu để kiểm chứng giả thuyết, hỗ trợ lập luận và rút ra insight.Chủ động, linh hoạt và có tinh thần học hỏi cao",
+            "job_benefit": "Mức lương: 3,000,000 – 5,000,000 đồng;Thời gian làm việc linh hoạt;Làm việc trong môi trường cởi mở, thân thiện, khuyến khích phát triển bản thân và được học hỏi kiến thức, kinh nghiệm trực tiếp từ mentor, senior chuyên nghiệp;Học hỏi và phát triển kĩ năng trong lĩnh vực phân tích dữ liệu;Được hướng dẫn xây dựng các kỹ năng thực hiện research: thu thập dữ liệu, xử lý thông tin, cách viết nội dung, trình bày kết quả nghiên cứu và insight,... Ngoài ra, nhân sự còn được hướng dẫn và đào tạo về cách thức quản lý kênh social và xây dựng cộng đồng;Môi trường làm việc cập nhật nhanh với xu hướng toàn cầu;Trợ cấp ăn trưa, gửi xe tại công ty;Chế độ lương, thưởng hấp dẫn, lộ trình thăng tiến rõ ràng.",
+            "working_location": "- Hà Nội: 52 Sunrise C, The Manor Central Park, Nguyễn Xiển, Phường Định Công (quận Hoàng Mai cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 09:00 đến 18:00)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/kien-truc-su-truong-ve-du-lieu-va-ai/2112791.html",
+        "scraped_at": "2026-04-26T17:40:06.246997",
+        "metadata": {
+            "category": "Data",
+            "job_title": "Kiến Trúc Sư Trưởng Về Dữ Liệu Và AI",
+            "company_name": "CÔNG TY VTC CÔNG NGHỆ VÀ NỘI DUNG SỐ",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Số 65, phố Lạc Trung, Phường Vĩnh Tuy, Thành phố Hà Nội, Việt Nam",
+            "salary": "Thoả thuận",
+            "location": "Hà Nội",
+            "experience": "Trên 5 năm",
+            "deadline": "09/05/2026",
+            "tags": [
+                "Trên 5 năm kinh nghiệm",
+                "Cao học trở lên",
+                "Nghỉ thứ 7",
+                "Data Analyst",
+                "Công nghệ kỹ thuật",
+                "IT - Phần mềm",
+                "Game"
+            ]
+        },
+        "content": {
+            "job_description": "1.    Tham mưu và Thiết lập giải pháp công nghệ:○     Chủ trì nghiên cứu, thiết kế mô hình kiến trúc tổng thể hạ tầng văn hóa số, nội dung số; khung kiến trúc dữ liệu, khung quản trị, quản lý dữ liệu; từ điển dữ liệu chuyên ngành.○     Chủ trì nghiên cứu thiết kế các CSDL chuyên ngành, phương án tích hợp, điều phối, chia sẻ dữ liệu; thiết kế kiến trúc và phát triển nền tảng tích hợp, điều phối và chia sẻ dữ liệu (Data Orchestration Platform).○     Chủ trì nghiên cứu, thiết kế và áp dụng các mô hình và công nghệ AI để giải quyết bài toán tích hợp, điều phối, chia sẻ, phân tích, khai thác, phát huy dữ liệu số, nội dung số.2.    Quản trị thực thi và Thương mại hóa:○     Trực tiếp điều phối việc chuyển đổi các kết quả nghiên cứu thành các sản phẩm, dịch vụ dữ liệu cụ thể, có khả năng vận hành ổn định và thương mại hóa hiệu quả trên thị trường.○     Đảm bảo các giải pháp kỹ thuật đạt được sự cân bằng giữa tính tiên phong (hàn lâm) và tính thực tiễn (hiệu quả kinh tế).○     Dẫn dắt và định hướng kỹ thuật cho các nhóm Data Engineer, AI Engineer và các nhóm phát triển hệ thống.3.    Xây dựng hành lang pháp lý và tiêu chuẩn:○     Tham mưu nội dung kỹ thuật cho việc xây dựng hành lang pháp lý, các tiêu chuẩn dữ liệu cho ngành, cho doanh nghiệp.",
+            "job_requirement": "1.    Trình độ đào tạo và Học thuật:○     Tốt nghiệp trình độ Thạc sĩ trở lên (ưu tiên Tiến sĩ) các chuyên ngành: Khoa học máy tính, Trí tuệ nhân tạo, Khoa học dữ liệu hoặc các ngành kỹ thuật liên quan.○     Ưu tiên: Tốt nghiệp tại các cơ sở đào tạo uy tín hàng đầu ở trong và ngoài nước. Có các công trình nghiên cứu khoa học, bài báo chuyên sâu được công bố trên các tạp chí khoa học uy tín (ưu tiên danh mục ISI/Scopus).2.    Kinh nghiệm thực tiễn:○     Có tối thiểu 05 năm kinh nghiệm làm việc trong lĩnh vực AI và Dữ liệu.○     Có bề dày kinh nghiệm thực tế trong việc đưa giải pháp và triển khai thành công sản phẩm hoặc hệ thống dữ liệu quy mô lớn (Large-scale systems) hoặc tham mưu thành công xây dựng chính sách về dữ liệu quy mô lớn và trí tuệ nhân tạo.○     Hiểu rõ quy trình từ nghiên cứu (R&D) đến sản xuất và thương mại; có năng lực tối ưu hóa công nghệ để đáp ứng nhu cầu thực tế của thị trường và xã hội.3.    Kỹ năng và Tư duy:○     Tư duy chiến lược, có khả năng nhìn nhận công nghệ dưới góc độ đóng góp cho sự phát triển.○     Khả năng làm việc độc lập và điều phối nhóm chuyên gia theo tinh thần \"6 rõ\" (Rõ người, rõ việc, rõ quy trình, rõ trách nhiệm, rõ thời gian, rõ hiệu quả).",
+            "job_benefit": "●     Vị trí công tác: Được bổ nhiệm chức danh tương đương Phó Trưởng ban hoặc Phó Giám đốc đơn vị thuộc Tổng công ty VTC.●     Môi trường làm việc: Làm việc tại doanh nghiệp nhà nước nòng cốt, trực tiếp tham gia vào các dự án trọng điểm quốc gia, có cơ hội tham vấn chính sách cấp Bộ và Chính phủ.●     Nguồn lực triển khai: Được quyền điều phối nhân sự chất lượng cao và hạ tầng kỹ thuật hiện đại; sử dụng kinh phí từ Quỹ Khoa học công nghệ để thực hiện các nhiệm vụ được giao.",
+            "working_location": "- Hà Nội: 67B Hàm Long, Phường Cửa Nam (quận Hoàn Kiếm cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:30)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/data-analyst/2116429.html",
+        "scraped_at": "2026-04-26T17:40:29.422519",
+        "metadata": {
+            "category": "Data",
+            "job_title": "Data Analyst",
+            "company_name": "Công ty CP & DV Giao hàng nhanh",
+            "company_scale": "10000+ nhân viên",
+            "company_field": "Khác",
+            "company_address": "Căn Hộ Rivera Park Sài Gòn, Quận 10, Hồ Chí Minh, Việt Nam",
+            "salary": "18 - 22 triệu",
+            "location": "Bắc Ninh",
+            "experience": "2 năm",
+            "deadline": "09/05/2026",
+            "tags": [
+                "2 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Tuổi 18 - 30",
+                "Nghỉ thứ 7",
+                "Data Analyst"
+            ]
+        },
+        "content": {
+            "job_description": "- Thu thập, xử lý và phân tích dữ liệu vận hành từ nhiều hệ thống khác nhau- Xây dựng, phát triển và duy trì dashboard, báo cáo và data model phục vụ theo dõi hiệu suất hoạt động- Phân tích các chỉ số vận hành quan trọng như năng suất xử lý, thời gian vận chuyển, tỷ lệ hoàn thành đơn hàng, chi phí vận hành…- Thực hiện phân tích dữ liệu chuyên sâu để xác định nguyên nhân vấn đề, kiểm chứng giả thuyết và tối ưu hiệu suất vận hành và cơ hội tối ưu- Phối hợp với các phòng ban liên quan để cung cấp insight và hỗ trợ ra quyết định dựa trên dữ liệu- Tự động hóa quy trình xử lý dữ liệu và báo cáo để nâng cao hiệu quả làm việc- Kiểm soát chất lượng dữ liệu, đảm bảo tính chính xác và nhất quán giữa các hệ thống",
+            "job_requirement": "- Có kiến thức về data mining: thu thập và xử lý dữ liệu từ nhiều hệ thống dữ liệu khác nhau- Thành thạo SQL & Python- Có kinh nghiệm sử dụng Google Sheets, Excel, Metabase hoặc các công cụ BI tương đương- Có kỹ năng xây dựng dashboard, trực quan hóa dữ liệu và tổng hợp báo cáo- Tư duy logic, khả năng phân tích và giải quyết vấn đề tốt- Tối thiểu 2 – 3 năm kinh nghiệm ở vị trí Data Analyst / Business Intelligence / Business Analyst- Có hiểu biết về Logistics, E-commerce hoặc Supply Chain là một lợi thế",
+            "job_benefit": "- Nghỉ phép 12 ngày/ năm- Tham gia BHXH, bảo hiểm sức khỏe, khám sức khỏe định kỳ- Thưởng tháng 13/ Lễ/ Tết/ Performance hàng kỳ- Môi trường làm việc trẻ trung, có cơ hội thăng tiến và được trao quyền- Làm việc tại: 386 Nguyễn Văn Linh, P. Phúc Lợi, Q. Long Biên, Hà Nội",
+            "working_location": "- Bắc Ninh: Phường Từ Sơn (Thành phố Từ Sơn cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:30 đến 17:00)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/chuyen-vien-phan-tich-du-lieu-ai-agent/2106718.html",
+        "scraped_at": "2026-04-26T17:41:24.536735",
+        "metadata": {
+            "category": "Data",
+            "job_title": "Chuyên Viên Phân Tích Dữ Liệu & AI Agent",
+            "company_name": "Công ty Cổ phần Thương mại Dịch vụ 4B",
+            "company_scale": "25-99 nhân viên",
+            "company_field": "Dược phẩm / Y tế / Công nghệ sinh học",
+            "company_address": "Số 66 - 68 Võ Văn Tần, Phường Xuân Hòa, TPHCM",
+            "salary": "Thoả thuận",
+            "location": "Hồ Chí Minh",
+            "experience": "2 năm",
+            "deadline": "08/05/2026",
+            "tags": [
+                "2 năm kinh nghiệm",
+                "Cao Đẳng trở lên",
+                "Data Analyst",
+                "Chăm sóc sức khỏe / Làm đẹp",
+                "Y tế / Dược phẩm"
+            ]
+        },
+        "content": {
+            "job_description": "Hệ thống Dữ liệu & Tự động hóa (40%)Kết nối đa kênh: Xây dựng luồng tự động kéo dữ liệu từ hệ thống quản lý phòng khám (HIS/CRM), các chiến dịch Facebook Ads và Google Ads (đặc biệt cho dòng dược mỹ phẩm).Kho dữ liệu bảo mật: Thiết kế và duy trì Data Warehouse (BigQuery/Snowflake), đảm bảo tính bảo mật tuyệt đối cho dữ liệu y tế và hình ảnh khách hàng nhạy cảm.Tối ưu vận hành: Sử dụng AI và các công cụ Automation (n8n, Make, Python) để thu thập dữ liệu nhanh chóng, giảm thiểu sai sót từ việc nhập liệu thủ công tại phòng khám.      2. Phân tích Dashboard & Trực quan hóa (30%)Báo cáo Marketing Thẩm mỹ: Theo dõi CPA (Chi phí mỗi khách đến phòng khám), ROAS, và tỷ lệ chuyển đổi từ Lead tư vấn sang lịch hẹn thực tế.Hiệu suất Vận hành: Phân tích tỷ lệ lấp đầy giường (Occupancy rate), hiệu suất làm việc của Bác sĩ/KTV và doanh thu trung bình trên mỗi liệu trình thẩm mỹ.Chân dung khách hàng: Phân tích tỷ lệ khách hàng quay lại (Retention rate), giá trị vòng đời khách hàng (LTV) và phân hạng khách hàng (RFM) để có chính sách chăm sóc phù hợp.      3. Ứng dụng AI & Hỗ trợ Chiến lược (30%)Có năng lực xây dựng AI Agents hoặc học tập nhanh các kiến thức kỹ năng để xây dựng hệ thống AI AgentsDự báo & Tối ưu nguồn lực bằng AI: Xây dựng các mô hình dự báo lưu lượng khách hàng theo khung giờ và mùa vụ để tối ưu hóa điều phối nhân sự Bác sĩ/KTV, đảm bảo hiệu suất khai thác phòng điều trị luôn ở mức cao nhất.Phân tích Hiệu quả Chiến dịch (Ad-hoc Analysis): Thực hiện các báo cáo chuyên sâu đánh giá ROI của các chương trình khuyến mãi, sự kiện khai trương hoặc các chiến dịch thúc đẩy doanh số đặc biệt theo yêu cầu từ Ban Giám đốc.Phân tích Hành trình & Chuyển đổi: Phối hợp chặt chẽ với khối Marketing và Sales để khớp nối chi phí quảng cáo với doanh thu thực tế từ dịch vụ, từ đó xác định chính xác biên lợi nhuận trên từng ca điều trị cụ thể.Tham vấn Quản trị Hệ thống: Đóng góp ý kiến chuyên môn dưới góc độ dữ liệu khi triển khai hoặc nâng cấp các hệ thống vận hành lõi như ERP, CRM chuyên dụng cho mô hình phòng khám.Tối ưu hóa bằng Generative AI: Sử dụng các giải pháp AI (LLMs) để tự động hóa việc tóm tắt hồ sơ khách hàng, phân tích xu hướng phản hồi và tối ưu hóa hiệu suất xử lý truy vấn dữ liệu nhanh chóng.",
+            "job_requirement": "Hiểu biết sâu về cấu trúc dữ liệu, kho dữ liệu (Data Warehouse) và quy trình ETL/ELT.Nắm vững các phương pháp phân tích thống kê và mô hình dự báo hành vi khách hàng.Có kiến thức về các chỉ số vận hành ngành Bán lẻ/Dịch vụ (O2O) và phễu chuyển đổi Marketing.Am hiểu về bảo mật dữ liệu và quy định về quyền riêng tư thông tin khách hàng.SQL: Thành thạo (Window functions, CTEs) để xử lý dữ liệu khách hàng phức tạp.BI Tools: Sử dụng xuất sắc Power BI, Looker Studio hoặc Tableau.Programming & AI: Biết sử dụng Python hoặc Google Apps Script; ứng dụng thành thạo AI (ChatGPT/Claude) để tối ưu hóa code và phân tích nhanh.Automation: Có tư duy xây dựng luồng dữ liệu tự động (n8n, Make hoặc API integration)Business Sense: Có tư duy nhạy bén về kinh doanh, hiểu được tầm quan trọng của việc tối ưu chi phí quảng cáo và gia tăng tỷ lệ quay lại của khách hàng.Data Storytelling: Khả năng trình bày số liệu một cách đơn giản, dễ hiểu cho các nhóm không chuyên kỹ thuật (Bác sĩ, Tư vấn viên, Marketing).",
+            "job_benefit": "Thu nhập: Mức lương cạnh tranh theo năng lực (Trao đổi trực tiếp).Chế độ phúc lợi: Đầy đủ theo luật lao động (BHXH, BHYT, BHTN), Phép năm (12 phép/năm)Đào tạo & phát triển: Cơ hội nâng cao kỹ năng nghiệp vụ, tham gia các khóa đào tạo chuyên môn.Môi trường làm việc: Chuyên nghiệp, năng động, có lộ trình thăng tiến rõ ràng.",
+            "working_location": "- Hồ Chí Minh: 66 - 68 Võ Văn Tần, Phường Xuân Hòa (Quận 3 cũ)",
+            "working_time": "Thứ 2 - Thứ 7 (từ 08:30 đến 17:30)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/data-analyst-manh-ve-phan-tich-tai-chinh-mang-duoc-my-pham-thu-nhap-tren-20-trieu-tro-len/2114787.html",
+        "scraped_at": "2026-04-26T17:41:47.605354",
+        "metadata": {
+            "category": "Data",
+            "job_title": "Data Analyst - Mạnh Về Phân Tích Tài Chính - Mảng Dược Mỹ Phẩm - Thu Nhập Trên 20 Triệu Trở Lên",
+            "company_name": "Công ty TNHH Thẩm Mỹ Zacy",
+            "company_scale": "25-99 nhân viên",
+            "company_field": "Tư vấn",
+            "company_address": "Số 69 Nguyễn Hy Quang, Ô Chợ Dừa, Đống Đa, Hà Nội",
+            "salary": "18 - 25 triệu",
+            "location": "Hà Nội",
+            "experience": "2 năm",
+            "deadline": "08/05/2026",
+            "tags": [
+                "2 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Tuổi 25 - 35",
+                "Bảo hiểm xã hội",
+                "Team building",
+                "Du lịch hàng năm",
+                "Data Analyst"
+            ]
+        },
+        "content": {
+            "job_description": "Lập kế hoạch & dự báo tài chính (Planning & Forecasting): Xây dựng budget năm / quý / tháng, Dự báo doanh thu, chi phí, dòng tiền, Phối hợp với Sales/Marketing để xây dựng target thực tế.Phân tích hiệu quả kinh doanh (Business Performance Analysis): + Theo dõi Doanh thu, Biên lợi nhuận (gross margin, net margin) và Chi phí vận hành +Phân tích: Phân tích xu hướng doanh thu, chi phí, hành vi khách hàng, Xác định nguyên nhân tăng/giảm hiệu suất kinh doanh và Đưa ra insight có thể hành động (actionable insights).Kiểm soát chi phí & ngân sách (Cost Control): Theo dõi chi phí thực tế vs ngân sách (Budget vs Actual) Kiểm soát: Chi phí marketing, Chi phí vận hành, Chi phí nhập hàng để Đề xuất tối ưu chi phí.Báo cáo tài chính quản trị (Management Reporting): Lập báo cáo P&L (Profit & Loss), Cash flow, KPI dashboard và Báo cáo cho CEO.Hỗ trợ ra quyết định kinh doanh: Đánh giá hiệu quả, Launch sản phẩm mới, Mở rộng kênh bán, Chính sách giá / chiết khấu, Tham gia quyết định chiến lược.",
+            "job_requirement": "Kinh nghiệm: 2 - 3 năm ở vị trí Data Analyst. Ưu tiên có kinh nghiệm làm việc với dữ liệu ngành E-commerce, Retail, Dược mỹ phẩm, Mỹ phẩm hoặc FMCG. Hiểu rõ luồng vận hành và cấu trúc chi phí của TMĐT.Kỹ năng Lõi (Tech Stack):- Viết SQL xuất sắc (thành thạo Window functions, CTEs, tối ưu query).- Sử dụng thành thạo ít nhất 1 công cụ BI (Looker Studio, Power BI, Tableau).Điểm cộng lớn (Nice-to-have):- Có tư duy xây dựng luồng dữ liệu. Biết dùng các công cụ Automation (n8n, Make) hoặc biết cơ bản về Python/API để thiết lập Data Pipeline.- Có khả năng ứng dụng AI (ChatGPT/Claude) để tối ưu hiệu suất viết code/query.Kỹ năng mềm: Tư duy kinh doanh (Business Sense) nhạy bén, giải quyết vấn đề độc lập. Kỹ năng Data Storytelling tốt để trình bày số liệu cho khối Non-tech (Sales, Marketing).Yêu cầu thành thạo tiếng Anh cơ bản",
+            "job_benefit": "Lương cơ bản: 15.000.000 - 20.000.000 VNĐ/Tháng + ThưởngThử việc 2 tháng: 85%Thưởng tháng 13, thưởng Lễ, TếtDu lịch hàng nămSinh nhật, teambuildingChế độ bảo hiểm thực hiện theo pháp luật quy địnhCác chế độ phúc lợi khác theo chính sách của Công tyMôi trường làm việc cực kỳ trẻ trung thân thiện, thoải mái, team trẻ hòa đồng…Sếp vô cùng tâm lý và luôn tạo mọi điều kiện hỗ trợ",
+            "working_location": "- Hà Nội: 69 Nguyễn Hy Quang, Phường Đống Đa (quận Đống Đa cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:30 đến 17:30)\n                                                            Thứ 7 (từ 08:00 đến 12:00)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/chuyen-vien-data-integration-engineer/2060720.html",
+        "scraped_at": "2026-04-26T17:42:10.783829",
+        "metadata": {
+            "category": "Data",
+            "job_title": "Chuyên Viên Data Integration Engineer",
+            "company_name": "Công ty Cổ Phần Giải Pháp Quản Lý SSG",
+            "company_scale": "25-99 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "173A Nguyễn Văn Trỗi, Phường 11, Quận Phú Nhuận, Hồ Chí Minh",
+            "salary": "15 - 20 triệu",
+            "location": "Hà Nội",
+            "experience": "2 năm",
+            "deadline": "08/05/2026",
+            "tags": [
+                "2 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Tiếng Anh Giao tiếp cơ bản",
+                "Data Engineer",
+                "Tài chính",
+                "Ngân hàng",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Tham gia triển khai các dự án tích hợp dữ liệu và xây dựng kho dữ liệu cho khách hàng trong lĩnh vực tài chính – doanh nghiệp quy mô lớn.Thực hiện phân tích yêu cầu dưới sự hướng dẫn của Senior/Leader; tham gia thiết kế và phát triển các luồng dữ liệu (ETL/ELT, data pipeline).Xây dựng, chỉnh sửa và vận hành các job ETL/Streaming theo tài liệu thiết kế; hỗ trợ xử lý lỗi phát sinh trong quá trình vận hành hệ thống.Viết và tối ưu các truy vấn SQL phục vụ xử lý, chuyển đổi và kiểm tra dữ liệu.Kiểm tra, đối soát và đảm bảo tính chính xác, đầy đủ của dữ liệu theo yêu cầu dự án và quy định bảo mật.Phối hợp với các thành viên trong nhóm kỹ thuật và các bên liên quan để đảm bảo tiến độ công việc.Tham gia học hỏi, cập nhật công nghệ và thực hiện các nhiệm vụ khác theo phân công của Trưởng nhóm/Trưởng bộ phận.Thực hiện các công việc khác trong phạm vi chức năng, nhiệm vụ của phòng ban theo yêu cầu của trưởng bộ phận.",
+            "job_requirement": "Từ 2 năm kinh nghiệm trở lên làm việc với vai trò Kỹ sư/Chuyên viên ETL, ưu tiên trong ngành Tài chính/Ngân hàng.Có kiến thức về ODI, Pentaho và công nghệ xử lý dữ liệu theo thời gian thực (streaming) để hỗ trợ các hoạt động phân tích, báo cáo và ra quyết định chiến lược.Có kinh nghiệm xây dựng các luồng dữ liệu và công việc (ETLjob)Có kinh nghiệm thiết kế & tối ưu hóa ETL với dữ liệu lớn (Big VolumeData).Có kiến thức về SQL, PL/SQL và kinh nghiệm làm việc với các hệ quản trị cơ sở dữ liệu lớn như Oracle, MS SQL Server.Hiểu biết về kiến trúc Kho dữ liệu (Data Warehouse) và các khái niệm mô hình hóa dữ liệu.Có kiến trúc hệ thống ngân hàng, quy trình xử lý giao dịch, và chuẩn dữ liệu tài chính.",
+            "job_benefit": "Mức lương: 15,000,000 -  20,000,000Môi trường làm việc năng động, chuyên nghiệp trong lĩnh vực công nghệ.Cơ hội tiếp xúc và làm việcvới các hệ thống dữ liệu lớn, phức tạp.Được tham gia các khóa đào tạo chuyên sâu và phát triển nghề nghiệp.Hưởng đầy đủ các chế độ phúc lợi theo quy định.",
+            "working_location": "- Hà Nội: Phòng 401, tòa nhà Savina, Số 1 Đinh Lễ, Hoàn Kiếm, Phường Hoàn Kiếm (quận Hoàn Kiếm cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:30)\n                                                            Sáng thứ 7 theo điều động của PM (nếu phát sinh công việc)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/nhan-vien-xuat-nhap-khau-data-analysis/1912100.html",
+        "scraped_at": "2026-04-26T17:42:31.718973",
+        "metadata": {
+            "category": "Data",
+            "job_title": "Nhân Viên Xuất Nhập Khẩu (Data Analysis)",
+            "company_name": "CÔNG TY TNHH TESSELLATION BÌNH DƯƠNG",
+            "company_scale": "25-99 nhân viên",
+            "company_field": "Sản xuất",
+            "company_address": "Số 15 Đại Lộ Tự Do, khu công nghiệp Việt Nam - Singapore, Phường Bình Hòa, Thành phố Thuận An, Tỉnh Bình Dương, Việt Nam",
+            "salary": "Thoả thuận",
+            "location": "Đồng Nai",
+            "experience": "Không yêu cầu",
+            "deadline": "08/05/2026",
+            "tags": [
+                "Không yêu cầu kinh nghiệm",
+                "Đại Học trở lên",
+                "Bảo hiểm xã hội",
+                "Bảo hiểm sức khỏe",
+                "Bảo hiểm sức khỏe ngưởi thân",
+                "Data Analyst",
+                "IT - Phần mềm",
+                "May mặc / Thời trang",
+                "Logistic / Vận tải"
+            ]
+        },
+        "content": {
+            "job_description": "Hỗ trợ giám sát các thủ tục nhập hàng, kiểm soát và theo dõi lô hàng từ cảng / sân bay, đường bộ đến Nhà máy TGV / EKV WH để đáp ứng OTA. Kiểm đếm và lưu trữ thông tin các lô hàng và các sắp xếp hậu cần liên quan.Theo dõi hàng nhập khẩu trực tiếpTheo dõi cước/ phí nhập khẩu nguyên phụ liệu và lập kế hoạch, thanh toán.Hỗ trợ trưởng bộ phận hướng dẫn, giám sát công việc các nhân viên trong bộ phận hàng nhập.Làm báo cáo thống kê và giá xuất hàng thángPhối hợp với các công ty giao nhận và nhà cung cấp để nhận nguyên vật liệu đúng hạn.Liên lạc và phối hợp với các bộ phận khác để kiểm tra chứng từ vận chuyển của lô hàng mới để đảm bảo chứng từ hàng nhập chính xác.Theo dõi vào File kế hoạch vận chuyển của lô hàng (ETD, ETA,…)Chịu trách nhiệm về các chứng từ nhập khẩu phải được kiểm tra & phân loại để nhập khẩu & thông quan.Thúc đẩy nhân viên giao nhận / môi giới hải quan kiểm tra và cập nhật tình trạng lô hàng cho bộ phận Kho, Đội sản xuất.Chịu trách nhiệm kiểm tra và rà soát tất cả các quy định hải quan mới để cập nhật, cập nhật quy trình hải quan nhằm đảm bảo công việc nhập khẩu đúng quy định pháp luật và tối ưu quy trình. Tìm hiểu sử dụng hệ thống Intranet để kiểm tra thông tin về lô hàng như số lượng, giá cả, tổng lô hàng và điều kiện giao hàng ... để đảm bảo thông tin chính xác.Đảm nhận các công việc văn thư như sắp xếp, tính toán, cập nhật hồ sơ hải quan, chuẩn bị thư từ, nhập và lấy thông tin từ máy tính.Hỗ trợ và giám sát các nhân viên trợ lý XNK trong team để hoàn thành mục tiêu chất lượng của bộ phận.Nêu bật lên cho cấp trên bất kỳ hoạt động nào trong công ty có thể trái với chính sách môi trường. Điều đó có thể tạo ra một tác động đáng kể đến môi trường.Bất kỳ vấn đề nào khác có thể được Ban quản lý phân công tùy từng thời điểm",
+            "job_requirement": "Tốt nghiệp đại họcChuyên ngành IT, phân tích dữ liệuCó thể đọc hiểu tất cả các tài liệu Vận chuyển nội bộ / bên ngoài bằng tiếng Việt & tiếng AnhKhả năng đọc và viết Email bằng tiếng Việt và tiếng AnhKhả năng giao tiếp với các bộ phận nội bộ và bên ngoài một cách hiệu quảKỹ năng MS Office tốt về máy tínhCó khả năng làm việc chính xác, độc lập và tổ chức tốtKiến thức về Luật, Quy định Hải quan",
+            "job_benefit": "Lương thỏa thuận theo năng lựcThời gian làm việc: Thứ 2 - thứ 6, 8:00 - 16h30 và 2 nửa thứ 7 bất kỳ trong thángTham gia đóng đầy đủ BHXH, BHYT, BHTN và Bảo Hiểm Sức Khỏe, bảo hiểm tai nạn 24/7Hưởng 14 ngày phép/ năm, lương tháng 13, thời gian thử việc 100% lương ký HĐLĐKhám sức khỏe đầu vào miễn phíTham gia hoạt động chăm sóc đời sống tinh thần cho Công nhân viên do công ty tổ chứcCác khoản phụ cấp khác: Xăng xe, chuyên cần, cơm trưa đa dạng món tại công ty",
+            "working_location": "- Đồng Nai: Lô 102/6-3, Số 2, KCN Amata, Phường Long Bình (Thành phố Biên Hòa cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 07:30 đến 16:00)\n                                                            và 2 nửa thứ 7 bất kỳ trong tháng",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/product-builder-remote/2111290.html",
+        "scraped_at": "2026-04-26T17:44:24.635381",
+        "metadata": {
+            "category": "Data",
+            "job_title": "Product Builder (Remote)",
+            "company_name": "CÔNG TY CỔ PHẦN KIMQ",
+            "company_scale": "1-9 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Tầng 2, số 02 Song Hành, Phường Bình Trưng, Thành phố Hồ Chí Minh, Việt Nam",
+            "salary": "Thoả thuận",
+            "location": "Hồ Chí Minh",
+            "experience": "2 năm",
+            "deadline": "07/05/2026",
+            "tags": [
+                "2 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Nghỉ thứ 7",
+                "Data Analyst"
+            ]
+        },
+        "content": {
+            "job_description": "•\tTrực tiếp xây dựng và phát triển sản phẩm bằng các công cụ AI (công cụ lập trình AI, nền tảng tự động hóa). \n•\tPhối hợp với nhóm kinh doanh để chuyển đổi yêu cầu thành sản phẩm thực tế (sản phẩm hoạt động được), đảm bảo có thể kiểm thử và cải tiến nhanh. \n•\tỨng dụng AI  để tăng tốc quá trình phát triển: lập trình, thiết kế giao diện/trải nghiệm người dùng, kiểm thử. \n•\tTích hợp hệ thống: API, cơ sở dữ liệu, và các dịch vụ bên thứ ba để hoàn thiện sản phẩm từ đầu đến cuối. \n•\tThực hiện thử nghiệm nhanh, thu thập phản hồi người dùng và tối ưu hiệu suất sản phẩm. \n•\tĐảm bảo sản phẩm được triển khai đúng mục tiêu kỹ thuật và kinh doanh.",
+            "job_requirement": "•\tCó kinh nghiệm xây dựng sản phẩm bằng công cụ AI, nền tảng lập trình tự động hoặc môi trường tạo mẫu thử nhanh. \n•\tCó nền tảng kỹ thuật cơ bản: hiểu về API, cơ sở dữ liệu và các nguyên lý phát triển phần mềm. \n•\tThành thạo sử dụng các công cụ AI như Claude, Copilot, Vercel... trong lập trình, thiết kế và triển khai sản phẩm. \n•\tCó khả năng chuyển đổi bài toán kinh doanh thành giải pháp kỹ thuật khả thi. \n•\tTư duy giải quyết vấn đề tốt, chủ động, thích thử nghiệm và học nhanh. \n•\tCó “tư duy người xây dựng sản phẩm” – ưu tiên làm ra sản phẩm thực tế thay vì chỉ dừng ở ý tưởng.",
+            "job_benefit": "• Lương: thỏa thuận theo năng lực ứng viên• Được trực tiếp xây dựng sản phẩm thực tế, không chỉ dừng ở việc lên kế hoạch. \n•\tTiếp cận và làm việc với các công cụ AI tiên tiến, cập nhật xu hướng công nghệ mới nhất. \n•\tMôi trường làm việc nhanh, linh hoạt, nơi ý tưởng có thể được triển khai thành sản phẩm trong thời gian ngắn. \n•\tCơ hội phát triển kỹ năng toàn diện từ sản phẩm, công nghệ đến tư duy xây dựng sản phẩm. \n•\tTham gia vào các dự án sáng tạo, có tác động thực tế.",
+            "working_location": "- Hồ Chí Minh: (Tất cả phường)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 09:00 đến 18:00)\n                                                            Thời gian làm việc từ T2-T6: 9h-18h\nLàm việc Remote không cần đến văn phòng",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/data-architect-customer-profile/2111978.html",
+        "scraped_at": "2026-04-26T17:44:46.336603",
+        "metadata": {
+            "category": "Data",
+            "job_title": "Data Architect (Customer Profile)",
+            "company_name": "Công ty Cổ phần MISA",
+            "company_scale": "3000+ nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Tầng 9 tòa nhà Technosoft ngõ 15 Duy Tân, Dịch Vọng Hậu, Cầu Giấy, Hà Nội",
+            "salary": "Thoả thuận",
+            "location": "Hà Nội",
+            "experience": "4 năm",
+            "deadline": "07/05/2026",
+            "tags": [
+                "4 năm kinh nghiệm",
+                "Cao học trở lên",
+                "Nghỉ thứ 7",
+                "Data Engineer",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Tập đoàn MISA, thành lập năm 1994, là doanh nghiệp CNTT hàng đầu Việt Nam với hơn 500.000 khách hàng đơn vị, tổ chức (trong đó: 44.500 đơn vị HCSN và 20.000 cơ sở giáo dục trên toàn quốc) và gần 3,5 triệu cá nhân, hiện diện tại 22 quốc gia. MISA tiên phong phát triển Agentic AI và nền tảng AIaaS, cung cấp giải pháp số hóa cho doanh nghiệp, hộ kinh doanh và chính phủ giúp tối ưu vận hành, nâng cao hiệu quả và giảm tải thủ công cho tổ chức. Sứ mệnh của MISA là đồng hành cùng chính phủ, doanh nghiệp và cá nhân trong hành trình chuyển đổi số, khẳng định vị thế công nghệ Việt Nam trên quốc tế.Trách nhiệm thiết yếu:Thiết kế kiến trúc dữ liệu tổng thể cho dự án Customer Profile & AnalyticsĐảm bảo dữ liệu khách hàng được quản lý thống nhất, an toàn và tuân thủ quy định pháp lýCông việc thiết yếu:Thiết kế Data Lake / Data Warehouse / Data Lakehouse, mô hình dữ liệu và phân lớp dữ liệu cho Customer ProfileXây dựng Data Catalog, lineage và phân quyền truy cập dữ liệuĐảm bảo kiến trúc dữ liệu phục vụ tốt cho BI, AI/ML và vận hành kinh doanhĐánh giá, đề xuất công nghệ mới để tối ưu hiệu năng và chi phí hạ tầng dữ liệu",
+            "job_requirement": "Trình độ học vấn:Cử nhân hoặc Thạc sĩ về Công nghệ Thông tin, Khoa học dữ liệu hoặc Kỹ thuật phần mềmChứng chỉ cloud/data (AWS, GCP, Azure) là lợi thếKinh nghiệm làm việc:Từ 4 năm kinh nghiệm trong thiết kế kiến trúc dữ liệu OLAP và Big DataKinh nghiệm triển khai Data Lake/DWH/Lakehouse quy mô lớnKiến thức và kỹ năng:Thành thạo SQL, NoSQL, Spark, Kafka và ETL/ELT toolsAm hiểu Data Governance, lineage và tiêu chuẩn dữ liệuKỹ năng tư duy chiến lược và tối ưu hiệu suất hệ thống dữ liệuƯu tiên:Kinh nghiệm xây dựng kiến trúc dữ liệu cho Customer 360 hoặc CRM",
+            "job_benefit": "Tiên phong công nghệ, uy tínMISA là doanh nghiệp CNTT xuất sắc nhất khu vực Châu Á - Châu Đại Dương. Tiên phong xuất khẩu giải pháp SaaSTOP đầu doanh nghiệp CNTT tăng trưởng liên tục với quy mô nhân sự tăng 20%/năm, doanh thu tăng 15%/nămHội tụ hơn 4000 nhân tài cùng khát vọng đưa sản phẩm công nghệ “Make In Vietnam” vươn tầm quốc tếXây dựng niềm tin với 500.000 khách hàng là cơ quan nhà nước, doanh nghiệp, hộ kinh doanh và 3.5 triệu khách hàng cá nhân tại Việt Nam và 22 quốc gia trên thế giới.Hơn 100 giải thưởng trong ngành CNTT trong nước và quốc tếNền tảng vững chắc cho phát triển sự nghiệp, thăng tiến, quyền lợiLương cứng cạnh tranh. Thưởng năng suất dựa trên kết quả công việc từ 2 tháng lương.Đánh giá review lương 2 lần/năm, thưởng sáng kiến...Huấn luyện “Hổ tướng”: chương trình đào tạo quản lý tài năng, bệ phóng trở thành Chiến tướng tinh nhuệGiải thưởng “Gấu vàng\": nơi tôn vinh những tài năng xuất sắc nhấtGói chăm sóc sức khỏe toàn diện tại Medlatec, cháy hết mình tại các CLB theo sở thích, chương trình teambuilding, du lịch định kỳMôi trường thân thiện, chia sẻ, đồng hànhKết nối tài năng: tập trung phát triển những con người có chung lý tưởng, mục tiêu, cùng trao giá trị và nhận thành côngTư duy đột phá: môi trường tôn trọng sự khác biệt và đề cao sáng tạo, MISA-er được tự do phát triển các ý tưởng tiến bộ, cải tiến công việcCông nghệ cao: trang bị máy tính làm việc, tối ưu hiệu suất công việc bằng ứng dụng công nghệ, phần mềm tự động (AMIS, Jira, Power BI, AI Marketing,...)Nơi làm việc hạnh phúc: MISA mong muốn tạo một môi trường làm việc để bạn luôn cảm thấy hạnh phúc",
+            "working_location": "- Hà Nội: Tầng 3, Tòa nhà N03T6, Khu Ngoại Giao Đoàn, Phường Xuân Đỉnh (quận Bắc Từ Liêm cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:30)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/data-controller/2113221.html",
+        "scraped_at": "2026-04-26T17:46:14.185572",
+        "metadata": {
+            "category": "Data",
+            "job_title": "Data Controller",
+            "company_name": "CÔNG TY TRÁCH NHIỆM HỮU HẠN DU LỊCH BAN MAI",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "Du lịch",
+            "company_address": "Tầng 4, toà nhà Vinare số 141 Lê Duẩn, Hoàn Kiếm, Hà Nội, Việt Nam",
+            "salary": "Thoả thuận",
+            "location": "Đà Nẵng",
+            "experience": "Không yêu cầu",
+            "deadline": "07/05/2026",
+            "tags": [
+                "Không yêu cầu kinh nghiệm",
+                "Đại Học trở lên",
+                "Nữ",
+                "Tiếng Anh Đọc hiểu",
+                "Bảo hiểm xã hội",
+                "Bảo hiểm sức khỏe",
+                "Thưởng tháng 13",
+                "Data Analyst"
+            ]
+        },
+        "content": {
+            "job_description": "Product Data Entry\nKeep all price agreements from local suppliers uploaded on the system in accordance with the Product Development team's instructions and the Sales Team's requests\nEnsure that all rates from local vendors are properly uploaded and up to date\nCorrect any errors to guarantee data entry accuracy before using it for tour module and sales bookings\nCoordinate with other departments to resolve issues about errors or any necessary corrections\nWork with the system supplier to fix the issue with data uploading, and create additional functions that enhance the database.\n\n\nOther Data Entry Funding updates\nUpdate and manage the data suppliers at the Head office for Vietnam, Cambodia, and Laos\nOther data entry duties as reasonably requested\n\n\nBasic reporting\nCreation of basic excel reports or from Tourchain system\n\n\nGeneral\nPerform all tasks in accordance with the task assigned from Product Team\nFunction as an effective, positive team member\nActively identify opportunities for continuous improvement\n\n\nCarry out other reasonable duties as required",
+            "job_requirement": "Female candidates with a bachelor’s degree in Tourism, Accounting, or Administration.\nIntermediate English level both written and sp (reading, writing). All services lines must be stated in English\nIntermediate excel skills including knowledge\nSkills of analysis and problem-solving\nAbility to work with a high attention to detail and accuracy\nAbility to work under pressure in high volume and varied environment\nAbility to adapt and be flexible to organizational changes and requirements\nAbility to work effectively within a team environment to achieve team goal",
+            "job_benefit": "Negotiable – To Be Advised on interview, depending on experience.\nPay insurance according to the law + Special health insurance package\nQuarterly, annual, holiday bonuses...\nTravel domestically and internationally according to Company policies and other special programs.\nProduct inspection trip and training courses according to company regulations\nThe Company's maternity pay policy in addition to insurance salary.\nHappy hour policy at the office.\nOff Saturday, Sunday\nFriendly and progressive working environment.",
+            "working_location": "- Đà Nẵng: tầng 1, khách sạn Dream, 24-26 Phan Bội Châu, Phường Hải Châu (quận Hải Châu cũ)",
+            "working_time": null,
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/chuyen-vien-phan-tich-du-lieu-tai-chinh/2109110.html",
+        "scraped_at": "2026-04-26T17:46:58.918150",
+        "metadata": {
+            "category": "Data",
+            "job_title": "Chuyên Viên Phân Tích Dữ Liệu Tài Chính",
+            "company_name": "CÔNG TY CỔ PHẦN TẬP ĐOÀN MASTERISE",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "Bất động sản",
+            "company_address": "TMDV số 19, Tòa nhà Masteri An Phú, 179 Võ Nguyên Giáp, Phường Thảo Điền, Thành phố Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam",
+            "salary": "Thoả thuận",
+            "location": "Hà Nội",
+            "experience": "3 năm",
+            "deadline": "05/05/2026",
+            "tags": [
+                "3 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Data Analyst",
+                "Tài chính"
+            ]
+        },
+        "content": {
+            "job_description": "Mục tiêu vị tríVị trí chịu trách nhiệm thu thập, xử lý, chuẩn hóa, phân tích và trực quan hóa dữ liệu tài chính – kinh doanh nhằm phục vụ công tác báo cáo quản trị, theo dõi thực hiện kế hoạch tài chính, kiểm soát chi phí và hỗ trợ Ban lãnh đạo ra quyết định.Đồng thời, vị trí này là đầu mối tham gia xây dựng hệ thống dữ liệu, chuẩn hóa master data, tự động hóa báo cáo và phát triển dashboard phục vụ quản trị tài chính trên phạm vi toàn Tập đoàn.Nhiệm vụ chính1. Quản trị dữ liệu và báo cáo tài chínhThu thập, tổng hợp, làm sạch và chuẩn hóa dữ liệu tài chính – kinh doanh từ các đơn vị/phòng ban liên quan.Xây dựng, vận hành và cải tiến hệ thống cơ sở dữ liệu, quy trình thu thập dữ liệu và luồng xử lý dữ liệu phục vụ báo cáo quản trị tài chính.Thiết kế, duy trì và tối ưu các báo cáo định kỳ như báo cáo kết quả kinh doanh, báo cáo thực hiện kế hoạch tài chính, báo cáo ngân sách, báo cáo chi phí và các báo cáo quản trị khác.Phát triển dashboard, báo cáo tự động và các công cụ trực quan hóa dữ liệu nhằm nâng cao hiệu quả theo dõi và phân tích.Kiểm tra tính đầy đủ, chính xác và nhất quán của dữ liệu trước khi đưa vào hệ thống báo cáo.2. Phân tích dữ liệu phục vụ quản trị tài chínhPhân tích biến động doanh thu, chi phí, lợi nhuận, ngân sách và các chỉ số tài chính trọng yếu; xác định nguyên nhân và đánh giá tác động đến kết quả kinh doanh.Thực hiện phân tích chuyên sâu theo yêu cầu của Ban lãnh đạo hoặc các bộ phận liên quan nhằm hỗ trợ ra quyết định.Phối hợp với các đơn vị để rà soát tính hợp lý của số liệu kế hoạch, dự phóng và số liệu thực hiện.Theo dõi việc thực hiện kế hoạch tài chính, ngân sách và cảnh báo sớm các biến động bất thường hoặc rủi ro vượt ngân sách.Đề xuất các góc nhìn phân tích mới, chỉ số theo dõi mới hoặc phương pháp đo lường mới phù hợp với định hướng kinh doanh.3. Chuẩn hóa dữ liệu và tự động hóaTham gia xây dựng và duy trì bộ mã dữ liệu tài chính, master data và nguyên tắc mapping dữ liệu phục vụ công tác báo cáo quản trị.Phối hợp với các bộ phận liên quan để chuẩn hóa định nghĩa chỉ tiêu, cấu trúc dữ liệu và biểu mẫu báo cáo áp dụng thống nhất trong toàn hệ thống.Tham gia các dự án tự động hóa báo cáo, tối ưu quy trình xử lý dữ liệu và triển khai các công cụ BI/analytics trong phòng Tài chính.Đề xuất giải pháp cải thiện chất lượng dữ liệu, rút ngắn thời gian xử lý báo cáo và giảm thiểu thao tác thủ công.Hỗ trợ xây dựng tài liệu hướng dẫn, biểu mẫu và quy trình phục vụ công tác báo cáo và quản trị dữ liệu tài chính.4. Phối hợp vận hànhLàm việc với các phòng ban/đơn vị để thu thập, đối chiếu và xác minh số liệu khi cần thiết.Hỗ trợ phòng Tài chính trong việc chuẩn bị dữ liệu cho các kỳ lập kế hoạch, forecast, review ngân sách và các báo cáo quản trị định kỳ.Đảm bảo việc cung cấp dữ liệu và báo cáo đúng hạn, đúng chuẩn và đáp ứng yêu cầu quản trị của Ban lãnh đạo.",
+            "job_requirement": "1. Trình độ học vấnTốt nghiệp Đại học chuyên ngành Tài chính, Kế toán, Kiểm toán, Hệ thống thông tin quản lý, Khoa học dữ liệu, Toán kinh tế hoặc các ngành liên quan.Ưu tiên ứng viên có nền tảng kết hợp giữa tài chính và phân tích dữ liệu.2. Kinh nghiệmTừ 3–5 năm kinh nghiệm ở các vị trí liên quan đến phân tích dữ liệu tài chính, báo cáo quản trị, FP&A, BI tài chính hoặc kiểm soát dữ liệu.Ưu tiên ứng viên đã từng làm việc với dữ liệu lớn, dữ liệu đa nguồn hoặc môi trường tập đoàn.Có kinh nghiệm xây dựng dashboard, tự động hóa báo cáo hoặc chuẩn hóa dữ liệu là lợi thế lớn.3. Kỹ năng chuyên mônThành thạo Excel nâng cao; ưu tiên ứng viên sử dụng tốt Power Query, Power Pivot.Có khả năng sử dụng SQL để truy vấn, xử lý và kiểm tra dữ liệu.Có kinh nghiệm với Power BI hoặc các công cụ BI tương đương.Có tư duy tốt về cấu trúc dữ liệu, logic báo cáo và kiểm soát chất lượng dữ liệu.Hiểu các chỉ số tài chính, báo cáo quản trị và nguyên tắc phân tích biến động.Có khả năng tổng hợp, diễn giải số liệu và chuyển hóa dữ liệu thành insight phục vụ quản trị.4. Kỹ năng mềmTư duy logic, cẩn trọng, chi tiết và có trách nhiệm cao với số liệu.Chủ động trong công việc, có khả năng làm việc độc lập và phối hợp đa phòng ban.Kỹ năng giao tiếp và trình bày tốt, có khả năng giải thích số liệu rõ ràng, dễ hiểu.Có tinh thần cải tiến, thích tối ưu quy trình và ứng dụng công nghệ vào công việc.5. Ngoại ngữCó khả năng sử dụng tiếng Anh trong công việc là lợi thế.",
+            "job_benefit": "Thu nhập thỏa thuận theo năng lựcLương tháng 13, thưởng hiệu quả công việcBảo hiểm sức khỏe",
+            "working_location": "- Hà Nội: Time City, Phường Vĩnh Tuy (quận Hai Bà Trưng, quận Hoàng Mai cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:30 đến 17:30)\n                                                            Thứ 7 (từ 08:00 đến 12:00)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    }
+]

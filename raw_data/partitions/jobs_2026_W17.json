@@ -1,0 +1,134 @@
+[
+    {
+        "url": "https://www.topcv.vn/viec-lam/ai-agent-engineer/2098442.html",
+        "scraped_at": "2026-04-26T15:33:29.275171",
+        "metadata": {
+            "category": "AI",
+            "job_title": "AI Agent Engineer",
+            "company_name": "Công ty TNHH SETA international Việt Nam",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Tầng 11, Tòa nhà HL, ngõ 82 Duy Tân, Cầu Giấy, Hà Nội",
+            "salary": "Thoả thuận",
+            "location": "Hà Nội",
+            "experience": "1 năm",
+            "deadline": "26/04/2026",
+            "tags": [
+                "1 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Nam",
+                "Tiếng Anh Giao tiếp thành thạo",
+                "Nghỉ thứ 7",
+                "AI Researcher",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "We are looking for curious, fast-learning engineers who are passionate about building the next generation of AI agents and intelligent systems.This is not a traditional AI/ML role.You will work on Agentic AI systems — combining LLMs, tools, workflows, and reasoning to automate real-world business processes in domains like insurance, energy, and enterprise software development (SDLC).We value attitude, ownership, and learning ability more than years of experience.What You Will DoDesign and build AI agents using LLMs (OpenAI, Claude, Llama, Qwen, Falcon, etc.)Develop multi-step agent workflows (planning → reasoning → tool use → reflection)Build RAG pipelines (embedding, vector DB, retrieval optimization)Integrate AI agents with APIs, databases, and enterprise systemsCollaborate with domain experts to translate business problems into AI-driven solutionsExperiment with prompt engineering, tool use, memory systems, and evaluation frameworksContinuously improve agent performance (accuracy, latency, cost)",
+            "job_requirement": "Who You AreMindset (Very Important)Strong growth mindset — fast learner, adaptableComfortable with uncertainty and rapid changeWilling to experiment, fail, and iterateHigh ownership — proactive and self-drivenCurious about how systems work under the hoodPassionate about building real products, not just demosRequired Skills & Background1–4 years experience in Software Engineering / AI / ML / Data EngineeringUnderstanding of LLM fundamentals (tokens, context, prompting, limitations)Familiar with AI agent frameworks (LangChain, LlamaIndex, etc.)Strong programming in Python (preferred) or TypeScriptFamiliar with REST APIs and SQL/NoSQL databasesBasic knowledge of RAG, embeddings, and vector databasesGood at speaking EnglishNice to HaveExperience with multi-agent systemsExperience with open-source LLMs (Llama, Qwen, Falcon, DeepSeek)Experience with fine-tuning (LoRA, PEFT)Experience with private AI / on-prem deploymentKnowledge of MLOps / LLMOps, Docker, KubernetesExposure to insurance, energy, or finance domains",
+            "job_benefit": "What You Will LearnBuilding production-grade AI agentsDesigning Agentic AI architecturesWorking with private enterprise AI systemsOptimizing cost, latency, and accuracyTransitioning from AI demos to real-world systemsCareer GrowthPath to Senior Agentic AI Engineer, AI Architect, AI Product EngineerExposure to global clients and enterprise AI projectsWhy Join UsWork on real AI systems and business problemsAI-first engineering cultureBuild domain-specific AI platformsExposure to international marketsFast growth and high impact environmentBonusSide projects (agents, bots, tools)Actively follow AI trendsStrong problem-solving mindsetFocus on quality and craftsmanship",
+            "working_location": "- Hà Nội: Toà nhà HL, ngõ 82, Duy Tân, Phường Cầu Giấy (quận Cầu Giấy cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:00)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/ai-engineer/2096938.html",
+        "scraped_at": "2026-04-26T15:36:19.842702",
+        "metadata": {
+            "category": "AI",
+            "job_title": "AI Engineer",
+            "company_name": "Công ty cổ phần phần mềm ITSOL Holdings",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Số 15, ngõ 82 Dịch Vọng Hậu, Cầu Giấy, Hà Nội",
+            "salary": "18 - 25 triệu",
+            "location": "Hà Nội",
+            "experience": "2 năm",
+            "deadline": "26/04/2026",
+            "tags": [
+                "2 năm kinh nghiệm",
+                "Cao Đẳng trở lên",
+                "Nghỉ thứ 7",
+                "AI Engineer",
+                "IT - Phần mềm",
+                "Viễn thông",
+                "Bưu chính"
+            ]
+        },
+        "content": {
+            "job_description": "Tham gia phát triển các sản phẩm nội bộ về Chatbot, CV, OCR, Voice2Text … bằng ứng dụng AI từ các kỹ thuật ML, DL, Transformer, LLM/ Prompt/ Multi agent.Đảm bảo chất lượng dữ liệu, kết quả mô hình, báo cáo định kỳ tự động.Chịu trách nhiệm bảo trì, cải thiện, làm sạch và thao tác dữ liệu, khắc phục các sự cố tồn tại.Thiết kế API giao tiếp với các hệ thống nội bộ, hợp tác với các nhóm khác để tích hợp giải pháp xây dựng sản phẩm hoàn thiện.Đóng gói và triển khai trên môi trường Product với docker và docker-compose.Xây dựng các tài liệu Thiết kế tổng thể, giải pháp, Thiết kế chi tiết, tài liệu Giám sát, theo quy trình DS/AI.",
+            "job_requirement": "Có kinh nghiệm từ 2 năm trở lên với vị trí tương đươngKiến thức về lập trình, cấu trúc dữ liệu và giải thuật, lý thuyết đồ thị.Kiến thức về xác suất thống kê, đại số tuyến tính, giải tích.Kiến thức về các loại CSDL (RDBMS, Graph Databases, NoSQL Products, ...).Kiến thức về học máy (Machine Learning), học sâu (Deep Learning), về xử lý ngôn ngữ tự nhiên (NLP), xử lý hình ảnh;Sử dụng thành thạo một trong các thư viện học máy: Scikit-learn, TensorFlow, Keras, PyTorch;Kỹ năng lập trình thành thạo Python, SQL.Kỹ năng với các nhiệm vụ trong NLP: conversational AI, information extraction, textsummarization, text completion, sentiment analysis,...Kỹ năng với các nhiệm vụ trong LLM: LangChain, vector embeddings, NLTK, GPT-3, GPT-4, ChatGPT, Claude, Mistral, LLaMA, spaCy, Stanford CoreNLP, word2vec, Alpaca , FastText, BERT, VectorDB, BERT, LLM/Prompt, LangGraph",
+            "job_benefit": "Lương Thỏa thuận( upto 25tr)Thưởng hiệu quả công việc, Dự án…Teambuilding 2 lần/nămThăm khám sức khỏe định kì, du lịch....Tham gia các hoạt động chung của công ty: Giáng sinh, Trung thu, Ngày tết thiếu nhi, ngày 20/10, ngày nam giới.......Tham gia đầy đủ chế độ BHXH: BHTN, BHYT, BHTS…..Được thử thách trong các dự án lớn, có cơ hội khẳng định năng lực bản thân và phát triển sự nghiệp.Chính sách thưởng hấp dẫn: thưởng theo tháng, thưởng quý, thưởng năm, ngày lễ Tết, ...Môi trường làm việc chuyên nghiệp, thân thiện, cởi mở. Cácthành viên trong công ty gần gũi, gắn bó, quan tâm, giúp đỡ nhau cùng phát triển.",
+            "working_location": "- Hà Nội: Ngõ 86 Duy Tân, Phường Cầu Giấy (quận Cầu Giấy cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:30 đến 17:30)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/data-scientist/2098443.html",
+        "scraped_at": "2026-04-26T17:58:51.372909",
+        "metadata": {
+            "category": "Data",
+            "job_title": "Data Scientist",
+            "company_name": "Công ty TNHH SETA international Việt Nam",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Tầng 11, Tòa nhà HL, ngõ 82 Duy Tân, Cầu Giấy, Hà Nội",
+            "salary": "Thoả thuận",
+            "location": "Hà Nội",
+            "experience": "3 năm",
+            "deadline": "26/04/2026",
+            "tags": [
+                "3 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Tiếng Anh Giao tiếp thành thạo",
+                "Nghỉ thứ 7",
+                "Bảo hiểm xã hội",
+                "Bảo hiểm sức khỏe",
+                "Data Scientist",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "We are seeking a Data Scientist with a minimum of 3 years of hands-on experience in data science, machine learning, and optimization algorithms. The core focus of this role is to deepen expertise in ML systems, MLOps practices, and cloud-based deployment (Azure) while spearheading the development of advanced forecasting models.ResponsibilitiesStrategic Collaboration: Partner with cross-functional teams to design and implement scalable, data-driven features and production-ready solutions.Advanced ML Development: Architect complex data science projects using the full Python stack, including Pandas, NumPy, SciPy, Scikit-learn, and Keras.Hybrid Forecasting: Lead the development of high-precision models for both short-term operational and long-term strategic horizons.ML Systems & MLOps: Design, develop, and maintain production-grade MLOps pipelines, including model versioning, monitoring, and CI/CD workflows specifically on Microsoft Azure.Algorithmic Optimization: Design sophisticated optimization algorithms to enhance system throughput and streamline large-scale data processingVisualization & Monitoring: Develop high-fidelity dashboards and monitoring tools using Streamlit and Grafana to track model health and deliver insights.Cloud Infrastructure: Manage data science solutions on Azure using services such as Azure ML, Azure Storage, and Azure Compute.Engineering Excellence: Write clean, maintainable, and well-documented Python code while performing unit testing and code reviews.Agentic AI Research: Explore and implement LLMs and Agentic AI frameworks to automate and enhance decision-making within forecast models.",
+            "job_requirement": "Required Qualifications:Bachelor’s or Master’s degree in Computer Science, Data Science, Mathematics, Engineering, or a related technical discipline.At least 3 years of experience working as a Data Scientist, Machine Learning Engineer, or similar role.Fluent in written and spoken English.Strong proficiency in Python (Pandas, NumPy, Scikit-learn, SciPy) and SQL.Strong theoretical and practical command of Machine Learning frameworks, Optimization algorithms, and Monte Carlo Simulation for risk and uncertainty quantification.Experience or solid understanding of MLOps concepts, such as model lifecycle management, deployment, and monitoring.Proven experience designing and managing the model lifecycle, including automated retraining, versioning, and CI/CD integration.Hands-on experience developing production-grade monitoring solutions and interactive data applications using Streamlit and Grafana.Understanding of ORM libraries and database integration.Ability to integrate and process data from multiple sources and databases.Knowledge of Python’s threading limitations, multiprocessing, and event-driven programming.Familiarity with version control systems such as Git.Preferred QualificationsExperience deploying machine learning models in production environments.Hands-on experience with Azure Machine Learning, Docker, or CI/CD pipelines.Strong understanding of optimization algorithms and their application in data science or software systems.Experience working in data-intensive or ML-driven products.Familiarity with Django or backend frameworks is a plus.AI Innovation: Direct experience implementing Large Language Models (LLMs) or Agentic AI frameworks to automate reasoning in predictive workflows.",
+            "job_benefit": "Salary: NegotiableBe able to learn new technologies via interesting projects and top engineersAn international, professional, young but innovative and dynamic environment working closely with international experts and joining conferences and workshops on exciting new technologies.Full benefits for employees according to the Vietnam Labor Laws: social and health insuranceHolidays based on the Vietnamese labor law + paid vacations",
+            "working_location": "- Hà Nội: Toà nhà HL, ngõ 82, Duy Tân, Phường Cầu Giấy (quận Cầu Giấy cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 09:00 đến 18:00)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/senior-data-analyst-toi-uu-hieu-suat/2096175.html",
+        "scraped_at": "2026-04-26T17:59:42.075695",
+        "metadata": {
+            "category": "Data",
+            "job_title": "Senior Data Analyst (Tối Ưu Hiệu Suất)",
+            "company_name": "Công ty CP Vinhomes",
+            "company_scale": "5000+ nhân viên",
+            "company_field": "Bất động sản",
+            "company_address": "Tòa nhà văn phòng Symphony, Đường Chu Huy Mân, Khu đô thị sinh thái Vinhomes Riverside, Phường Phúc Lợi, Quận Long Biên, Thành phố Hà Nội",
+            "salary": "Thoả thuận",
+            "location": "Hà Nội",
+            "experience": "2 năm",
+            "deadline": "26/04/2026",
+            "tags": [
+                "2 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Data Analyst",
+                "Bất động sản",
+                "Thương mại điện tử",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "a. Vận hành & giám sát phân phối lead- Thực hiện setup phân phối lead/lịch hẹn trên hệ thống CRM theo rule, kịch bản và phân công đã được phê duyệt.- Theo dõi tình trạng phân phối lead hằng ngày: đúng thời gian, đúng đối tượng, đúng kênh.- Xử lý các tình huống phát sinh: lead quá hạn xử lý, lead bị từ chối, phân phối sai đối tượng.- Thực hiện tái phân bổ lead theo đúng SOP và hướng dẫn từ Trưởng nhóm.b. Vận hành dashboard & dữ liệu chỉ báo- Cập nhật, kiểm tra và đối soát dữ liệu đầu vào cho các dashboard hiệu suất.- Theo dõi độ chính xác của các chỉ báo: số lượng lead, tỷ lệ xử lý, chuyển đổi, tồn đọng.- Phát hiện và báo cáo các lỗi dữ liệu, sai lệch chỉ số hoặc gián đoạn luồng dữ liệu.- Hỗ trợ Trưởng nhóm trong việc xuất báo cáo định kỳ (ngày/tuần/tháng).c. Kiểm soát tuân thủ quy trình- Đảm bảo các thao tác phân phối lead và cập nhật dữ liệu tuân thủ đúng SOP.- Ghi nhận các lỗi vận hành, lỗi người dùng và đề xuất biện pháp khắc phục.- Phối hợp với bộ phận Nền tảng/IT khi có sự cố hệ thống ảnh hưởng đến phân phối hoặc dashboard.d. Phối hợp & hỗ trợ nội bộ- Hỗ trợ Sales và Marketing trong việc tra cứu lead, dữ liệu hiệu suất trên dashboard.- Tiếp nhận phản hồi từ người dùng về phân phối lead và dữ liệu, tổng hợp báo cáo Trưởng nhóm.- Tham gia đào tạo nội bộ về quy trình phân phối và cách sử dụng dashboard khi có yêu cầu.",
+            "job_requirement": "- Tốt nghiệp Cao đẳng/Đại học các ngành: Quản trị Kinh doanh, CNTT, Hệ thống thông tin, Phân tích dữ liệu hoặc tương đương.- Hiểu cơ bản về quy trình bán hàng, phân phối lead và CRM.- Có khả năng làm việc với Excel ; ưu tiên biết Power BI, Looker Studio hoặc công cụ dashboard.- Cẩn thận, logic, có khả năng làm việc với dữ liệu số lượng lớn.",
+            "job_benefit": "- Mức lương cạnh tranh, thu nhập hấp dẫn.- Hưởng đầy đủ quyền lợi và được đóng bảo hiểm theo Bộ luật Lao động.- Hưởng các chế độ phúc lợi, đãi ngộ hấp dẫn: được đặc biệt ưu đãi khi sử dụng các hệ thống dịch vụ cao cấp của Tập đoàn Vingroup như: Vinpearl, Vinmec, Vinschool...- Được đào tạo nâng cao nghiệp vụ. Được làm việc trong môi trường chuyên nghiệp, năng động và hiệu quả.- Ký hợp đồng thử việc 02 tháng, qua thử việc ký hợp đồng chính thức.",
+            "working_location": "- Hà Nội: Tòa TechnoPark, Vinhomes Ocean Park 1, Xã Gia Lâm (huyện Gia Lâm cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 09:00 đến 18:00)\n                                                            Thứ 7 làm cách tuần",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    }
+]

@@ -1,0 +1,67 @@
+[
+    {
+        "url": "https://www.topcv.vn/viec-lam/junior-full-stack-developer/2125286.html",
+        "scraped_at": "2026-04-26T16:09:49.058000",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Junior Full-Stack Developer",
+            "company_name": "CÔNG TY CỔ PHẦN DEVBRIX",
+            "company_scale": "25-99 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Số 02,Đường 7C,KP4, Phường Bình Trưng, TP.HCM",
+            "salary": "8 - 12 triệu",
+            "location": "Hồ Chí Minh",
+            "experience": "Không yêu cầu",
+            "deadline": "16/06/2026",
+            "tags": [
+                "Không yêu cầu kinh nghiệm",
+                "Cao Đẳng trở lên",
+                "Fullstack Developer",
+                "IT - Phần mềm",
+                "Điện toán đám mây (Cloud)"
+            ]
+        },
+        "content": {
+            "job_description": "Tham gia phát triển các hệ thống Web/Mobile ứng dụng thực tế\nLàm việc với:\nBackend: .NET / NodeJS (tuỳ project)\nFrontend: ReactJS / Blazor / HMTL\nTham gia xây dựng:\nRESTful APIs, các dự án IOT\nDatabase (SQL Server / PostgreSQL, MongoDB)\nTham gia trực tiếp dự án, hỗ trợ fix bug, tối ưu performance và cải tiến hệ thống\nLàm việc theo quy trình Agile/Scrum\nTham gia review code, học best practices từ Senior",
+            "job_requirement": "Bắt buộc- Sinh viên năm cuối hoặc đã tốt nghiệp ngành CNTT- Có kiến thức cơ bản về: HTML, CSS, JavaScript OOP, Data structures- Có kinh nghiệm với ít nhất 1 backend language: C# (.NET) hoặc NodeJS- Biết sử dụng Git (GitHub / GitLab)- Tư duy logic tốt, chịu khó học hỏiƯu tiên (không bắt buộc)- Có kinh nghiệm với: ReactJS / Blazor, REST API / Microservices, Docker / Kubernetes (cơ bản)- Có project cá nhân (GitHub là điểm cộng lớn)- Có hiểu biết về: Cloud (Azure / AWS), CI/CD, MassTransit , SignalR",
+            "job_benefit": "Mức lương: 8 – 12 triệu/thángReview lương sau 6 thángĐược training trực tiếp từ Senior EngineerTham gia dự án thực tếMôi trường startup năng động, phát triển nhanhCơ hội trở thành Full-time Developer Lộ trình phát triểnIntern → Junior → Middle → Senior -> Tech LeadĐược tham gia các dự án:- Microservices architecture- Cloud deployment (K8s, CI/CD)- Real-world product- IOT systems- Robot automation.",
+            "working_location": "- Hồ Chí Minh: Số 02 đường 7C, Phường Bình Trưng (Thành phố Thủ Đức cũ)",
+            "working_time": "Thứ 2 - Thứ 7 (từ 08:30 đến 17:30)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/analytics-engineer/2113334.html",
+        "scraped_at": "2026-04-26T17:43:22.099516",
+        "metadata": {
+            "category": "Data",
+            "job_title": "Analytics Engineer",
+            "company_name": "CÔNG TY TNHH THƯƠNG MẠI VÀ TRUYỀN THÔNG QUẢNG CÁO GOLDEN PHOENIX",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "Marketing / Truyền thông / Quảng cáo",
+            "company_address": "Tòa nhà SHG, số 8 Quang Trung, Hà Đông, Hà Nội",
+            "salary": "30 - 50 triệu",
+            "location": "Hà Nội",
+            "experience": "2 năm",
+            "deadline": "15/06/2026",
+            "tags": [
+                "2 năm kinh nghiệm",
+                "Cao Đẳng trở lên",
+                "Tuổi 25 - 40",
+                "Thưởng tháng 13",
+                "Bảo hiểm xã hội",
+                "Team building",
+                "Data Analyst",
+                "Thương mại điện tử"
+            ]
+        },
+        "content": {
+            "job_description": "Thiết lập Metric Layer chuẩn hóa, định nghĩa và quản trị các chỉ số cốt lõi (Core Metrics) xuyên suốt vòng đời kinh doanh để đảm bảo mọi phòng ban vận hành trên cùng một nguồn tham chiếu chính thức.Xây dựng hệ thống BI Self-service Platform, giúp các team Marketing, P&L và Operations có thể độc lập khai thác dữ liệu mà không bị phụ thuộc vào đội ngũ Data cho các truy vấn thường nhật.Chủ động thực hiện các phân tích chuyên sâu, chuyển hóa những bài toán kinh doanh mơ hồ thành các Insight có giá trị hành động cụ thể.Thiết kế hệ thống kiểm soát chất lượng dữ liệu (Data Quality & Observability) theo chiều sâu, đảm bảo phát hiện và xử lý sự cố ngay tại tầng Transformation trước khi ảnh hưởng đến người dùng cuối.Kiến trúc và triển khai hệ thống Data Warehouse nhiều tầng (từ Raw đến Gold Layer), đảm bảo mọi tập dữ liệu đều có nguồn gốc truy vết rõ ràng và sẵn sàng cho phân tích quy mô lớn.Dẫn dắt việc tích hợp các nguồn dữ liệu mới (TikTok Shop, Shopify, Advertising Platforms) vào hệ thống hiện hành một cách linh hoạt mà không làm mất ổn định cấu trúc chung.Xây dựng tài liệu (Documentation) và đào tạo, thúc đẩy văn hóa sử dụng dữ liệu (Data-driven culture) trong toàn công ty.",
+            "job_requirement": "Hiểu bản chất kinh doanh eCommerce (Revenue, Refund, Attribution, SCM) để đặt đúng câu hỏi phân tích và xây dựng các giả thuyết có giá trị thực tiễn.Thành thạo SQL trên Columnar Database (ưu tiên ClickHouse) và có tư duy tối ưu Query hiệu quả ở quy mô dữ liệu lớn.Chuyên gia thiết kế Data Warehouse (Dimensional Modeling) và thành thạo các framework như dbt để xây dựng lớp Transformation sạch, dễ bảo trì.Có tư duy thẩm mỹ và logic khi thiết kế Dashboard (trên Apache Superset hoặc tương đương), biết cách trình bày số liệu bằng ngôn ngữ kinh doanh.Kinh nghiệm vận hành Workflow Orchestration (Airflow) và các công cụ kiểm soát chất lượng dữ liệu (Great Expectations, Elementary...).Tư duy chủ động xác định vấn đề, có khả năng phân biệt và ưu tiên các công việc có tác động cao (High-impact) thay vì chỉ chạy theo các yêu cầu khẩn cấp.Khả năng làm việc đa chức năng, chuyển hóa nhu cầu nghiệp vụ thành yêu cầu kỹ thuật và quản lý kỳ vọng của các bên liên quan một cách hiệu quả.",
+            "job_benefit": "Thu nhập cạnh tranh nhất thị trường, tương xứng với năng lực và hiệu quả công việc.Thưởng tháng 13 và thưởng kinh doanh cuối năm rõ ràng, minh bạch.Chính sách làm việc linh hoạt (Hybrid / Work From Home), đảm bảo cân bằng giữa công việc và cuộc sống. Môi trường làm việc hạnh phúc & hiện đại. Ghế công thái học 100% nhân viên. Pantry luôn đầy đồ ăn.Tiệc sinh nhật hàng tháng, du lịch nước ngoài. Bàn bi-a, không gian giải trí và văn phòng view tàu điện trên cao cực chill.Làm việc trực tiếp với leadership: CEO, CTO, Head of Product, Head of Marketing – cơ hội học hỏi và ảnh hưởng trực tiếp tới các quyết định chiến lược.Tham gia xây dựng hệ thống cốt lõi: Trực tiếp thiết kế và vận hành nền tảng cho mô hình multi-brand eCommerce tốc độ cao.Lộ trình thăng tiến rõ ràng: Cơ hội phát triển Senior Analytics Engineer → Data Lead → Head of Data.Môi trường thực chiến – tốc độ – data-driven: Quy trình ra quyết định dựa trên dữ liệu, mức độ ownership cao, liên tục tối ưu & cải tiến.",
+            "working_location": "- Hà Nội: Toà SHG, số 8 đường Quang Trung, Phường Hà Đông (quận Hà Đông cũ)",
+            "working_time": "Thứ 2 - Thứ 7 (từ 08:30 đến 18:00)\n                                                            Làm thứ 7 cách tuần\nNghỉ trưa từ 12h - 13h30",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    }
+]
