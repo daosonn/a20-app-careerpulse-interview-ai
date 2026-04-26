@@ -1,6 +1,9 @@
 import { useRef, useCallback } from 'react';
+import { useAuth } from '../../auth';
+import { apiUrl } from '../../../lib/api';
 
 export function useSpeech() {
+  const { authenticatedFetch, user } = useAuth();
   const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const speakWithBrowser = useCallback((text: string, langCode: string) => {
@@ -25,7 +28,7 @@ export function useSpeech() {
     window.speechSynthesis.speak(utterance);
   }, []);
 
-  const audioQueue = useRef<string[]>([]);
+  const audioQueue = useRef<Array<{ audioBase64: string; mimeType: string }>>([]);
   const isPlaying = useRef(false);
 
   const playNextInQueue = useCallback(async () => {
@@ -35,14 +38,14 @@ export function useSpeech() {
     }
 
     isPlaying.current = true;
-    const base64Audio = audioQueue.current.shift();
-    if (!base64Audio) {
+    const queuedAudio = audioQueue.current.shift();
+    if (!queuedAudio) {
         playNextInQueue();
         return;
     }
 
     try {
-      const url = `data:audio/mp3;base64,${base64Audio}`;
+      const url = `data:${queuedAudio.mimeType};base64,${queuedAudio.audioBase64}`;
       const audio = new Audio(url);
       ttsAudioRef.current = audio;
       
@@ -58,10 +61,16 @@ export function useSpeech() {
     }
   }, []);
 
-  const speakText = useCallback(async (text: string, lang: string, base64Audio?: string) => {
+  const speakText = useCallback(async (
+    text: string,
+    lang: string,
+    base64Audio?: string,
+    mimeType = 'audio/wav',
+    character?: string,
+  ) => {
     // 1. If we have base64 audio from backend, queue it
     if (base64Audio) {
-      audioQueue.current.push(base64Audio);
+      audioQueue.current.push({ audioBase64: base64Audio, mimeType });
       if (!isPlaying.current) {
         playNextInQueue();
       }
@@ -77,48 +86,38 @@ export function useSpeech() {
       window.speechSynthesis.cancel();
     }
 
-    // 2. Fallback to OpenAI if key exists (original logic)
-    if (lang === 'vi') {
-      const apiKey = (import.meta as any).env.VITE_OPENAI_API_KEY;
-      if (apiKey) {
-        try {
-          const response = await fetch('https://api.openai.com/v1/audio/speech', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              model: 'tts-1',
-              input: text,
-              voice: 'nova',
-              speed: 0.95,
-            }),
-          });
+    const trimmedText = text.trim();
+    if (trimmedText && user) {
+      try {
+        const response = await authenticatedFetch(apiUrl('/api/v1/tts/speak'), {
+          method: 'POST',
+          body: JSON.stringify({
+            text: trimmedText,
+            language: lang,
+            character,
+          }),
+        });
 
-          if (response.ok) {
-            const audioBlob = await response.blob();
-            const url = URL.createObjectURL(audioBlob);
-            const audio = new Audio(url);
-            ttsAudioRef.current = audio;
-            audio.onended = () => {
-              URL.revokeObjectURL(url);
-              ttsAudioRef.current = null;
-            };
-            await audio.play();
+        if (response.ok) {
+          const data = await response.json();
+          if (data.audio_base64) {
+            audioQueue.current.push({
+              audioBase64: data.audio_base64,
+              mimeType: data.mime_type || 'audio/wav',
+            });
+            if (!isPlaying.current) {
+              playNextInQueue();
+            }
             return;
           }
-        } catch (err) {
-          console.warn('[TTS] OpenAI TTS failed:', err);
         }
+      } catch (err) {
+        console.warn('[TTS] Backend TTS failed:', err);
       }
-      
-      // 3. Last resort: Browser Synthesis
-      speakWithBrowser(text, 'vi-VN');
-    } else {
-      speakWithBrowser(text, 'en-US');
     }
-  }, [speakWithBrowser, playNextInQueue]);
+
+    speakWithBrowser(trimmedText, lang === 'vi' ? 'vi-VN' : 'en-US');
+  }, [authenticatedFetch, user, speakWithBrowser, playNextInQueue]);
 
   const stopSpeaking = useCallback(() => {
     audioQueue.current = [];

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { User, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db, googleProvider, handleFirestoreError, OperationType } from '../../../lib/firebase';
@@ -11,7 +11,58 @@ export interface UserProfile {
   fullName?: string;
   dob?: string;
   currentPosition?: string;
+  education?: Array<{
+    id: number;
+    school: string;
+    degree: string;
+    field: string;
+    year: string;
+  }>;
+  preferences?: {
+    preferred_language: string;
+    difficulty: string;
+    ai_persona: string;
+    availability: string;
+    default_interview_type: string;
+    stress_test_default: boolean;
+    auto_read_questions: boolean;
+    questions_per_session: number;
+  };
+  settings?: {
+    ui_language: string;
+    theme: string;
+    email_reminders: boolean;
+    ai_suggestions: boolean;
+    security_alerts: boolean;
+    public_profile: boolean;
+    anonymous_practice: boolean;
+  };
+  suggestedJobs?: Array<{
+    title: string;
+    company: string;
+    industry: string;
+    fit: number;
+    reason: string;
+    url?: string;
+    source?: string;
+  }>;
 }
+
+const normalizeUserProfile = (data: any): UserProfile => {
+  const profileData = data?.profile || data || {};
+  return {
+    isOnboarded: Boolean(profileData.onboarded),
+    cvText: profileData.cv_text,
+    skills: Array.isArray(profileData.skills) ? profileData.skills : [],
+    fullName: profileData.full_name,
+    dob: profileData.dob,
+    currentPosition: profileData.current_position,
+    education: Array.isArray(data?.education) ? data.education : [],
+    preferences: data?.preferences,
+    settings: data?.settings,
+    suggestedJobs: Array.isArray(data?.suggested_jobs) ? data.suggested_jobs : [],
+  };
+};
 
 interface AuthContextType {
   user: User | null;
@@ -34,10 +85,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const authenticatedFetch = async (
+  const authenticatedFetch = useCallback(async (
     url: string,
     options: RequestInit = {},
-    authUser: User | null = user,
+    authUser: User | null = auth.currentUser,
   ) => {
     if (!authUser) {
       throw new Error("User not authenticated");
@@ -68,36 +119,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     return response;
-  };
+  }, []);
 
-  const fetchProfile = async (authUser: User) => {
+  const fetchProfile = useCallback(async (authUser: User) => {
     try {
-      const response = await authenticatedFetch(
-        apiUrl('/api/v1/user/profile'),
+      let response = await authenticatedFetch(
+        apiUrl('/api/v1/user/me'),
         {},
         authUser,
       );
-      if (response.ok) {
-        const data = await response.json();
-        setProfile({
-          isOnboarded: data.onboarded,
-          cvText: data.cv_text,
-          skills: data.skills,
-          fullName: data.full_name,
-          dob: data.dob,
-          currentPosition: data.current_position
-        });
+
+      if (!response.ok) {
+        console.warn(`Profile bundle request failed with ${response.status}; falling back to basic profile.`);
+        response = await authenticatedFetch(
+          apiUrl('/api/v1/user/profile'),
+          {},
+          authUser,
+        );
       }
+
+      if (!response.ok) {
+        const detail = await response.text().catch(() => '');
+        throw new Error(`Profile request failed with ${response.status}: ${detail}`);
+      }
+
+      const data = await response.json();
+      setProfile(normalizeUserProfile(data));
     } catch (error) {
       console.error("Error fetching user profile", error);
+      setProfile(null);
     }
-  };
+  }, [authenticatedFetch]);
 
-  const refreshProfile = async () => {
+  const refreshProfile = useCallback(async () => {
     if (user) {
       await fetchProfile(user);
     }
-  };
+  }, [fetchProfile, user]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -128,28 +186,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [fetchProfile]);
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = useCallback(async () => {
     try {
       await signInWithPopup(auth, googleProvider);
     } catch (error) {
       console.error("Error signing in with Google", error);
       throw error;
     }
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await signOut(auth);
     } catch (error) {
       console.error("Error signing out", error);
       throw error;
     }
-  };
+  }, []);
+
+  const contextValue = useMemo(
+    () => ({
+      user,
+      profile,
+      loading,
+      signInWithGoogle,
+      logout,
+      refreshProfile,
+      authenticatedFetch,
+    }),
+    [user, profile, loading, signInWithGoogle, logout, refreshProfile, authenticatedFetch],
+  );
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signInWithGoogle, logout, refreshProfile, authenticatedFetch }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,10 +1,19 @@
 import os
+import sys
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
+
+from django.core.exceptions import ImproperlyConfigured
+from dotenv import load_dotenv
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 BACKEND_ROOT = BASE_DIR.parent
+REPO_ROOT = BACKEND_ROOT.parent
+load_dotenv(REPO_ROOT / ".env")
+load_dotenv(BACKEND_ROOT / ".env")
+if str(BACKEND_ROOT) not in sys.path:
+    sys.path.insert(0, str(BACKEND_ROOT))
 
 
 def _sqlite_path_from_url(db_url: str) -> str:
@@ -27,7 +36,7 @@ def _database_config() -> dict:
 
         if db_url.startswith("postgresql://") or db_url.startswith("postgres://"):
             parsed = urlparse(db_url)
-            return {
+            config = {
                 "ENGINE": "django.db.backends.postgresql",
                 "NAME": parsed.path.lstrip("/"),
                 "USER": parsed.username or "",
@@ -35,20 +44,33 @@ def _database_config() -> dict:
                 "HOST": parsed.hostname or "",
                 "PORT": str(parsed.port or ""),
             }
+            query = parse_qs(parsed.query)
+            sslmode = query.get("sslmode", [None])[0]
+            if sslmode:
+                config["OPTIONS"] = {"sslmode": sslmode}
+            return config
 
-    default_sqlite = BACKEND_ROOT / "data" / "interview_coach.db"
-    if os.getenv("VERCEL") and not db_url:
-        default_sqlite = Path("/tmp/interview_coach.db")
+        raise ImproperlyConfigured("Unsupported DATABASE_URL scheme for Django Admin.")
+
+    if os.getenv("VERCEL"):
+        raise ImproperlyConfigured(
+            "DATABASE_URL is required on Vercel. Configure managed Postgres "
+            "instead of ephemeral /tmp SQLite storage."
+        )
 
     return {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": str(default_sqlite),
+        "NAME": str(BACKEND_ROOT / "data" / "interview_coach.db"),
     }
 
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-change-me")
 DEBUG = os.getenv("DJANGO_DEBUG", "false").lower() == "true"
-ALLOWED_HOSTS = [host.strip() for host in os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",") if host.strip()]
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+    if host.strip()
+]
 
 INSTALLED_APPS = [
     "django.contrib.admin",

@@ -1,19 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import {
-  doc,
-  getDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-} from 'firebase/firestore';
-import {
-  db,
-  handleFirestoreError,
-  OperationType,
-} from '../../../lib/firebase';
 import { useAuth } from '../../auth';
+import { apiUrl } from '../../../lib/api';
 import {
   ArrowLeft,
   CheckCircle2,
@@ -60,7 +48,7 @@ const STAR_STEPS: Array<'situation' | 'task' | 'action' | 'result'> = [
 
 export function SessionDetail() {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, authenticatedFetch } = useAuth();
   const [session, setSession] = useState<SessionData | null>(null);
   const [turns, setTurns] = useState<InterviewTurn[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,35 +57,23 @@ export function SessionDetail() {
     async function fetchData() {
       if (!id || !user) return;
       try {
-        const docRef = doc(db, 'interview_sessions', id);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setSession(docSnap.data() as SessionData);
-        }
+        const response = await authenticatedFetch(apiUrl(`/api/v1/history/${id}`));
+        if (!response.ok) throw new Error(`Session detail failed: ${response.status}`);
 
-        const q = query(
-          collection(db, 'interview_turns'),
-          where('sessionId', '==', id),
-          where('userId', '==', user.uid),
-        );
-        const turnsSnap = await getDocs(q);
-        const loadedTurns = turnsSnap.docs
-          .map((d) => ({ id: d.id, ...d.data() } as InterviewTurn))
+        const data = await response.json();
+        setSession(data as SessionData);
+        const loadedTurns = ((data.turns || []) as InterviewTurn[])
           .sort((a, b) => a.turnOrder - b.turnOrder);
         setTurns(loadedTurns);
       } catch (error) {
-        handleFirestoreError(
-          error,
-          OperationType.GET,
-          `interview_sessions/${id}`,
-        );
+        console.error('Error loading session detail:', error);
       } finally {
         setLoading(false);
       }
     }
 
     fetchData();
-  }, [id, user]);
+  }, [id, user, authenticatedFetch]);
 
   if (loading) {
     return (
@@ -149,6 +125,9 @@ export function SessionDetail() {
     betterVersion: isVi ? 'Phiên bản tốt hơn' : 'Elevate Standard',
     goToDashboard: isVi ? 'Về Bảng điều khiển' : 'Go to Dashboard',
     readinessLabel: isVi ? 'Chỉ số sẵn sàng' : 'Readiness',
+    warmup: isVi ? 'Khởi động' : 'Warm-up',
+    needsClarification: isVi ? 'Cần làm rõ' : 'Needs clarification',
+    evaluating: isVi ? 'Đang phân tích STAR cho câu trả lời này...' : 'Analyzing STAR feedback for this answer...',
   };
 
   const scoreLabel = (key: string) =>
@@ -166,16 +145,19 @@ export function SessionDetail() {
     confidence: 0,
   };
   if (scoredTurns.length > 0) {
+    let totalWeight = 0;
     const totals = scoredTurns.reduce((acc, turn) => {
       const s = turn.evaluation!.scores;
-      competencySums.relevance += s.relevance;
-      competencySums.structure += s.structure;
-      competencySums.specificity += s.specificity;
-      competencySums.clarity += s.clarity;
-      competencySums.confidence += s.confidence;
-      return acc + (s.relevance + s.structure + s.specificity + s.clarity + s.confidence) / 5;
+      const weight = turn.isWarmup ? 0.25 : 1;
+      totalWeight += weight;
+      competencySums.relevance += s.relevance * weight;
+      competencySums.structure += s.structure * weight;
+      competencySums.specificity += s.specificity * weight;
+      competencySums.clarity += s.clarity * weight;
+      competencySums.confidence += s.confidence * weight;
+      return acc + ((s.relevance + s.structure + s.specificity + s.clarity + s.confidence) / 5) * weight;
     }, 0);
-    avgScore = totals / scoredTurns.length;
+    avgScore = totalWeight ? totals / totalWeight : 0;
   }
   const readinessPct = Math.round((avgScore / 5) * 100);
 
@@ -183,7 +165,9 @@ export function SessionDetail() {
     Object.keys(competencySums) as CompetencyKey[]
   ).map((key) => ({
     key,
-    score: scoredTurns.length ? competencySums[key] / scoredTurns.length : 0,
+    score: scoredTurns.length
+      ? competencySums[key] / scoredTurns.reduce((sum, turn) => sum + (turn.isWarmup ? 0.25 : 1), 0)
+      : 0,
   }));
   const sortedByScore = [...perCompetencyAvg].sort((a, b) => b.score - a.score);
   const strengths = sortedByScore.slice(0, 2);
@@ -296,9 +280,10 @@ export function SessionDetail() {
                 {t.overviewTitle}
               </h2>
               {session.summary && (
-                <p className="text-text-muted leading-relaxed">
-                  {session.summary}
-                </p>
+                <FormattedText
+                  text={session.summary}
+                  className="text-text-muted text-sm"
+                />
               )}
               {session.keyTakeaways && session.keyTakeaways.length > 0 && (
                 <div className="mt-6">
@@ -354,6 +339,18 @@ export function SessionDetail() {
                     <p className="font-serif text-lg leading-snug text-text-primary flex-1">
                       {turn.question}
                     </p>
+                    <div className="flex flex-col items-end gap-2">
+                      {turn.isWarmup && (
+                        <Badge variant="gold-outline" size="sm">
+                          {t.warmup}
+                        </Badge>
+                      )}
+                      {turn.gateResult && !turn.gateResult.pass && (
+                        <Badge variant="warning" size="sm">
+                          {t.needsClarification}
+                        </Badge>
+                      )}
+                    </div>
                   </header>
 
                   {/* Answer */}
@@ -367,6 +364,15 @@ export function SessionDetail() {
                   </div>
 
                   {/* Evaluation */}
+                  {!turn.evaluation && turn.evaluationStatus === 'pending' && (
+                    <div className="px-6 py-6 bg-cream-50">
+                      <div className="flex items-center gap-3 rounded-xl border border-cream-200 bg-white px-4 py-4 text-text-dark/70">
+                        <Loader2 className="w-4 h-4 animate-spin text-gold-600" aria-hidden />
+                        <span className="text-sm font-medium">{t.evaluating}</span>
+                      </div>
+                    </div>
+                  )}
+
                   {turn.evaluation && (
                     <div className="px-6 py-6 space-y-5 bg-cream-50">
                       {/* Scores */}

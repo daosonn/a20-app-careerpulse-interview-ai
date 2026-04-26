@@ -1,6 +1,12 @@
 import asyncio
+from contextlib import ExitStack
+import os
+from pathlib import Path
+import sqlite3
+
 from langgraph.graph import StateGraph, END, START
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.sqlite import SqliteSaver
+from app.core.database import DATABASE_URL
 from .state import InterviewState
 from .profiler import extract_cv_info_logic, search_questions_logic
 from .interviewer import generate_ai_batch
@@ -8,6 +14,7 @@ from .evaluator import evaluate_star_logic
 
 # Standard retry policy
 retry_policy = {"max_attempts": 3}
+_CHECKPOINT_STACK = ExitStack()
 
 async def profiler_node(state: InterviewState):
     """Integrates Profiler logic directly."""
@@ -30,9 +37,17 @@ async def interviewer_node(state: InterviewState):
     """Orchestrates dynamic batch generation and question popping."""
     pending = list(state.get("pending_questions", []))
     count = state.get("total_question_count", 0)
+    max_count = state.get("max_question_count", 5) or 5
+
+    if count >= max_count:
+        return {
+            "chat_history": [{"role": "ai", "content": "Thank you for the interview. We will now wrap up the session."}],
+            "pending_questions": [],
+            "current_phase": "Closing",
+        }
     
     # Check if we need a new batch
-    if not pending and count < 9:
+    if not pending and count < max_count:
         new_batch = await generate_ai_batch(state)
         pending.extend(new_batch)
     
@@ -47,11 +62,13 @@ async def interviewer_node(state: InterviewState):
     next_q = item["question"]
     tip = item.get("tip", "")
     model_ans = item.get("model_answer", "")
+    phase = item.get("phase") or state.get("current_phase") or "Behavioral"
     
     return {
         "chat_history": [{"role": "ai", "content": next_q, "tip": tip}],
         "pending_questions": pending,
         "total_question_count": count + 1,
+        "current_phase": phase,
         "current_model_answer": model_ans,
         "current_tip": tip
     }
@@ -117,8 +134,40 @@ workflow.add_conditional_edges(START, route_next)
 workflow.add_edge("profiler", "unified")
 workflow.add_edge("unified", END)
 
+def _postgres_checkpoint_url() -> str:
+    return DATABASE_URL.replace("postgresql+psycopg2://", "postgresql://", 1)
+
+
+def _build_checkpointer():
+    if DATABASE_URL.startswith("sqlite"):
+        default_path = Path(__file__).resolve().parents[2] / "data" / "langgraph_checkpoints.sqlite"
+        checkpoint_path = Path(os.getenv("LANGGRAPH_CHECKPOINT_SQLITE_PATH", str(default_path)))
+        checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+        conn = sqlite3.connect(str(checkpoint_path), check_same_thread=False)
+        saver = SqliteSaver(conn)
+        saver.setup()
+        return saver
+
+    if DATABASE_URL.startswith("postgresql"):
+        try:
+            from langgraph.checkpoint.postgres import PostgresSaver
+        except ImportError as exc:
+            raise RuntimeError(
+                "Postgres LangGraph checkpointing requires "
+                "`langgraph-checkpoint-postgres`. Install backend requirements."
+            ) from exc
+
+        saver = _CHECKPOINT_STACK.enter_context(
+            PostgresSaver.from_conn_string(_postgres_checkpoint_url())
+        )
+        saver.setup()
+        return saver
+
+    raise RuntimeError(f"Unsupported DATABASE_URL for LangGraph checkpointing: {DATABASE_URL}")
+
+
 # Persistence
-checkpointer = MemorySaver()
+checkpointer = _build_checkpointer()
 
 # Compile
 app_graph = workflow.compile(checkpointer=checkpointer)

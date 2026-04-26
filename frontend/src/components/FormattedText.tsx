@@ -83,7 +83,43 @@ export function FormattedText({ text, className = '' }: FormattedTextProps) {
 
     if (!line) {
       flushList();
-      continue; // Skip empty lines (they become paragraph breaks)
+      continue;
+    }
+
+    // ### H3
+    const h3Match = line.match(/^###\s+(.+)/);
+    if (h3Match) {
+      flushList();
+      blocks.push(
+        <h3 key={blockKey++} className="font-semibold text-sm uppercase tracking-wide text-gold-400 mt-3 mb-1">
+          {renderInlineFormatting(h3Match[1])}
+        </h3>
+      );
+      continue;
+    }
+
+    // ## H2
+    const h2Match = line.match(/^##\s+(.+)/);
+    if (h2Match) {
+      flushList();
+      blocks.push(
+        <h2 key={blockKey++} className="font-serif text-base font-semibold text-text-primary mt-4 mb-1 border-b border-white/10 pb-1">
+          {renderInlineFormatting(h2Match[1])}
+        </h2>
+      );
+      continue;
+    }
+
+    // # H1
+    const h1Match = line.match(/^#\s+(.+)/);
+    if (h1Match) {
+      flushList();
+      blocks.push(
+        <h1 key={blockKey++} className="font-serif text-lg font-bold text-gold-400 mt-2 mb-2">
+          {renderInlineFormatting(h1Match[1])}
+        </h1>
+      );
+      continue;
     }
 
     // Numbered list: "1. text" or "1) text"

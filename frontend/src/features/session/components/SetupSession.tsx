@@ -41,6 +41,13 @@ async function parseErrorMessage(
   return fallback;
 }
 
+function extractSessionId(payload: any): string {
+  const rawId = payload?.session_id ?? payload?.sessionId ?? payload?.id;
+  if (rawId === undefined || rawId === null) return '';
+  const sessionId = String(rawId).trim();
+  return /^\d+$/.test(sessionId) ? sessionId : '';
+}
+
 /* ------------------------------------------------------------------ */
 /*  Sub-components                                                     */
 /* ------------------------------------------------------------------ */
@@ -134,7 +141,7 @@ function TileRadioGroup<V extends string>({
 /* ------------------------------------------------------------------ */
 
 export function SetupSession() {
-  const { user, authenticatedFetch } = useAuth();
+  const { user, profile, authenticatedFetch } = useAuth();
   const navigate = useNavigate();
 
   const [cvText, setCvText] = useState('');
@@ -146,12 +153,42 @@ export function SetupSession() {
   const [interviewType, setInterviewType] = useState<'Behavioral' | 'Technical' | 'HR'>('Behavioral');
   const [language, setLanguage] = useState<'vi' | 'en'>('vi');
   const [isStressTest, setIsStressTest] = useState(false);
+  const [questionsPerSession, setQuestionsPerSession] = useState(5);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
 
   const [recommendedJobs, setRecommendedJobs] = useState<any[]>([]);
   const [isFetchingRecommendations, setIsFetchingRecommendations] = useState(false);
   const [selectedJobIndex, setSelectedJobIndex] = useState<number | null>(null);
+  const defaultsLoadedRef = useRef(false);
+
+  const clearJobRecommendations = () => {
+    setRecommendedJobs([]);
+    setSelectedJobIndex(null);
+  };
+
+  React.useEffect(() => {
+    if (!profile || defaultsLoadedRef.current) return;
+    defaultsLoadedRef.current = true;
+
+    if (profile.cvText && !cvText.trim()) {
+      setCvText(profile.cvText);
+      setFileName('CV đã lưu trong hồ sơ');
+    }
+
+    const prefs = profile.preferences;
+    if (!prefs) return;
+    if (prefs.preferred_language === 'vi' || prefs.preferred_language === 'en') {
+      setLanguage(prefs.preferred_language);
+    }
+    if (['Behavioral', 'Technical', 'HR'].includes(prefs.default_interview_type)) {
+      setInterviewType(prefs.default_interview_type as 'Behavioral' | 'Technical' | 'HR');
+    }
+    setIsStressTest(Boolean(prefs.stress_test_default));
+    if (prefs.questions_per_session) {
+      setQuestionsPerSession(prefs.questions_per_session);
+    }
+  }, [profile, cvText]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -163,6 +200,7 @@ export function SetupSession() {
       const text = await extractTextFromFile(file);
       setCvText(text);
       setFileName(file.name);
+      clearJobRecommendations();
     } catch (err: any) {
       setError(err.message || 'Lỗi khi đọc file CV.');
     } finally {
@@ -174,34 +212,30 @@ export function SetupSession() {
   const fetchRecommendations = async (text: string) => {
     if (!text.trim()) return;
     setIsFetchingRecommendations(true);
+    setError('');
     try {
       const response = await authenticatedFetch(apiUrl('/api/v1/interview/recommend-jobs'), {
         method: 'POST',
         body: JSON.stringify({ cv_text: text, limit: 3 }),
       });
-      if (response.ok) {
-        const data = await response.json();
-        setRecommendedJobs(data);
-        if (data.length > 0) {
-          // Auto-select first job if none selected
-          setSelectedJobIndex(0);
-          setJobDescription(data[0].description);
-        }
+      if (!response.ok) {
+        throw new Error(await parseErrorMessage(response, 'Không thể lấy gợi ý job phù hợp.'));
       }
-    } catch (err) {
+
+      const data = await response.json();
+      setRecommendedJobs(data);
+      if (data.length > 0) {
+        // Auto-select first job if none selected
+        setSelectedJobIndex(0);
+        setJobDescription(data[0].description);
+      }
+    } catch (err: any) {
       console.error('Failed to fetch recommendations', err);
+      setError(err?.message || 'Không thể lấy gợi ý job phù hợp. Bạn vẫn có thể nhập JD thủ công.');
     } finally {
       setIsFetchingRecommendations(false);
     }
   };
-
-  // Trigger recommendations when cvText changes (and is long enough)
-  React.useEffect(() => {
-    if (cvText.length > 100 && recommendedJobs.length === 0) {
-      const timer = setTimeout(() => fetchRecommendations(cvText), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [cvText]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -226,6 +260,7 @@ export function SetupSession() {
           interview_type: interviewType,
           language: language,
           is_stress_test: isStressTest,
+          question_count: questionsPerSession,
         }),
       });
 
@@ -236,7 +271,12 @@ export function SetupSession() {
       }
 
       const data = await response.json();
-      navigate(`/session/${data.session_id}`);
+      const sessionId = extractSessionId(data);
+      if (!sessionId) {
+        throw new Error('Backend đã tạo phản hồi không có session_id hợp lệ.');
+      }
+
+      navigate(`/session/${sessionId}`);
     } catch (err) {
       console.error(err);
       setError(
@@ -290,8 +330,15 @@ export function SetupSession() {
                   CV của bạn
                 </label>
                 <p className="text-sm text-text-muted mb-3 leading-relaxed">
-                  Tải lên hoặc dán nội dung CV
+                  Dùng CV đã lưu trong hồ sơ, tải CV khác hoặc dán trực tiếp nội dung CV.
                 </p>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  accept=".pdf,.docx,.txt"
+                  className="hidden"
+                />
 
                 {!fileName ? (
                   <div
@@ -307,34 +354,54 @@ export function SetupSession() {
                     <p className="text-xs text-text-muted mt-1">
                       PDF, DOCX, TXT
                     </p>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleFileUpload}
-                      accept=".pdf,.docx,.txt"
-                      className="hidden"
-                    />
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between bg-gold-500/10 border border-gold-500/40 p-3 rounded-xl">
-                    <div className="flex items-center gap-2 text-gold-300 min-w-0">
-                      <FileText className="w-4 h-4 shrink-0" aria-hidden />
-                      <span className="font-medium text-sm truncate">
-                        {fileName}
-                      </span>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between bg-gold-500/10 border border-gold-500/40 p-3 rounded-xl">
+                      <div className="flex items-center gap-2 text-gold-300 min-w-0">
+                        <FileText className="w-4 h-4 shrink-0" aria-hidden />
+                        <span className="font-medium text-sm truncate">
+                          {fileName}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFileName('');
+                          setCvText('');
+                          clearJobRecommendations();
+                        }}
+                        className="p-1 hover:bg-gold-500/20 rounded-md text-gold-300 shrink-0"
+                        aria-label="Xóa file CV"
+                      >
+                        <X className="w-4 h-4" aria-hidden />
+                      </button>
                     </div>
-                    <button
+                    <Button
                       type="button"
-                      onClick={() => {
-                        setFileName('');
-                        setCvText('');
-                      }}
-                      className="p-1 hover:bg-gold-500/20 rounded-md text-gold-300 shrink-0"
-                      aria-label="Xóa file CV"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isParsingFile}
                     >
-                      <X className="w-4 h-4" aria-hidden />
-                    </button>
+                      <Upload className="w-4 h-4" aria-hidden />
+                      Tải lên CV khác
+                    </Button>
                   </div>
+                )}
+
+                {!fileName && profile?.cvText && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCvText(profile.cvText || '');
+                      setFileName('CV đã lưu trong hồ sơ');
+                      clearJobRecommendations();
+                    }}
+                    className="mt-3 text-xs text-gold-400 hover:text-gold-300 transition-colors underline underline-offset-4"
+                  >
+                    Dùng CV đã lưu trong hồ sơ
+                  </button>
                 )}
 
                 {isParsingFile && (
@@ -350,6 +417,7 @@ export function SetupSession() {
                     onChange={(e) => {
                       setCvText(e.target.value);
                       if (!e.target.value) setFileName('');
+                      clearJobRecommendations();
                     }}
                     rows={4}
                     placeholder="Nội dung CV sẽ hiển thị ở đây. Bạn cũng có thể dán trực tiếp text vào..."
@@ -367,10 +435,11 @@ export function SetupSession() {
                     <button 
                       type="button" 
                       onClick={() => fetchRecommendations(cvText)}
+                      disabled={isFetchingRecommendations}
                       className="text-xs text-gold-400 hover:text-gold-300 transition-colors flex items-center gap-1"
                     >
                       <Sparkles className="w-3 h-3" />
-                      Tìm lại job phù hợp
+                      Tìm job phù hợp
                     </button>
                   )}
                 </div>
@@ -378,7 +447,7 @@ export function SetupSession() {
                 <p className="text-sm text-text-muted mb-3 leading-relaxed">
                   {recommendedJobs.length > 0 
                     ? "Chúng tôi đã tìm thấy các vị trí phù hợp với CV của bạn. Hãy chọn một vị trí để bắt đầu."
-                    : "Tải CV lên để hệ thống tự động tìm kiếm vị trí phù hợp hoặc dán JD thủ công."}
+                    : "Mặc định hệ thống sẽ dùng JD bạn nhập. Nếu chưa có JD, bấm Tìm job phù hợp để AI gợi ý vị trí từ CV."}
                 </p>
 
                 {isFetchingRecommendations ? (
@@ -457,7 +526,7 @@ export function SetupSession() {
                     value={jobDescription}
                     onChange={(e) => setJobDescription(e.target.value)}
                     rows={5}
-                    placeholder="Dán nội dung JD vào đây hoặc để AI tự tìm kiếm từ CV..."
+                    placeholder="Dán nội dung JD/vị trí ứng tuyển vào đây. Chỉ bấm Tìm job phù hợp nếu bạn muốn AI gợi ý job từ CV."
                   />
                 )}
               </div>

@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { collection, query, where, getDocs, doc, deleteDoc } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from '../../../lib/firebase';
 import { useAuth } from '../../auth';
+import { apiUrl } from '../../../lib/api';
 import {
   Session,
   ChartDataPoint,
@@ -27,7 +26,7 @@ const COMPETENCY_LABELS_VI: Record<keyof CompetencyAverages, string> = {
 };
 
 export function useDashboardData() {
-  const { user } = useAuth();
+  const { user, authenticatedFetch } = useAuth();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [competencyAverages, setCompetencyAverages] =
     useState<CompetencyAverages>(EMPTY_COMPETENCIES);
@@ -38,77 +37,22 @@ export function useDashboardData() {
     if (!user) return;
     setLoading(true);
     try {
-      // Fetch sessions
-      const qSessions = query(
-        collection(db, 'interview_sessions'),
-        where('userId', '==', user.uid)
-      );
-      const sessionSnap = await getDocs(qSessions);
-      const fetchedSessions = sessionSnap.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Session[];
+      const response = await authenticatedFetch(apiUrl('/api/v1/dashboard/metrics'));
+      if (!response.ok) throw new Error(`Dashboard metrics failed: ${response.status}`);
 
-      // Sort client-side
-      fetchedSessions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-      // Fetch turns to calculate scores
-      const qTurns = query(
-        collection(db, 'interview_turns'),
-        where('userId', '==', user.uid)
-      );
-      const turnsSnap = await getDocs(qTurns);
-      const turns = turnsSnap.docs.map(d => d.data());
-
-      // Calculate avg score per session
-      const sessionsWithScores = fetchedSessions.map(session => {
-        const sessionTurns = turns.filter(t => t.sessionId === session.id && t.evaluation);
-        if (sessionTurns.length === 0) return session;
-
-        const totalScore = sessionTurns.reduce((acc, turn) => {
-          const s = turn.evaluation.scores;
-          return acc + (s.relevance + s.structure + s.specificity + s.clarity + s.confidence) / 5;
-        }, 0);
-
-        return {
-          ...session,
-          avgScore: totalScore / sessionTurns.length
-        };
-      });
-
-      setSessions(sessionsWithScores);
-
-      // Aggregate per-competency averages across ALL evaluated turns.
-      const evaluatedTurns = turns.filter(t => t?.evaluation?.scores);
-      setEvaluatedTurnCount(evaluatedTurns.length);
-
-      if (evaluatedTurns.length > 0) {
-        const sums: CompetencyAverages = { ...EMPTY_COMPETENCIES };
-        for (const turn of evaluatedTurns) {
-          const s = turn.evaluation.scores;
-          sums.relevance += s.relevance;
-          sums.structure += s.structure;
-          sums.specificity += s.specificity;
-          sums.clarity += s.clarity;
-          sums.confidence += s.confidence;
-        }
-        const n = evaluatedTurns.length;
-        setCompetencyAverages({
-          relevance: sums.relevance / n,
-          structure: sums.structure / n,
-          specificity: sums.specificity / n,
-          clarity: sums.clarity / n,
-          confidence: sums.confidence / n,
-        });
-      } else {
-        setCompetencyAverages(EMPTY_COMPETENCIES);
-      }
+      const data = await response.json();
+      setSessions((data.sessions || []) as Session[]);
+      setCompetencyAverages(data.competencyAverages || EMPTY_COMPETENCIES);
+      setEvaluatedTurnCount(data.evaluatedTurnCount || 0);
     } catch (error) {
-      handleFirestoreError(error, OperationType.LIST, 'interview_sessions');
+      console.error('Error loading dashboard metrics:', error);
+      setSessions([]);
+      setCompetencyAverages(EMPTY_COMPETENCIES);
+      setEvaluatedTurnCount(0);
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, authenticatedFetch]);
 
   useEffect(() => {
     fetchData();
@@ -120,13 +64,16 @@ export function useDashboardData() {
     }
 
     try {
-      await deleteDoc(doc(db, 'interview_sessions', sessionId));
+      const response = await authenticatedFetch(apiUrl(`/api/v1/dashboard/sessions/${sessionId}`), {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error(`Delete session failed: ${response.status}`);
       setSessions(prev => prev.filter(s => s.id !== sessionId));
     } catch (error) {
-      console.error("Error deleting session:", error);
+      console.error('Error deleting session:', error);
       alert('Đã có lỗi xảy ra khi xóa phiên phỏng vấn. Vui lòng thử lại.');
     }
-  }, []);
+  }, [authenticatedFetch]);
 
   const chartData: ChartDataPoint[] = [...sessions]
     .filter(s => s.avgScore !== undefined)

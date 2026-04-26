@@ -1,0 +1,34 @@
+{
+  "project": "CareerPulse AI Interview Coach",
+  "context": [
+    ".agent/project_context.md",
+    ".codex/context.md"
+  ],
+  "automation": {
+    "default": "allow local development actions",
+    "allow": [
+      "read/search repository files",
+      "edit source, docs, and AI operating files",
+      "run git status and git diff",
+      "run frontend lint/build/dev commands",
+      "run backend FastAPI/Django local checks",
+      "run bash scripts/setup_hooks.sh"
+    ],
+    "confirm_first": [
+      "editing .env, keys, tokens, credentials, or service accounts",
+      "database drop, truncate, flush, or destructive rollback",
+      "recursive directory deletion outside generated temporary artifacts",
+      "production deploy or irreversible infrastructure operation",
+      "force push, hard reset, git clean, or history rewrite"
+    ],
+    "never_commit": [
+      ".ai-log/*.jsonl"
+    ]
+  },
+  "validation": {
+    "frontend": "cd frontend && npm run lint",
+    "frontend_build": "cd frontend && npm run build",
+    "django_admin": "cd backend/django_admin && python manage.py check"
+  }
+}
+

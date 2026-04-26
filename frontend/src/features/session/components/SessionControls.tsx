@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mic, Square, RotateCcw, Send, Keyboard, Loader2 } from 'lucide-react';
+import { Mic, Square, RotateCcw, Send, Keyboard, Loader2, ShieldAlert } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 
 interface Props {
@@ -11,6 +11,11 @@ interface Props {
   audioLevel: number;
   error: string;
   isVi: boolean;
+  recordingDurationMs?: number;
+  maxDurationMs?: number;
+  silenceMs?: number;
+  silenceStopMs?: number;
+  permissionState?: 'unknown' | 'prompt' | 'granted' | 'denied';
   onStartRecording: () => void;
   onStopRecording: () => void;
   onReRecord: () => void;
@@ -18,15 +23,27 @@ interface Props {
   onTranscriptChange: (text: string) => void;
 }
 
+function formatTime(ms = 0) {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const minutes = Math.floor(total / 60).toString().padStart(2, '0');
+  const seconds = (total % 60).toString().padStart(2, '0');
+  return `${minutes}:${seconds}`;
+}
+
 export function SessionControls({
   isProcessing,
-  isRecording: _isRecording, // retained for prop compat; state derived from recordingState
+  isRecording: _isRecording,
   recordingState,
   audioUrl,
   transcript,
   audioLevel,
   error,
   isVi,
+  recordingDurationMs = 0,
+  maxDurationMs = 120_000,
+  silenceMs = 0,
+  silenceStopMs = 12_000,
+  permissionState = 'unknown',
   onStartRecording,
   onStopRecording,
   onReRecord,
@@ -36,19 +53,21 @@ export function SessionControls({
   const [inputMode, setInputMode] = useState<'keyboard' | 'voice'>('keyboard');
 
   const t = {
-    stopRecording: isVi ? 'Dừng thu âm' : 'Stop',
-    reRecord: isVi ? 'Ghi âm lại' : 'Re-record',
-    send: isVi ? 'Gửi' : 'Send',
+    stopRecording: isVi ? 'Dừng ghi âm' : 'Stop',
+    reRecord: isVi ? 'Ghi lại' : 'Re-record',
+    send: isVi ? 'Gửi câu trả lời' : 'Send answer',
     typePlaceholder: isVi
-      ? 'Hoặc gõ câu trả lời của bạn vào đây...'
-      : 'Or type your answer here...',
-    listening: isVi ? 'Đang nghe...' : 'Listening...',
+      ? 'Nhập câu trả lời hoặc bật micro để trả lời bằng giọng nói...'
+      : 'Type your answer or use the microphone...',
     recording: isVi ? 'Đang ghi âm' : 'Recording',
-    noAudio: isVi ? '(Chưa nhận được âm thanh)' : '(No audio detected)',
-    yourRecording: isVi ? 'Bản ghi âm của bạn' : 'Your recording',
+    review: isVi ? 'Kiểm tra bản ghi' : 'Review recording',
     switchToKeyboard: isVi ? 'Chuyển sang bàn phím' : 'Switch to keyboard',
-    switchToVoice: isVi ? 'Chuyển sang giọng nói' : 'Switch to voice',
+    switchToVoice: isVi ? 'Trả lời bằng giọng nói' : 'Answer by voice',
+    permissionDenied: isVi ? 'Micro đang bị chặn' : 'Microphone blocked',
   };
+
+  const durationPct = Math.min(100, (recordingDurationMs / maxDurationMs) * 100);
+  const silencePct = Math.min(100, (silenceMs / silenceStopMs) * 100);
 
   const handleSend = () => {
     if ((transcript.trim() || audioUrl) && !isProcessing) {
@@ -68,104 +87,98 @@ export function SessionControls({
   };
 
   return (
-    <div className="bg-navy-900 border-t border-gold-500/25 px-4 sm:px-8 py-4">
-      <div className="max-w-5xl mx-auto">
-        {error && (
+    <div className="px-4 sm:px-8 pb-5">
+      <div className="max-w-6xl mx-auto rounded-[1.6rem] border border-cyan-200/25 bg-navy-950/80 shadow-[0_0_40px_rgba(56,189,248,0.14)] backdrop-blur-xl overflow-hidden">
+        {(error || permissionState === 'denied') && (
           <div
             role="alert"
-            className="mb-3 text-sm font-medium text-status-error text-center bg-status-error/10 border border-status-error/40 px-3 py-2 rounded-lg"
+            className="flex items-center justify-center gap-2 border-b border-status-error/30 bg-status-error/10 px-4 py-2 text-sm font-medium text-status-error"
           >
-            {error}
+            <ShieldAlert className="w-4 h-4" aria-hidden />
+            {error || t.permissionDenied}
           </div>
         )}
 
-        {/* Voice recording HUD */}
         {inputMode === 'voice' && recordingState === 'recording' && (
-          <div className="mb-3 flex items-center justify-center gap-4 flex-wrap">
-            <div className="flex items-end gap-[3px] h-6" aria-hidden>
-              {[1, 2, 3, 4, 5].map((i) => {
-                const active = audioLevel > i * 3;
-                return (
-                  <div
-                    key={i}
-                    className="w-1.5 rounded-full transition-all duration-100"
-                    style={{
-                      height: `${Math.max(
-                        4,
-                        Math.min(24, (audioLevel / 80) * 24 * (0.4 + i * 0.12)),
-                      )}px`,
-                      backgroundColor: active
-                        ? 'var(--color-gold-500)'
-                        : 'var(--color-navy-600)',
-                      opacity: active ? 1 : 0.7,
-                    }}
-                  />
-                );
-              })}
+          <div className="px-4 sm:px-6 pt-4">
+            <div className="grid gap-3 md:grid-cols-[1fr_auto] items-center">
+              <div className="rounded-2xl border border-cyan-200/15 bg-white/[0.04] p-4">
+                <div className="flex items-center justify-between gap-4 mb-3">
+                  <div className="flex items-center gap-3">
+                    <span className="relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-status-error/15 text-status-error">
+                      <span className="absolute inset-0 rounded-full animate-ping bg-status-error/20" />
+                      <Mic className="relative w-5 h-5" aria-hidden />
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-text-primary">{t.recording}</p>
+                      <p className="text-xs text-text-muted">
+                        {formatTime(recordingDurationMs)} / {formatTime(maxDurationMs)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-end gap-1 h-9" aria-hidden>
+                    {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                      <span
+                        key={i}
+                        className="w-1.5 rounded-full bg-cyan-300 transition-all"
+                        style={{
+                          height: `${Math.max(5, Math.min(34, (audioLevel / 70) * 34 * (0.45 + i * 0.08)))}px`,
+                          opacity: audioLevel > i * 2 ? 1 : 0.25,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="h-1.5 overflow-hidden rounded-full bg-navy-700">
+                    <span className="block h-full rounded-full bg-gold-400" style={{ width: `${durationPct}%` }} />
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-navy-700">
+                    <span className="block h-full rounded-full bg-cyan-300" style={{ width: `${silencePct}%` }} />
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={onStopRecording}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gold-500 px-5 py-4 text-sm font-bold text-navy-950 transition hover:bg-gold-400 active:scale-[0.98]"
+              >
+                <Square className="w-4 h-4 fill-current" aria-hidden />
+                {t.stopRecording}
+              </button>
             </div>
-            <div className="flex items-center gap-2 text-gold-400 text-sm font-semibold">
-              <span
-                className="w-2.5 h-2.5 rounded-full bg-gold-500 animate-gold-pulse"
-                aria-hidden
-              />
-              {t.recording}
-            </div>
-            {audioLevel <= 1 && (
-              <span className="text-xs text-text-muted">{t.noAudio}</span>
-            )}
-            <button
-              onClick={onStopRecording}
-              className="inline-flex items-center gap-1.5 bg-gold-500 hover:bg-gold-400 text-navy-950 px-4 py-2 rounded-full text-sm font-semibold transition-colors active:scale-[0.98]"
-            >
-              <Square className="w-3.5 h-3.5 fill-current" aria-hidden />
-              {t.stopRecording}
-            </button>
           </div>
         )}
 
-        {/* Voice reviewing */}
         {inputMode === 'voice' && recordingState === 'reviewing' && (
-          <div className="mb-3 p-4 bg-navy-800 rounded-xl border border-navy-600 flex flex-col gap-3">
-            {audioUrl && (
-              <div>
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-gold-400 block mb-1.5">
-                  {t.yourRecording}
-                </span>
+          <div className="px-4 sm:px-6 pt-4">
+            <div className="rounded-2xl border border-gold-500/25 bg-gold-500/[0.06] p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-gold-300">
+                  {t.review}
+                </p>
+                <button
+                  onClick={onReRecord}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-gold-500/50 px-3 py-1.5 text-xs font-semibold text-gold-300 transition hover:bg-gold-500/10"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" aria-hidden />
+                  {t.reRecord}
+                </button>
+              </div>
+              {audioUrl && (
                 <audio
                   src={audioUrl}
                   controls
-                  className="w-full h-10"
+                  className="w-full h-9"
                   style={{ accentColor: 'var(--color-gold-500)' }}
                 />
-              </div>
-            )}
-            <div className="flex items-center justify-end gap-2">
-              <button
-                onClick={onReRecord}
-                className="inline-flex items-center gap-1.5 border border-gold-500/60 text-gold-300 hover:bg-gold-500/10 hover:text-gold-400 px-4 py-2 rounded-full text-sm font-semibold transition-colors"
-              >
-                <RotateCcw className="w-4 h-4" aria-hidden />
-                {t.reRecord}
-              </button>
-              <button
-                onClick={handleSend}
-                disabled={isProcessing}
-                className="inline-flex items-center gap-1.5 bg-gold-500 hover:bg-gold-400 text-navy-950 px-5 py-2 rounded-full text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
-              >
-                {isProcessing ? (
-                  <Loader2 className="w-4 h-4 animate-spin" aria-hidden />
-                ) : (
-                  <Send className="w-4 h-4" aria-hidden />
-                )}
-                {t.send}
-              </button>
+              )}
             </div>
           </div>
         )}
 
-        {/* Main input bar */}
-        <div className="flex items-center gap-2">
-          <div className="flex-1 relative">
+        <div className="flex items-center gap-2 p-4 sm:p-5">
+          <div className="relative flex-1">
             <input
               type="text"
               value={transcript}
@@ -174,16 +187,11 @@ export function SessionControls({
                 if (e.key === 'Enter') handleSend();
               }}
               className={cn(
-                'w-full h-12 rounded-lg border pl-4 pr-12 text-sm font-medium outline-none transition-colors',
-                'bg-navy-700 border-navy-600 text-text-primary placeholder:text-text-muted',
-                'focus:border-gold-400 focus:ring-2 focus:ring-gold-400/40',
-                'disabled:opacity-60 disabled:cursor-not-allowed',
+                'h-13 w-full rounded-2xl border bg-white/[0.06] pl-4 pr-14 text-sm font-medium text-text-primary outline-none transition',
+                'border-cyan-200/20 placeholder:text-text-muted focus:border-cyan-200/60 focus:ring-2 focus:ring-cyan-200/20',
+                'disabled:cursor-not-allowed disabled:opacity-60',
               )}
-              placeholder={
-                inputMode === 'voice' && recordingState === 'recording'
-                  ? t.listening
-                  : t.typePlaceholder
-              }
+              placeholder={t.typePlaceholder}
               disabled={isProcessing || recordingState === 'recording'}
               readOnly={inputMode === 'voice' && recordingState === 'recording'}
             />
@@ -191,17 +199,13 @@ export function SessionControls({
               onClick={handleToggleMode}
               disabled={isProcessing}
               className={cn(
-                'absolute right-1.5 top-1/2 -translate-y-1/2 p-2 rounded-lg transition-colors disabled:opacity-50',
+                'absolute right-1.5 top-1/2 -translate-y-1/2 rounded-xl p-2.5 transition disabled:opacity-50',
                 inputMode === 'voice'
-                  ? 'text-gold-400 hover:bg-gold-500/10'
-                  : 'text-text-muted hover:bg-navy-600 hover:text-gold-400',
+                  ? 'bg-gold-500/15 text-gold-300'
+                  : 'text-text-muted hover:bg-white/10 hover:text-cyan-200',
               )}
-              title={
-                inputMode === 'voice' ? t.switchToKeyboard : t.switchToVoice
-              }
-              aria-label={
-                inputMode === 'voice' ? t.switchToKeyboard : t.switchToVoice
-              }
+              title={inputMode === 'voice' ? t.switchToKeyboard : t.switchToVoice}
+              aria-label={inputMode === 'voice' ? t.switchToKeyboard : t.switchToVoice}
             >
               {inputMode === 'voice' ? (
                 <Keyboard className="w-5 h-5" aria-hidden />
@@ -213,15 +217,11 @@ export function SessionControls({
 
           <button
             onClick={handleSend}
-            disabled={
-              (!transcript.trim() && !audioUrl) ||
-              isProcessing ||
-              recordingState === 'recording'
-            }
+            disabled={(!transcript.trim() && !audioUrl) || isProcessing || recordingState === 'recording'}
             className={cn(
-              'inline-flex items-center justify-center h-12 w-12 rounded-lg transition-colors active:scale-[0.98]',
+              'inline-flex h-13 min-w-13 items-center justify-center gap-2 rounded-2xl px-4 font-bold transition active:scale-[0.98]',
               'bg-gold-500 text-navy-950 hover:bg-gold-400',
-              'disabled:bg-navy-700 disabled:text-text-muted disabled:cursor-not-allowed disabled:hover:bg-navy-700',
+              'disabled:cursor-not-allowed disabled:bg-navy-700 disabled:text-text-muted disabled:hover:bg-navy-700',
             )}
             aria-label={t.send}
           >
@@ -230,6 +230,7 @@ export function SessionControls({
             ) : (
               <Send className="w-5 h-5" aria-hidden />
             )}
+            <span className="hidden sm:inline">{t.send}</span>
           </button>
         </div>
       </div>

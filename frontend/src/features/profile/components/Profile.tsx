@@ -248,11 +248,12 @@ export function Profile() {
           <ProfileTabContent
             user={user} profile={profile} joinDate={joinDate}
             authenticatedFetch={authenticatedFetch} refreshProfile={refreshProfile}
+            initialEducation={profile.education}
           />
         )}
-        {activeTab === 'jobs' && <JobsTabContent authenticatedFetch={authenticatedFetch} />}
-        {activeTab === 'preferences' && <PreferencesTabContent authenticatedFetch={authenticatedFetch} />}
-        {activeTab === 'settings' && <SettingsTabContent user={user} authenticatedFetch={authenticatedFetch} />}
+        {activeTab === 'jobs' && <JobsTabContent authenticatedFetch={authenticatedFetch} initialJobs={profile.suggestedJobs} />}
+        {activeTab === 'preferences' && <PreferencesTabContent authenticatedFetch={authenticatedFetch} initialPrefs={profile.preferences} />}
+        {activeTab === 'settings' && <SettingsTabContent user={user} authenticatedFetch={authenticatedFetch} initialSettings={profile.settings} />}
       </div>
     </div>
   );
@@ -263,11 +264,12 @@ export function Profile() {
 /* ================================================================== */
 
 function ProfileTabContent({
-  user, profile, joinDate, authenticatedFetch, refreshProfile,
+  user, profile, joinDate, authenticatedFetch, refreshProfile, initialEducation,
 }: {
   user: any; profile: any; joinDate: string;
   authenticatedFetch: (url: string, opts?: RequestInit) => Promise<Response>;
   refreshProfile: () => Promise<void>;
+  initialEducation?: EducationEntry[];
 }) {
   return (
     <div className="grid gap-5 lg:grid-cols-3">
@@ -275,7 +277,7 @@ function ProfileTabContent({
         hasCv={!!profile.cvText} joinDate={joinDate}
         authenticatedFetch={authenticatedFetch} refreshProfile={refreshProfile}
       />
-      <EducationCard authenticatedFetch={authenticatedFetch} />
+      <EducationCard authenticatedFetch={authenticatedFetch} initialEntries={initialEducation} />
       <PersonalInfoCard
         user={user} profile={profile} joinDate={joinDate}
         authenticatedFetch={authenticatedFetch} refreshProfile={refreshProfile}
@@ -357,9 +359,15 @@ function ResumeVaultCard({
 
 /* ----- Education ----- */
 
-function EducationCard({ authenticatedFetch }: { authenticatedFetch: (url: string, opts?: RequestInit) => Promise<Response> }) {
-  const [entries, setEntries] = useState<EducationEntry[]>([]);
-  const [loadingList, setLoadingList] = useState(true);
+function EducationCard({
+  authenticatedFetch,
+  initialEntries,
+}: {
+  authenticatedFetch: (url: string, opts?: RequestInit) => Promise<Response>;
+  initialEntries?: EducationEntry[];
+}) {
+  const [entries, setEntries] = useState<EducationEntry[]>(initialEntries || []);
+  const [loadingList, setLoadingList] = useState(!initialEntries);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ school: '', degree: '', field: '', year: '' });
@@ -371,7 +379,9 @@ function EducationCard({ authenticatedFetch }: { authenticatedFetch: (url: strin
     } catch { /* ignore */ } finally { setLoadingList(false); }
   }, [authenticatedFetch]);
 
-  useEffect(() => { fetchEntries(); }, [fetchEntries]);
+  useEffect(() => {
+    if (!initialEntries) fetchEntries();
+  }, [fetchEntries, initialEntries]);
 
   const handleAdd = async () => {
     if (!form.school.trim()) return;
@@ -554,11 +564,20 @@ const DEFAULT_JOBS: JobSuggestion[] = [
   { title: 'Data-Driven Operations Manager', company: 'Startup FinTech', industry: 'FinTech', fit: 81, reason: 'Nền tảng kỹ thuật kết hợp kinh nghiệm vận hành.' },
 ];
 
-function JobsTabContent({ authenticatedFetch }: { authenticatedFetch: (url: string, opts?: RequestInit) => Promise<Response> }) {
-  const [jobs, setJobs] = useState<JobSuggestion[]>(DEFAULT_JOBS);
-  const [loading, setLoading] = useState(true);
+function JobsTabContent({
+  authenticatedFetch,
+  initialJobs,
+}: {
+  authenticatedFetch: (url: string, opts?: RequestInit) => Promise<Response>;
+  initialJobs?: JobSuggestion[];
+}) {
+  const [jobs, setJobs] = useState<JobSuggestion[]>(
+    initialJobs && initialJobs.length > 0 ? initialJobs : DEFAULT_JOBS,
+  );
+  const [loading, setLoading] = useState(!initialJobs);
 
   useEffect(() => {
+    if (initialJobs) return;
     (async () => {
       try {
         const res = await authenticatedFetch(apiUrl('/api/v1/user/suggested-jobs'));
@@ -568,7 +587,7 @@ function JobsTabContent({ authenticatedFetch }: { authenticatedFetch: (url: stri
         }
       } catch { /* use defaults */ } finally { setLoading(false); }
     })();
-  }, [authenticatedFetch]);
+  }, [authenticatedFetch, initialJobs]);
 
   if (loading) return <div className="py-10 flex justify-center"><MiniSpinner /></div>;
 
@@ -627,14 +646,21 @@ const DEFAULT_PREFS: Preferences = {
   questions_per_session: 5,
 };
 
-function PreferencesTabContent({ authenticatedFetch }: { authenticatedFetch: (url: string, opts?: RequestInit) => Promise<Response> }) {
-  const [prefs, setPrefs] = useState<Preferences>(DEFAULT_PREFS);
-  const [loading, setLoading] = useState(true);
+function PreferencesTabContent({
+  authenticatedFetch,
+  initialPrefs,
+}: {
+  authenticatedFetch: (url: string, opts?: RequestInit) => Promise<Response>;
+  initialPrefs?: Preferences;
+}) {
+  const [prefs, setPrefs] = useState<Preferences>(initialPrefs || DEFAULT_PREFS);
+  const [loading, setLoading] = useState(!initialPrefs);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState<Partial<Preferences>>(DEFAULT_PREFS);
+  const [form, setForm] = useState<Partial<Preferences>>(initialPrefs || DEFAULT_PREFS);
 
   useEffect(() => {
+    if (initialPrefs) return;
     (async () => {
       try {
         const res = await authenticatedFetch(apiUrl('/api/v1/user/preferences'));
@@ -645,7 +671,7 @@ function PreferencesTabContent({ authenticatedFetch }: { authenticatedFetch: (ur
         }
       } catch { /* use defaults */ } finally { setLoading(false); }
     })();
-  }, [authenticatedFetch]);
+  }, [authenticatedFetch, initialPrefs]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -741,18 +767,27 @@ const DEFAULT_SETTINGS: SettingsData = {
   anonymous_practice: false,
 };
 
-function SettingsTabContent({ user, authenticatedFetch }: { user: any; authenticatedFetch: (url: string, opts?: RequestInit) => Promise<Response> }) {
-  const [settings, setSettings] = useState<SettingsData>(DEFAULT_SETTINGS);
-  const [loading, setLoading] = useState(true);
+function SettingsTabContent({
+  user,
+  authenticatedFetch,
+  initialSettings,
+}: {
+  user: any;
+  authenticatedFetch: (url: string, opts?: RequestInit) => Promise<Response>;
+  initialSettings?: SettingsData;
+}) {
+  const [settings, setSettings] = useState<SettingsData>(initialSettings || DEFAULT_SETTINGS);
+  const [loading, setLoading] = useState(!initialSettings);
 
   useEffect(() => {
+    if (initialSettings) return;
     (async () => {
       try {
         const res = await authenticatedFetch(apiUrl('/api/v1/user/settings'));
         if (res.ok) setSettings(await res.json());
       } catch { /* use defaults */ } finally { setLoading(false); }
     })();
-  }, [authenticatedFetch]);
+  }, [authenticatedFetch, initialSettings]);
 
   const toggleSetting = async (field: keyof SettingsData) => {
     const newVal = !settings[field];
