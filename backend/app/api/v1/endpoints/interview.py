@@ -3,8 +3,11 @@ from fastapi.responses import StreamingResponse
 from app.schemas.interview import SetupReq, ChatReq, RecommendationReq
 from app.services.graph import app_graph
 from app.services.reporter import generate_report_logic
+from app.rag_service.rag_service import rag_service
 from app.core.database import SessionDep
 from app.core.auth import CurrentUser
+from app.models.models import Interview, UserActivity, User
+from app.core.config import async_client, transcribe_audio_async, generate_speech_base64_async, CHAT_MODEL
 from app.models.models import Interview, InterviewTurn, UserActivity, User
 from app.core.config import async_client, transcribe_audio_async, generate_speech_base64_async
 from app.services.tts_service import WAV_MIME_TYPE, character_from_phase
@@ -60,7 +63,7 @@ async def _generate_predicted_questions(req: SetupReq) -> list[str]:
     )
     try:
         llm_response = await async_client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=CHAT_MODEL,
             messages=[
                 {"role": "system", "content": system_msg},
                 {"role": "user", "content": prompt}

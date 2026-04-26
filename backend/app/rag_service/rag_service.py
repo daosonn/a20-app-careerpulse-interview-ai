@@ -1,13 +1,16 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
+import os
+import datetime
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 import uuid
-from app.core.config import embedding_model
+from pathlib import Path
+from app.core.config import embedding_model, PROJECT_ROOT
 
 class RAGService:
     def __init__(self):
         self.embeddings = embedding_model
-        self.persist_directory = "./chroma_db"
+        self.persist_directory = str(PROJECT_ROOT / "chroma_db")
         self.collection_name = "jobs_collection"
         self.vector_db = Chroma(
             collection_name=self.collection_name,
@@ -57,10 +60,24 @@ class RAGService:
         query = f"Tìm công việc phù hợp với các kỹ năng: {', '.join(user_skills)}"
         return self.retrieve_by_text(query, limit)
 
-    def retrieve_by_text(self, query: str, limit: int = 5) -> List[Dict[str, Any]]:
+    def retrieve_by_text(self, query: str, limit: int = 5, only_active: bool = True) -> List[Dict[str, Any]]:
         """Truy xuất job từ ChromaDB dựa trên đoạn văn bản (CV hoặc query)."""
+        filter_metadata = None
+        if only_active:
+            # Tạo danh sách các partition hợp lệ (tuần hiện tại và 12 tuần tới)
+            # Vì deadline thường không quá 3 tháng
+            active_partitions = []
+            now = datetime.date.today()
+            for i in range(12): # Lấy các tuần trong 3 tháng tới
+                target_date = now + datetime.timedelta(weeks=i)
+                year, week, _ = target_date.isocalendar()
+                active_partitions.append(f"{year}_W{week:02d}")
+            
+            # ChromaDB filter syntax: {"partition": {"$in": ["2026_W17", "2026_W18", ...]}}
+            filter_metadata = {"partition": {"$in": active_partitions}}
+
         try:
-            results = self.vector_db.similarity_search(query, k=limit)
+            results = self.vector_db.similarity_search(query, k=limit, filter=filter_metadata)
         except Exception as e:
             print(f"RAG Retrieval Error: {e}")
             # Likely an embedding dimension mismatch if you switched models.

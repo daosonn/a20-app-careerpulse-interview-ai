@@ -1,9 +1,10 @@
+from app.core.config import PROJECT_ROOT
 from dotenv import load_dotenv
 import os
 
-# Load variables from root .env file BEFORE any other imports load
-env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env')
-load_dotenv(env_path)
+# Load variables from root .env file
+env_path = PROJECT_ROOT / '.env'
+load_dotenv(str(env_path))
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware

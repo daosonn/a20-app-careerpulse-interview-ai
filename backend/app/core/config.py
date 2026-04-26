@@ -5,11 +5,38 @@ import json
 import re
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_community.embeddings import DashScopeEmbeddings, JinaEmbeddings
+from langchain_google_genai import ChatGoogleGenerativeAI
 from openai import AsyncOpenAI
+import google.generativeai as genai
+from pathlib import Path
 from dotenv import load_dotenv
+
+# ==========================================
+# 0. PATH CONFIGURATION
+# ==========================================
+# This file is in backend/app/core/config.py
+# ROOT_DIR is the root of the entire repository
+CORE_DIR = Path(__file__).resolve().parent
+APP_DIR = CORE_DIR.parent
+BACKEND_DIR = APP_DIR.parent
+PROJECT_ROOT = BACKEND_DIR.parent
+
+# Common Data Directories
+DATA_DIR = PROJECT_ROOT / "raw_data"
+LOGS_DIR = BACKEND_DIR / "logs"
+
+# Ensure directories exist
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
 # 1. Load môi trường
 load_dotenv()
+
+# Jina AI Embedding Configuration (Sử dụng Model v3 mới nhất)
+embedding_model = JinaEmbeddings(
+    jina_api_key=os.getenv("JINA_API_KEY"),
+    model_name="jina-embeddings-v3"
+)
 
 # ==========================================
 # 1. OPENAI CONFIGURATION
@@ -19,25 +46,26 @@ class LLMFactory:
     @staticmethod
     def get_llm(model_name: str = "gpt-4o-mini", temperature: float = 0.7):
         return ChatOpenAI(
-            model=model_name, 
-            temperature=temperature, 
+            model=model_name,
+            temperature=temperature,
             api_key=os.getenv("OPENAI_API_KEY"),
             streaming=True
         )
 
 # 1. LLM Initializations
-interviewer_llm = LLMFactory.get_llm("gpt-4o-mini", 0.7).with_config({"tags": ["interviewer"]})
-evaluator_llm = LLMFactory.get_llm("gpt-4o-mini", 0.2)
+CHAT_MODEL = "gpt-4o-mini"
+interviewer_llm = LLMFactory.get_llm(CHAT_MODEL, 0.7).with_config({"tags": ["interviewer"]})
+evaluator_llm = LLMFactory.get_llm(CHAT_MODEL, 0.2)
 
 # 2. Raw Async Client
-async_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-openai_async_client = async_client
+openai_async_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+async_client = openai_async_client
 
 # 3. STT (Speech-to-Text) Centralized Helper
 async def transcribe_audio_async(file_path: str) -> str:
     """Helper for Whisper transcription."""
     with open(file_path, "rb") as audio_file:
-        transcript = await openai_async_client.audio.transcriptions.create(
+        transcript = await async_client.audio.transcriptions.create(
             model="whisper-1",
             file=audio_file
         )
@@ -55,6 +83,12 @@ async def generate_speech_base64_async(
     if not text:
         return ""
     try:
+        response = await async_client.audio.speech.create(
+            model=model,
+            voice="nova",
+            input=text
+        )
+        return base64.b64encode(response.content).decode('utf-8')
         from app.services.tts_service import synthesize_interview_tts_base64
 
         result = await synthesize_interview_tts_base64(
@@ -92,16 +126,63 @@ async def generate_speech_base64_async(
         print(f"TTS Error: {e}")
         return ""
 
+# ==========================================
+# 2. LLM & EMBEDDING INITIALIZATION - GEMINI (NATIVE)
+# ==========================================
+
+# GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# genai.configure(api_key=GEMINI_API_KEY)
+
+# class LLMFactory:
+#     @staticmethod
+#     def get_llm(model_name: str = "gemini-1.5-flash", temperature: float = 0.7):
+#         return ChatGoogleGenerativeAI(
+#             model=model_name,
+#             temperature=temperature,
+#             google_api_key=GEMINI_API_KEY,
+#             streaming=True
+#         )
+
+# # 1. LLM Initializations
+# CHAT_MODEL = "gemini-1.5-flash"
+# interviewer_llm = LLMFactory.get_llm(CHAT_MODEL, 0.7).with_config({"tags": ["interviewer"]})
+# evaluator_llm = LLMFactory.get_llm(CHAT_MODEL, 0.2)
+
+# # 2. Async Client (Native Wrapper or None)
+# # Lưu ý: Vì Gemini dùng genai library, ta có thể dùng genai.GenerativeModel trực tiếp
+# # Hoặc dùng một wrapper nếu code cũ yêu cầu async_client
+# async_client = genai.GenerativeModel(model_name=CHAT_MODEL) 
+
+# # 3. STT (Speech-to-Text) Centralized Helper
+# async def transcribe_audio_async(file_path: str, model_name: str = "gemini-1.5-flash") -> str:
+#     """Sử dụng Gemini Multimodal để chuyển đổi âm thanh sang văn bản."""
+#     try:
+#         uploaded_file = genai.upload_file(path=file_path)
+#         model = genai.GenerativeModel(model_name=model_name)
+#         response = await model.generate_content_async([
+#             uploaded_file,
+#             "Hãy chuyển đổi đoạn âm thanh này thành văn bản chính xác nhất có thể."
+#         ])
+#         return response.text
+#     except Exception as e:
+#         print(f"Gemini STT Error: {e}")
+#         return ""
+
+# # 4. TTS (Text-to-Speech) Centralized Helper
+# async def generate_speech_base64_async(text: str, model_name: str = "gemini-1.5-flash") -> str:
+#     """Placeholder cho Gemini TTS (Chưa hỗ trợ trực tiếp trong genai library)."""
+#     return ""
+
+
+# ==========================================
+# 3. LLM & EMBEDDING INITIALIZATION - ALIBABA
+# ==========================================
 
 # DASHSCOPE_API_KEY = os.getenv("DASHSCOPE_API_KEY")
 # Base URL cho cổng tương thích OpenAI (Dùng cho Chat, LLM)
 # DASHSCOPE_COMPATIBLE_BASE_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
 # Base URL cho các dịch vụ gốc (Dùng cho STT, TTS, Embedding)
 # DASHSCOPE_API_BASE_URL = "https://dashscope-intl.aliyuncs.com/api/v1"
-
-# ==========================================
-# 2. LLM & EMBEDDING INITIALIZATION (ALIBABA COMMENTED OUT)
-# ==========================================
 
 # class LLMFactory:
 #     @staticmethod
@@ -116,7 +197,8 @@ async def generate_speech_base64_async(
 #         )
 
 # Khởi tạo các instance chính
-# interviewer_llm = LLMFactory.get_llm("qwen-plus", 0.7).with_config({"tags": ["interviewer"]})
+# CHAT_MODEL = "qwen-plus"
+# interviewer_llm = LLMFactory.get_llm(CHAT_MODEL, 0.7).with_config({"tags": ["interviewer"]})
 # evaluator_llm = LLMFactory.get_llm("qwen-turbo", 0.2)
 
 # Embedding model cho RAG
@@ -125,12 +207,6 @@ async def generate_speech_base64_async(
 #     api_key=os.getenv("OPENAI_API_KEY")
 # )
 
-# Jina AI Embedding Configuration (Sử dụng Model v3 mới nhất)
-embedding_model = JinaEmbeddings(
-    jina_api_key=os.getenv("JINA_API_KEY"),
-    model_name="jina-embeddings-v3"
-)
-
 # Async Client theo mẫu chuẩn
 # alibaba_async_client = AsyncOpenAI(
 #     api_key=DASHSCOPE_API_KEY,
@@ -138,10 +214,6 @@ embedding_model = JinaEmbeddings(
 # )
 # async_client = alibaba_async_client
 
-
-# ==========================================
-# 3. STT & TTS HELPERS (QWEN3 SERIES - COMMENTED OUT)
-# ==========================================
 # async def transcribe_audio_async(file_path: str, model: str = "qwen3-asr-flash-2025-09-08") -> str:
 #     """
 #     Sử dụng model Qwen3-ASR mới nhất qua Multimodal Generation API.
@@ -271,5 +343,3 @@ embedding_model = JinaEmbeddings(
 #     except Exception as e:
 #         print(f"Alibaba TTS Exception: {e}")
 #         return ""
-
-

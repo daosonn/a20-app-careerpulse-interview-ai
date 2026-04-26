@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 import datetime
 from typing import Optional
+from fastapi.responses import StreamingResponse
 from app.schemas.user import (
     OnboardReq,
     ProfileUpdateReq,
@@ -15,6 +16,8 @@ from app.schemas.user import (
 from app.core.database import SessionDep
 from app.core.auth import CurrentUser
 from app.models.models import User, Education, ResumeUpload, SuggestedJob, UserActivity
+from app.services.profiler import extract_cv_info_logic, extract_cv_info_stream
+from app.rag_service.matcher import JobMatcherService
 from app.services.profiler import extract_cv_info_logic
 
 router = APIRouter()
@@ -102,6 +105,8 @@ async def onboard_user(req: OnboardReq, db: SessionDep, current_user: CurrentUse
 
         current_user.cv_text = req.cv_text
         current_user.skills = skills
+        current_user.tools = info.get("tools", [])
+        current_user.projects = info.get("projects", [])
         current_user.full_name = full_name
         current_user.dob = info.get("dob")
         current_user.current_position = info.get("current_position")
@@ -198,6 +203,8 @@ async def update_cv(req: CVUpdateReq, db: SessionDep, current_user: CurrentUser)
         skills = info.get("skills", current_user.skills or [])
         current_user.cv_text = req.cv_text
         current_user.skills = skills
+        current_user.tools = info.get("tools", current_user.tools or [])
+        current_user.projects = info.get("projects", current_user.projects or [])
         # Update extracted fields if the CV re-extraction provides them
         if info.get("full_name"):
             current_user.full_name = info["full_name"]
@@ -239,6 +246,16 @@ async def update_cv(req: CVUpdateReq, db: SessionDep, current_user: CurrentUser)
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/cv/analyze-stream")
+async def analyze_cv_stream(req: CVUpdateReq, current_user: CurrentUser):
+    """Endpoint stream để Frontend hiển thị tiến trình bóc tách CV."""
+    async def event_generator():
+        async for update in extract_cv_info_stream(req.cv_text):
+            yield f"data: {update}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 # ================================================================
@@ -450,6 +467,8 @@ async def get_suggested_jobs(db: SessionDep, current_user: CurrentUser, refresh:
         await matcher.match_and_persist(
             user_id=current_user.id, 
             skills=current_user.skills,
+            tools=current_user.tools,
+            projects=current_user.projects,
             current_position=current_user.current_position
         )
         saved_suggestions = db.query(SuggestedJob).filter(

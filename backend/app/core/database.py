@@ -2,13 +2,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 import os
+from pathlib import Path
 from typing import Annotated, Generator
 from fastapi import Depends
 
-# Path to database relative to this file
-# Since we are in backend/app/core/database.py, the data dir is in backend/data/
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-DEFAULT_SQLITE_PATH = os.path.join(BASE_DIR, 'data', 'interview_coach.db')
+from app.core.config import BACKEND_DIR, PROJECT_ROOT
+
+# Path to database
+# data dir is in backend/data/
+DEFAULT_SQLITE_PATH = BACKEND_DIR / 'data' / 'interview_coach.db'
 
 
 def _normalize_database_url(raw_url: str | None) -> str:
@@ -70,6 +72,8 @@ def _migrate_add_columns(engine_ref):
             ("security_alerts", "BOOLEAN DEFAULT 1"),
             ("public_profile", "BOOLEAN DEFAULT 0"),
             ("anonymous_practice", "BOOLEAN DEFAULT 0"),
+            ("tools", "JSON"),
+            ("projects", "JSON"),
         ],
         "educations": [
             ("created_at", "DATETIME"),
@@ -93,6 +97,9 @@ def _migrate_add_columns(engine_ref):
             ("audio_meta", "JSON"),
             ("updated_at", "DATETIME"),
         ],
+        "suggested_jobs": [
+            ("deadline", "VARCHAR"),
+        ],
     }
 
     with engine_ref.begin() as conn:
@@ -113,10 +120,8 @@ def _migrate_add_columns(engine_ref):
 def init_db():
     # Ensure data directory exists when using local sqlite file path.
     if DATABASE_URL.startswith("sqlite:///"):
-        sqlite_path = DATABASE_URL.replace("sqlite:///", "", 1)
-        data_dir = os.path.dirname(sqlite_path)
-        if data_dir and not os.path.exists(data_dir):
-            os.makedirs(data_dir, exist_ok=True)
+        sqlite_path = Path(DATABASE_URL.replace("sqlite:///", "", 1))
+        sqlite_path.parent.mkdir(parents=True, exist_ok=True)
     Base.metadata.create_all(bind=engine)
     if DATABASE_URL.startswith("sqlite"):
         _migrate_add_columns(engine)
