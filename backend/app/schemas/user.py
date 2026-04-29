@@ -25,6 +25,16 @@ class ProfileUpdateReq(BaseModel):
 class CVUpdateReq(BaseModel):
     cv_text: str
 
+class ResumeResp(BaseModel):
+    id: int
+    file_name: str
+    source: str
+    raw_text: str
+    status: str
+    created_at: str
+
+    model_config = {"from_attributes": True}
+
 
 # --- Education CRUD ---
 

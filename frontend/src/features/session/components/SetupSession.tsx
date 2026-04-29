@@ -160,6 +160,8 @@ export function SetupSession() {
   const [recommendedJobs, setRecommendedJobs] = useState<any[]>([]);
   const [isFetchingRecommendations, setIsFetchingRecommendations] = useState(false);
   const [selectedJobIndex, setSelectedJobIndex] = useState<number | null>(null);
+  const [savedResumes, setSavedResumes] = useState<any[]>([]);
+  const [isUploadingCv, setIsUploadingCv] = useState(false);
   const defaultsLoadedRef = useRef(false);
 
   const clearJobRecommendations = () => {
@@ -171,10 +173,20 @@ export function SetupSession() {
     if (!profile || defaultsLoadedRef.current) return;
     defaultsLoadedRef.current = true;
 
-    if (profile.cvText && !cvText.trim()) {
-      setCvText(profile.cvText);
-      setFileName('CV đã lưu trong hồ sơ');
-    }
+    // Fetch saved resumes
+    authenticatedFetch(apiUrl('/api/v1/user/resumes'))
+      .then((res) => res.json())
+      .then((data) => {
+        setSavedResumes(data || []);
+        if (data && data.length > 0 && !cvText.trim()) {
+          setCvText(data[0].raw_text);
+          setFileName(data[0].file_name || 'CV đã lưu');
+        } else if (profile.cvText && !cvText.trim()) {
+          setCvText(profile.cvText);
+          setFileName('CV đã lưu trong hồ sơ');
+        }
+      })
+      .catch(console.error);
 
     const prefs = profile.preferences;
     if (!prefs) return;
@@ -188,7 +200,7 @@ export function SetupSession() {
     if (prefs.questions_per_session) {
       setQuestionsPerSession(prefs.questions_per_session);
     }
-  }, [profile, cvText]);
+  }, [profile, cvText, user, authenticatedFetch]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -201,10 +213,22 @@ export function SetupSession() {
       setCvText(text);
       setFileName(file.name);
       clearJobRecommendations();
+
+      // Automatically save the newly uploaded CV to database
+      setIsUploadingCv(true);
+      await authenticatedFetch(apiUrl('/api/v1/user/cv'), {
+        method: 'PUT',
+        body: JSON.stringify({ cv_text: text }),
+      });
+      // Refresh the saved resumes list
+      const res = await authenticatedFetch(apiUrl('/api/v1/user/resumes'));
+      const data = await res.json();
+      setSavedResumes(data || []);
     } catch (err: any) {
-      setError(err.message || 'Lỗi khi đọc file CV.');
+      setError(err.message || 'Lỗi khi đọc hoặc lưu file CV.');
     } finally {
       setIsParsingFile(false);
+      setIsUploadingCv(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -390,18 +414,38 @@ export function SetupSession() {
                   </div>
                 )}
 
-                {!fileName && profile?.cvText && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCvText(profile.cvText || '');
-                      setFileName('CV đã lưu trong hồ sơ');
-                      clearJobRecommendations();
-                    }}
-                    className="mt-3 text-xs text-gold-400 hover:text-gold-300 transition-colors underline underline-offset-4"
-                  >
-                    Dùng CV đã lưu trong hồ sơ
-                  </button>
+                {savedResumes.length > 0 && (
+                  <div className="mt-4 border-t border-navy-600 pt-4">
+                    <p className="text-sm font-medium text-text-primary mb-2">Hoặc chọn CV đã lưu:</p>
+                    <div className="grid gap-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                      {savedResumes.map(r => (
+                        <div
+                          key={r.id}
+                          onClick={() => {
+                            setCvText(r.raw_text);
+                            setFileName(r.file_name || `CV lưu ngày ${new Date(r.created_at).toLocaleDateString()}`);
+                            clearJobRecommendations();
+                          }}
+                          className={cn(
+                            "flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors border",
+                            cvText === r.raw_text
+                              ? "bg-gold-500/10 border-gold-500 text-gold-400"
+                              : "bg-navy-800 border-navy-600 text-text-muted hover:border-gold-500/40"
+                          )}
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            <FileText className="w-4 h-4 shrink-0" />
+                            <span className="text-sm truncate font-medium">
+                              {r.file_name || "CV Upload"}
+                            </span>
+                          </div>
+                          <span className="text-[10px] opacity-70 shrink-0 ml-2">
+                            {new Date(r.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
 
                 {isParsingFile && (

@@ -547,6 +547,27 @@ function PersonalInfoCard({
                   : <span className="text-xs text-text-muted italic">Chưa có kỹ năng</span>}
               </div>
             </div>
+            {profile.tools && profile.tools.length > 0 && (
+              <div className="mt-4 pt-3 border-t border-navy-700/60">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted mb-2.5">Công cụ</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {profile.tools.map((tool: string) => <Badge key={tool} variant="secondary" size="sm">{tool}</Badge>)}
+                </div>
+              </div>
+            )}
+            {profile.projects && profile.projects.length > 0 && (
+              <div className="mt-4 pt-3 border-t border-navy-700/60">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted mb-2.5">Dự án</p>
+                <div className="space-y-2">
+                  {profile.projects.map((proj: any, idx: number) => (
+                    <div key={idx} className="p-2 rounded-lg bg-navy-800/50 border border-navy-700/60">
+                      <p className="text-xs font-bold text-gold-400">{proj.name || proj.title || 'Dự án'}</p>
+                      <p className="text-[11px] text-text-muted line-clamp-2">{proj.description || proj.role}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>

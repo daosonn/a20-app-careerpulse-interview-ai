@@ -3021,5 +3021,37 @@
             "working_time": "Thứ 2 - Thứ 6 (từ 08:30 đến 17:30)\n                                                            Hội sở Techcombank, số 6 Quang Trung, Hà Nội",
             "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
         }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/data-engineer-tan-uyen-binh-duong/2134632.html",
+        "scraped_at": "2026-04-28T20:25:34.854612",
+        "metadata": {
+            "category": "Data",
+            "job_title": "Data Engineer - Tân Uyên Bình Dương",
+            "company_name": "CÔNG TY CỔ PHẦN GỖ TÂN THÀNH",
+            "company_scale": "1000+ nhân viên",
+            "company_field": "Sản xuất",
+            "company_address": "Thửa đất số 484, Tờ bản đồ số 05, Khu phố Khánh Lộc, Phường Tân Phước Khánh, Thị xã Tân Uyên, Tỉnh Bình Dương, Việt Nam",
+            "salary": "18 - 25 triệu",
+            "location": "Hồ Chí Minh",
+            "experience": "2 năm",
+            "deadline": "22/05/2026",
+            "tags": [
+                "2 năm kinh nghiệm",
+                "Cao Đẳng trở lên",
+                "Tiếng Anh Đọc hiểu",
+                "Data Engineer",
+                "IT - Phần cứng và máy tính",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Quản trị hệ thống: Thiết kế, phát triển và tối ưu hóa hệ thống Database/Data Warehouse trên AppSheet & Google Sheets.\nXây dựng luồng dữ liệu (ETL): Thiết kế quy trình trích xuất và chuyển đổi dữ liệu từ nhiều nguồn khác nhau bằng Python & SQL.\nPhân tích nghiệp vụ: Làm việc trực tiếp với khối Kế toán, Thu mua, Sản xuất để nắm bắt yêu cầu và chuyển hóa thành giải pháp dữ liệu thực tế.\nTrực quan hóa: Tích hợp và trình bày báo cáo thông qua các công cụ BI (Power BI/Looker Studio).\nVận hành ERP: Xử lý lỗi hệ thống lõi, nghiên cứu và phát triển thêm các tính năng mới cho hệ thống ERP hiện tại của công ty.\nTài liệu hóa: Thực hiện kiểm thử (Testing) và lập tài liệu hướng dẫn vận hành hệ thống.",
+            "job_requirement": "Học vấn: Tốt nghiệp Cao đẳng/Đại học chuyên ngành CNTT, Hệ thống thông tin, Khoa học máy tính hoặc các ngành kỹ thuật liên quan.\nKinh nghiệm: Tối thiểu 02 năm tại vị trí quản trị Database/Data Warehouse.\nKỹ thuật\nThành thạo Python để xây dựng pipeline tự động hóa.\nSử dụng tốt SQL (MSSQL) để truy vấn và xử lý dữ liệu phức tạp.\nCó kinh nghiệm triển khai giải pháp trên AppSheet/Google Sheets là một lợi thế lớn.\nKỹ năng:\nAm hiểu về quy trình sản xuất, kho bãi hoặc ERP.\nKhả năng giao tiếp tiếng Anh tốt (đáp ứng yêu cầu thuyết trình/làm việc với đối tác).\nTư duy logic sắc bén, khả năng tự học và nghiên cứu công nghệ mới.",
+            "job_benefit": "Thu nhập: Mức lương cạnh tranh, thỏa thuận trực tiếp theo năng lực từ 18-25 triệuThưởng: Thưởng theo tiến độ dự án, hiệu quả công việc và các dịp lễ Tết.\nPhát triển: Cơ hội tham gia các khóa đào tạo chuyên sâu về quản lý và công nghệ.\nMôi trường: Làm việc tại đơn vị có quy trình ổn định, chuyên nghiệp, đồng nghiệp hỗ trợ nhiệt tình.\nPhúc lợi: Đầy đủ chế độ bảo hiểm (BHXH, BHYT...), Team building và du lịch hàng năm.",
+            "working_location": "- Hồ Chí Minh: 484 Tờ bản đồ 5, KP Khánh Lộc (TP. Tân Uyên, Bình Dương), Phường Tân Khánh (Thành phố Tân Uyên cũ)",
+            "working_time": "Thứ 2 - Thứ 7 (từ 08:00 đến 17:00)\n                                                            Nghỉ Thứ 7 cách tuần và các ngày Chủ nhật",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
     }
 ]

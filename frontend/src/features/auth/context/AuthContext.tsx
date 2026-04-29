@@ -8,6 +8,8 @@ export interface UserProfile {
   isOnboarded: boolean;
   cvText?: string;
   skills?: string[];
+  tools?: string[];
+  projects?: any[];
   fullName?: string;
   dob?: string;
   currentPosition?: string;
@@ -54,6 +56,8 @@ const normalizeUserProfile = (data: any): UserProfile => {
     isOnboarded: Boolean(profileData.onboarded),
     cvText: profileData.cv_text,
     skills: Array.isArray(profileData.skills) ? profileData.skills : [],
+    tools: Array.isArray(profileData.tools) ? profileData.tools : [],
+    projects: Array.isArray(profileData.projects) ? profileData.projects : [],
     fullName: profileData.full_name,
     dob: profileData.dob,
     currentPosition: profileData.current_position,

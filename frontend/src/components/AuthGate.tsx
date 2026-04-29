@@ -28,9 +28,6 @@ export function AuthGate() {
     return <Navigate to="/login" replace />;
   }
 
-  if (profile && !profile.isOnboarded) {
-    return <Navigate to="/onboarding" replace />;
-  }
 
   return <Outlet />;
 }

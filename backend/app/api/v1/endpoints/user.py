@@ -43,6 +43,8 @@ def _profile_payload(user: User) -> dict:
         "onboarded": user.is_onboarded,
         "cv_text": user.cv_text,
         "skills": user.skills,
+        "tools": user.tools,
+        "projects": user.projects,
         "name": user.name,
         "full_name": user.full_name,
         "dob": user.dob,
@@ -99,7 +101,7 @@ def _jobs_payload(jobs: list[SuggestedJob]) -> list[dict]:
 @router.post("/onboard")
 async def onboard_user(req: OnboardReq, db: SessionDep, current_user: CurrentUser):
     try:
-        info = extract_cv_info_logic(req.cv_text)
+        info = await extract_cv_info_logic(req.cv_text)
         skills = info.get("skills", ["Kỹ năng chung"])
         full_name = info.get("full_name") or req.name
 
@@ -194,12 +196,24 @@ async def update_profile(req: ProfileUpdateReq, db: SessionDep, current_user: Cu
 #  CV — update + re-extract skills
 # ================================================================
 
+@router.get("/resumes")
+async def list_resumes(db: SessionDep, current_user: CurrentUser):
+    resumes = db.query(ResumeUpload).filter(ResumeUpload.user_id == current_user.id).order_by(ResumeUpload.created_at.desc()).all()
+    return [{
+        "id": r.id,
+        "file_name": r.file_name,
+        "source": r.source,
+        "raw_text": r.raw_text,
+        "status": r.status,
+        "created_at": r.created_at.isoformat() if r.created_at else None
+    } for r in resumes]
+
 @router.put("/cv")
 async def update_cv(req: CVUpdateReq, db: SessionDep, current_user: CurrentUser):
     if not req.cv_text.strip():
         raise HTTPException(status_code=400, detail="CV text cannot be empty.")
     try:
-        info = extract_cv_info_logic(req.cv_text)
+        info = await extract_cv_info_logic(req.cv_text)
         skills = info.get("skills", current_user.skills or [])
         current_user.cv_text = req.cv_text
         current_user.skills = skills
@@ -461,8 +475,6 @@ async def get_suggested_jobs(db: SessionDep, current_user: CurrentUser, refresh:
     ).all()
     
     if refresh and current_user.skills:
-        from app.services.rag_service.matcher import JobMatcherService
-
         matcher = JobMatcherService(db)
         await matcher.match_and_persist(
             user_id=current_user.id, 

@@ -2,6 +2,7 @@ import os
 import sys
 import logging
 import datetime
+import subprocess
 from pathlib import Path
 
 # --- IDE & PROJECT PATH SETUP ---
@@ -41,18 +42,42 @@ def main():
         crawler = UnifiedCrawler()
         try:
             logging.info("Starting crawler...")
-            crawler.run(categories, max_pages=5)
+            crawler.run(categories, max_pages=1)
             logging.info("Crawler finished.")
         except Exception as e:
             logging.error(f"Crawler failed: {e}")
         
-        # 2. Ingest new data to ChromaDB
+        # 2. Ingest new data to ChromaDB for ALL THREE MODELS
         try:
-            logging.info("Starting ingestion...")
-            run_ingestion()
-            logging.info("Ingestion finished.")
+            providers = ["jina", "openai", "gemini"]
+            ingestion_script = Path(__file__).resolve().parent / "ingestion.py"
+            
+            for provider in providers:
+                logging.info(f"Starting ingestion for provider: {provider.upper()}...")
+                env = os.environ.copy()
+                env["EMBEDDING_PROVIDER"] = provider
+                
+                # Chạy script bằng subprocess để khởi tạo lại config.py với biến môi trường mới
+                result = subprocess.run(
+                    [sys.executable, str(ingestion_script)],
+                    env=env,
+                    capture_output=True,
+                    text=True
+                )
+                
+                # Log output của subprocess
+                for line in result.stdout.splitlines():
+                    logging.info(f"[ingestion_{provider}] {line}")
+                
+                if result.returncode == 0:
+                    logging.info(f"Ingestion finished successfully for {provider.upper()}.")
+                else:
+                    logging.error(f"Ingestion failed for {provider.upper()}. Error output:")
+                    for line in result.stderr.splitlines():
+                        logging.error(f"[ingestion_{provider}] {line}")
+                        
         except Exception as e:
-            logging.error(f"Ingestion failed: {e}")
+            logging.error(f"Ingestion process failed: {e}")
 
         logging.info("=== DAILY AGENT COMPLETED ===")
     finally:
