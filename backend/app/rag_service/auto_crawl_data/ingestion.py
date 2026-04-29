@@ -17,7 +17,7 @@ if str(backend_path) not in sys.path:
 
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from app.core.config import PROJECT_ROOT, DATA_DIR
+from app.core.config import PROJECT_ROOT, DATA_DIR, EMBEDDING_PROVIDER
 from app.rag_service.rag_service import rag_service
 
 class JobIngestor:
@@ -74,7 +74,8 @@ class JobIngestor:
     def process_partitions(self, partitions_dir: str = "raw_data/partitions", start_partition: str = None):
         """Xử lý các file JSON phân vùng trong thư mục partitions."""
         partitions_path = PROJECT_ROOT / partitions_dir
-        state_file = DATA_DIR / "ingestion_state.json"
+        # Theo dõi trạng thái đã ingest cho từng model
+        state_file = DATA_DIR / f"ingestion_state_{EMBEDDING_PROVIDER}.json"
 
         if not partitions_path.exists():
             print(f"    Partitions directory not found: {partitions_path}")
@@ -231,6 +232,7 @@ class JobIngestor:
 
 def run_ingestion(start_partition: str = None):
     """Hàm helper để chạy nhanh quá trình nạp dữ liệu."""
+    print(f"=== Bắt đầu nạp dữ liệu với Embedding Provider: {EMBEDDING_PROVIDER.upper()} ===")
     ingestor = JobIngestor()
     ingestor.process_partitions(start_partition=start_partition)
 

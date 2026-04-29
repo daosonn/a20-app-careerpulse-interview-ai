@@ -3899,5 +3899,69 @@
             "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:30)",
             "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
         }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/ai-backend-engineer-district-1/2126860.html",
+        "scraped_at": "2026-04-28T20:13:18.279356",
+        "metadata": {
+            "category": "AI",
+            "job_title": "AI Backend Engineer - District 1",
+            "company_name": "Công ty TNHH AIOZ Việt Nam",
+            "company_scale": "25-99 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Tầng 4, tòa nhà Vimedimex, 246 Cống Quỳnh, phường Phạm Ngũ Lão, quận 1, Thành phố Hồ Chí Minh, Việt Nam",
+            "salary": "15 - 25 triệu",
+            "location": "Hồ Chí Minh",
+            "experience": "2 năm",
+            "deadline": "16/05/2026",
+            "tags": [
+                "2 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Nghỉ thứ 7",
+                "AI Engineer",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Mô tả công việc bằng tiếng Việt:Phát triển AI serving pipeline cho môi trường node phi tập trung, không đồng nhất về phần cứng và điều kiện mạng.Cùng xây dựng hệ thống AI có khả năng chịu lỗi, xử lý được tình huống node bị gián đoạn, tài nguyên động và lập lịch workload phân tán trên DePIN.Phối hợp chặt chẽ với đội ngũ phát triển ứng dụng để đảm bảo tích hợp end-to-end mượt mà.Triển khai hệ thống monitoring, logging và alerting tự động cho các AI service trên môi trường production.Nghiên cứu và đánh giá các công nghệ AI mới nổi, rút ngắn khoảng cách từ prototype đến triển khai production thực tế.Mô tả công việc bằng tiếng Anh:Develop and maintain AI serving pipelines for heterogeneous, decentralized node environments with variable hardware and network conditions.Contribute to building fault-tolerant inference workflows that handle node failures, dynamic resource availability, and distributed workload scheduling across the DePIN.Collaborate closely with application developers to ensure smooth end-to-end integration.Implement automated monitoring, logging, and alerting for AI services in production.Research and evaluate emerging AI technologies, bridging the gap between rapid prototyping and robust production deployment.",
+            "job_requirement": "Yêu cầu ứng viên bằng tiếng Việt:   Yêu cầu chuyên môn:       Tốt nghiệp Đại học chuyên ngành Khoa học Máy tính, Kỹ thuật Phần mềm hoặc lĩnh vực liên          quan, cùng với:2-4 năm kinh nghiệm phát triển thực tế, trong đó 1-2 năm tập trung vào AI/ML.Thành thạo Python; có kinh nghiệm Golang là lợi thế.Nền tảng vững chắc về Computer Vision hoặc LLM.Hiểu biết về PyTorch, bao gồm inference serving và training pipeline.Kinh nghiệm thực tế với inference toolchain (vLLM, SGLang, Triton, Dynamo).Kinh nghiệm với RAG pipeline, embedding management và prompt optimization.Quen thuộc với LlamaIndex hoặc LangGraph và vector database (Milvus, Qdrant).       Kinh nghiệm với Model Quantization, Stable Diffusion, ViT và VLM là điểm cộng lớn.  Yêu cầu chung:Kinh nghiệm vững chắc với containerization và orchestration (Docker).Kinh nghiệm bảo mật AI dịch vụ, bao gồm các API endpoints, kiểm soát truy cập và phòng chống prompt injection.Quen thuộc với kiến trúc microservices và message broker (Kafka, RabbitMQ).Kinh nghiệm thực tế quản lý task queue và xử lý bất đồng bộ.Hiểu biết về P2P Networking và high-performance RPC (gRPC).Làm việc được với cơ sở dữ liệu quan hệ, phi quan hệ và vector database.Nắm vững CI/CD, quản lý phiên bản (Git) và quy trình Agile.Yêu cầu ứng viên bằng tiếng Anh:       Bachelor’s degree in Computer Science, Software Engineering, or a related field, plus:from 2 years of hands-on development experience, with 1-2 years in AI/ML.Strong proficiency in Python; experience with Golang is a plus.Strong foundation in Computer Vision or LLMs.Working knowledge of PyTorch, including serving inference and training pipelines.Hands-on experience with inference toolchains (vLLM, SGLang, Triton, Dynamo).Practical experience with RAG pipelines, embedding management, and prompting.Familiar with LlamaIndex or LangGraph, and vector databases (Milvus, Qdrant).       Experience with Model Quantization, Stable Diffusion, ViT, and VLMs is a strong plus. Additional Requirements:Proficient with containerization and orchestration (Docker).Familiarity with securing AI service, including API endpoints, authentication with access control, and protecting against prompt injection.Solid grasp of microservices architectures and message brokers (Kafka, RabbitMQ).Capable of managing task queues and asynchronous processing.Understanding of P2P Networking and High-performance RPC (gRPC).Comfortable with relational, non-relational, and vector databases.Solid understanding of CI/CD, version control (Git), and Agile workflows.",
+            "job_benefit": "Tại sao bạn sẽ yêu thích làm việc cùng chúng tôi?Cộng tác AI đỉnh cao: Làm việc trực tiếp cùng các Nhà nghiên cứu AI (AI Researchers) và đóng góp vào các sản phẩm thực tế đầy tiềm năng.Trực tiếp vận hành hệ thống AI: Tham gia sâu vào các hệ thống Computer Vision (Thị giác máy tính) và LLM (Mô hình ngôn ngữ lớn).Hạ tầng phần cứng cao cấp: Tiếp cận trực tiếp hệ thống phần cứng mạnh mẽ phục vụ cho việc huấn luyện và tối ưu hóa mô hình.Môi trường trao quyền: Nơi làm việc hỗ trợ tối đa, nơi chuyên môn của bạn trực tiếp định hình nên hình hài sản phẩm cuối cùng.Chế độ đãi ngộ & Phúc lợiMức lương cạnh tranh: Thu nhập hấp dẫn, tương xứng với năng lực và kinh nghiệm của bạn.Văn hóa làm việc chuyên nghiệp: Môi trường làm việc năng động, hiện đại và linh hoạt.Cân bằng công việc - cuộc sống: Làm việc từ Thứ Hai đến Thứ Sáu; nghỉ Thứ Bảy, Chủ Nhật và các ngày lễ Tết theo quy định pháp luật Việt Nam.Cơ hội phát triển: Đồng nghiệp thân thiện, văn hóa khuyến khích học hỏi và ứng dụng những công nghệ mới nhất.Tiện ích tại văn phòng: Cung cấp đồ ăn nhẹ, nước uống, máy tính, gửi xe tại nơi làm việc.Chế độ thử việc & Bảo hiểm:Thử việc: 2 tháng, hưởng 85% lương chính thức.Sau thử việc: Đóng bảo hiểm xã hội (BHXH) đầy đủ dựa trên 100% mức lương thực nhận.",
+            "working_location": "- Hồ Chí Minh: Tầng 4, tòa nhà Vimedimex, 246 Cống Quỳnh, Phường Bến Thành (Quận 1 cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 09:00 đến 18:30)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/ios-developer-swift-tu-3-nam-kinh-nghiem-tro-len/2122963.html",
+        "scraped_at": "2026-04-28T20:18:53.536230",
+        "metadata": {
+            "category": "Software",
+            "job_title": "IOS Developer - Swift - Từ 3 Năm Kinh Nghiệm Trở Lên",
+            "company_name": "CÔNG TY CỔ PHẦN TOH GROUP",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "Khác",
+            "company_address": "Tầng 16, Toà nhà Viwaseen 48 Tố Hữu, Phường Đại Mỗ, TP Hà Nội, Việt Nam",
+            "salary": "Thoả thuận",
+            "location": "Hà Nội",
+            "experience": "3 năm",
+            "deadline": "14/05/2026",
+            "tags": [
+                "3 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Tuổi 25 - 35",
+                "Nam",
+                "Tiếng Anh Đọc hiểu",
+                "Mobile Developer",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Tham gia vào việc phát triển các ứng dụng di động trên nền tảng iOS.Tối ưu hóa hiệu suất (performance, memory) và đảm bảo ứng dụng tương thích với các phiên bản iOS khác nhau.Phối hợp chặt chẽ với các thành viên khác trong team cũng như các team khác, bao gồm thiết kế, tester,...Sửa lỗi và cải tiến ứng dụng dựa trên phản hồi người dùng.Quản lý mã nguồn bằng các công cụ như Git, đảm bảo quy trình làm việc chuẩn và hiệu quả.",
+            "job_requirement": "Tốt nghiệp các trường Đại học chuyên ngành Công nghệ thông tin.Có ít nhất 3 năm kinh nghiệm trong lĩnh vực phát triển iOS app.Có kiến thức vững về OOP và các design pattern.Kinh nghiệm làm việc với các API, web service (REST, JSON), Realm database.Xử lý tốt UI sử dùng Auto layout.Kinh nghiệm sử dụng các công cụ quản lý phiên bản như Git.Có khả năng làm việc độc lập và làm việc nhóm tốt.Có khả năng đọc hiểu tài liệu kỹ thuật bằng tiếng Anh.Có kinh nghiệm trong việc tối ưu hóa hiệu suất và bộ nhớ của ứng dụng.Hiểu biết về quy trình phát triển ứng dụng di động và các best practices.",
+            "job_benefit": "Chế độ đãi ngộ:Lương cạnh tranh, theo chuyên môn và kinh nghiệmThưởng hàng tháng theo hiệu quả công việc.Thưởng các ngày lễ, Tết; thưởng đột xuất khácPhụ cấp: phụ cấp ăn trưa, điện thoại, đi lại; phụ cấp trách nhiệmPhúc lợi xã hội: bảo hiểm xã hội, bảo hiểm y tếSức khỏe & đời sống văn hóa tinh thần:Chế độ nghỉ phép, nghỉ ngày lễ theo quy định của Nhà nướcChế độ nghỉ mát hàng nămChế độ thai sảnKhám sức khỏe định kỳ hàng nămThăm hỏi, động viên, giúp đỡ tinh thần và vật chất cho nhân viên: cưới hỏi, bệnh tật, tai nạn, việc hiếuTặng quà các cháu thiếu nhi dịp Quốc tế thiếu nhi, tết Trung thuTổ chức, khuyến khích các hoạt động thể thao tăng cường sức khỏe và tình đoàn kết: Cầu lông, bóng đáChúc mừng sinh nhật nhân viên hàng thángLiên hoan, picnic, team-building định kỳMôi trường làm việc trẻ trung, thân thiện, công bằng, lộ trình sự nghiệp rõ ràng.Đào tạo phát triển nhân viên:Đào tạo nhân viên mớiĐào tạo nâng cao chuyên môn, nghiệp vụĐào tạo lực lượng quản lý kế cận.",
+            "working_location": "- Hà Nội: 48 Tố Hữu, Phường Đại Mỗ (quận Nam Từ Liêm cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:00 đến 17:30)\n                                                            Sáng thứ 7 chơi cầu lông 2h toàn cty, có hưởng lương.",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
     }
 ]

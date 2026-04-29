@@ -23,10 +23,6 @@ export function Layout() {
     return <Navigate to="/login" replace />;
   }
 
-  // Redirect to onboarding if profile is loaded but not onboarded.
-  if (profile && !profile.isOnboarded) {
-    return <Navigate to="/onboarding" replace />;
-  }
 
   return (
     <div className="min-h-screen bg-navy-950 font-sans text-text-primary flex">

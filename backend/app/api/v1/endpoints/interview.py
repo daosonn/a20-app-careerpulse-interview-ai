@@ -6,10 +6,8 @@ from app.services.reporter import generate_report_logic
 from app.rag_service.rag_service import rag_service
 from app.core.database import SessionDep
 from app.core.auth import CurrentUser
-from app.models.models import Interview, UserActivity, User
-from app.core.config import async_client, transcribe_audio_async, generate_speech_base64_async, CHAT_MODEL
 from app.models.models import Interview, InterviewTurn, UserActivity, User
-from app.core.config import async_client, transcribe_audio_async, generate_speech_base64_async
+from app.core.config import async_client, transcribe_audio_async, generate_speech_base64_async, CHAT_MODEL
 from app.services.tts_service import WAV_MIME_TYPE, character_from_phase
 from app.services.interview_flow import (
     create_initial_flow_state,
@@ -246,8 +244,6 @@ async def _transcribe_logic(file: UploadFile) -> str:
 @router.post("/recommend-jobs")
 async def recommend_jobs(req: RecommendationReq, db: SessionDep, current_user: CurrentUser):
     try:
-        from app.services.rag_service.rag_service import rag_service
-
         recommendations = rag_service.retrieve_by_text(req.cv_text, limit=req.limit or 5)
         return recommendations
     except Exception as e:
