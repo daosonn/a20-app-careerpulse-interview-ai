@@ -10,6 +10,7 @@ coverage/
 data/
 chroma/
 chroma_db/
+chroma_db_jina/
 
 venv/
 .env
