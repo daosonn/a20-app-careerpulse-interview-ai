@@ -77,73 +77,73 @@ else:
 # evaluator_llm = LLMFactory.get_llm(CHAT_MODEL, 0.2)
 
 # # 2. Raw Async Client
-# openai_async_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-# async_client = openai_async_client
+openai_async_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+async_client = openai_async_client
 
-# # 3. STT (Speech-to-Text) Centralized Helper
-# async def transcribe_audio_async(file_path: str) -> str:
-#     """Helper for Whisper transcription."""
-#     with open(file_path, "rb") as audio_file:
-#         transcript = await async_client.audio.transcriptions.create(
-#             model="whisper-1",
-#             file=audio_file
-#         )
-#     return transcript.text
+# 3. STT (Speech-to-Text) Centralized Helper
+async def transcribe_audio_async(file_path: str) -> str:
+    """Helper for Whisper transcription."""
+    with open(file_path, "rb") as audio_file:
+        transcript = await async_client.audio.transcriptions.create(
+            model="whisper-1",
+            file=audio_file
+        )
+    return transcript.text
 
-# # 4. TTS (Text-to-Speech) Centralized Helper
-# async def generate_speech_base64_async(
-#     text: str,
-#     model: str = "gpt-4o-mini-tts",
-#     character: str | None = None,
-#     provider: str | None = None,
-#     trace_context: dict | None = None,
-# ) -> str:
-#     """Helper for interview TTS conversion to Base64 WAV."""
-#     if not text:
-#         return ""
-#     try:
-#         response = await async_client.audio.speech.create(
-#             model=model,
-#             voice="nova",
-#             input=text
-#         )
-#         return base64.b64encode(response.content).decode('utf-8')
-#         from app.services.tts_service import synthesize_interview_tts_base64
+# 4. TTS (Text-to-Speech) Centralized Helper
+async def generate_speech_base64_async(
+    text: str,
+    model: str = "gpt-4o-mini-tts",
+    character: str | None = None,
+    provider: str | None = None,
+    trace_context: dict | None = None,
+) -> str:
+    """Helper for interview TTS conversion to Base64 WAV."""
+    if not text:
+        return ""
+    try:
+        response = await async_client.audio.speech.create(
+            model=model,
+            voice="nova",
+            input=text
+        )
+        return base64.b64encode(response.content).decode('utf-8')
+        from app.services.tts_service import synthesize_interview_tts_base64
 
-#         result = await synthesize_interview_tts_base64(
-#             character or "Ms. Linh",
-#             text,
-#             provider=provider or os.getenv("INTERVIEW_TTS_PROVIDER", "auto"),
-#             openai_model=model,
-#         )
-#         if trace_context:
-#             from app.services.trace_logger import trace_event
+        result = await synthesize_interview_tts_base64(
+            character or "Ms. Linh",
+            text,
+            provider=provider or os.getenv("INTERVIEW_TTS_PROVIDER", "auto"),
+            openai_model=model,
+        )
+        if trace_context:
+            from app.services.trace_logger import trace_event
 
-#             trace_event(trace_context.get("session_id"), trace_context.get("event", "tts.generated"), {
-#                 **trace_context,
-#                 "text": text,
-#                 "provider": result.provider,
-#                 "model": result.model,
-#                 "voice": result.voice,
-#                 "character": result.character,
-#                 "mime_type": result.mime_type,
-#                 "fallback_reason": result.fallback_reason,
-#                 "audio_base64_length": len(result.audio_base64),
-#             })
-#         return result.audio_base64
-#     except Exception as e:
-#         if trace_context:
-#             from app.services.trace_logger import trace_event
+            trace_event(trace_context.get("session_id"), trace_context.get("event", "tts.generated"), {
+                **trace_context,
+                "text": text,
+                "provider": result.provider,
+                "model": result.model,
+                "voice": result.voice,
+                "character": result.character,
+                "mime_type": result.mime_type,
+                "fallback_reason": result.fallback_reason,
+                "audio_base64_length": len(result.audio_base64),
+            })
+        return result.audio_base64
+    except Exception as e:
+        if trace_context:
+            from app.services.trace_logger import trace_event
 
-#             trace_event(trace_context.get("session_id"), trace_context.get("event", "tts.failed"), {
-#                 **trace_context,
-#                 "text": text,
-#                 "character": character or "Ms. Linh",
-#                 "model": model,
-#                 "error": str(e),
-#             })
-#         print(f"TTS Error: {e}")
-#         return ""
+            trace_event(trace_context.get("session_id"), trace_context.get("event", "tts.failed"), {
+                **trace_context,
+                "text": text,
+                "character": character or "Ms. Linh",
+                "model": model,
+                "error": str(e),
+            })
+        print(f"TTS Error: {e}")
+        return ""
 
 
 # ==========================================
@@ -232,22 +232,22 @@ else:
 # # Base URL cho các dịch vụ gốc (Dùng cho STT, TTS, Embedding)
 # DASHSCOPE_API_BASE_URL = "https://dashscope-intl.aliyuncs.com/api/v1"
 
-# class LLMFactory:
-#     @staticmethod
-#     def get_llm(model_name: str = "qwen-plus", temperature: float = 0.7):
-#         """Khởi tạo LangChain ChatOpenAI tương thích với Alibaba Qwen."""
-#         return ChatOpenAI(
-#             model=model_name, 
-#             temperature=temperature, 
-#             api_key=DASHSCOPE_API_KEY,
-#             base_url=DASHSCOPE_COMPATIBLE_BASE_URL,
-#             streaming=True
-#         )
+class LLMFactory:
+    @staticmethod
+    def get_llm(model_name: str = "qwen-plus", temperature: float = 0.7):
+        """Khởi tạo LangChain ChatOpenAI tương thích với Alibaba Qwen."""
+        return ChatOpenAI(
+            model=model_name, 
+            temperature=temperature, 
+            api_key=DASHSCOPE_API_KEY,
+            base_url=DASHSCOPE_COMPATIBLE_BASE_URL,
+            streaming=True
+        )
 
-# # Khởi tạo các instance chính
-# CHAT_MODEL = "qwen-plus"
-# interviewer_llm = LLMFactory.get_llm(CHAT_MODEL, 0.7).with_config({"tags": ["interviewer"]})
-# evaluator_llm = LLMFactory.get_llm("qwen-turbo", 0.2)
+# Khởi tạo các instance chính
+CHAT_MODEL = "qwen-plus"
+interviewer_llm = LLMFactory.get_llm(CHAT_MODEL, 0.7).with_config({"tags": ["interviewer"]})
+evaluator_llm = LLMFactory.get_llm("qwen-turbo", 0.2)
 
 # # Async Client theo mẫu chuẩn
 # alibaba_async_client = AsyncOpenAI(
