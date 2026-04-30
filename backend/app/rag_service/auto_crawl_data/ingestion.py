@@ -113,13 +113,16 @@ class JobIngestor:
                     jobs_data = json.load(f)
                 
                 all_docs = []
+                seen_ids = set()
                 for job in jobs_data:
                     # Thêm thông tin partition vào metadata để sau này có thể filter theo tuần
                     partition_info = partition_name
                     docs = self.chunk_job_data(job)
                     for d in docs:
                         d.metadata["partition"] = partition_info
-                    all_docs.extend(docs)
+                        if d.id not in seen_ids:
+                            seen_ids.add(d.id)
+                            all_docs.append(d)
 
                 if all_docs:
                     # 3. Lọc các chunk đã tồn tại để tránh tốn token embedding lại
@@ -240,5 +243,5 @@ if __name__ == "__main__":
     # Ví dụ: python ingestion.py 2026_W21
     # start_p = sys.argv[1] if len(sys.argv) > 1 else None
     # run_ingestion(start_partition=start_p)
-    run_ingestion(start_partition="2026_W21")
+    run_ingestion(start_partition="2026_W17")
 
