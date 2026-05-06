@@ -7,13 +7,13 @@ coverage/
 .env*
 !.env.example
 
-data/
-chroma/
-chroma_db/
-chroma_db_jina/
-chroma_db_gemini/
-vector/
-logs/
+# data/
+# chroma/
+# chroma_db/
+# chroma_db_jina/
+# chroma_db_gemini/
+# vector/
+# logs/
 
 
 venv/

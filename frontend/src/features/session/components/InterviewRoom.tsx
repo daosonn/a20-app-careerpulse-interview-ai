@@ -166,6 +166,7 @@ function TranscriptPanel({
               </p>
               <p className="line-clamp-2 text-xs text-text-muted">{turn.question}</p>
               <p className="mt-1.5 line-clamp-3 text-sm text-text-primary">{turn.answer}</p>
+              {/* Score display (Commented out as requested)
               {turn.evaluation?.scores && (
                 <p className="mt-2 font-headline text-xs font-semibold text-gold-300">
                   Score:{' '}
@@ -180,6 +181,7 @@ function TranscriptPanel({
                   /5
                 </p>
               )}
+              */}
             </article>
           ))
         )}
