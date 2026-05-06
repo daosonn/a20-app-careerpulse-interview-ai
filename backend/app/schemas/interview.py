@@ -1,6 +1,9 @@
-from pydantic import BaseModel, ConfigDict, Field, field_validator
-from typing import Any, List, Optional
 import json
+from typing import Any, List, Optional
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from app.core.logger import log_func
 
 class ChatMsg(BaseModel):
     role: str
@@ -38,6 +41,7 @@ class ChatReq(BaseModel):
     @field_validator("evaluations", mode="before")
     @classmethod
     def parse_evaluations(cls, v: Any) -> list:
+        log_func("ChatReq.parse_evaluations", level=2)
         """Accept both pre-parsed dicts and JSON-string-encoded dicts."""
         if not isinstance(v, list):
             return []

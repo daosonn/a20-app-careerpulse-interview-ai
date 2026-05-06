@@ -1,18 +1,21 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
 import os
 from pathlib import Path
 from typing import Annotated, Generator
+
 from fastapi import Depends
+from sqlalchemy import create_engine, inspect as sa_inspect, text
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import BACKEND_DIR, PROJECT_ROOT, SQL_DATA_DIR
+from app.core.logger import log_func
 
 # Path to database in the unified data/sql directory
 DEFAULT_SQLITE_PATH = SQL_DATA_DIR / 'interview_coach.db'
 
 
 def _normalize_database_url(raw_url: str | None) -> str:
+    log_func("_normalize_database_url", level=2)
     if raw_url:
         normalized = raw_url.strip()
         if normalized.startswith("postgres://"):
@@ -38,13 +41,13 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 def _migrate_add_columns(engine_ref):
+    log_func("_migrate_add_columns", level=2)
     """Add new columns to existing tables without dropping data.
 
     SQLAlchemy's ``create_all`` only creates *missing tables*, not missing
     columns.  For SQLite (and Postgres) we issue ``ALTER TABLE ADD COLUMN``
     and silently ignore failures (column already exists).
     """
-    from sqlalchemy import text, inspect as sa_inspect
 
     inspector = sa_inspect(engine_ref)
 
@@ -117,6 +120,7 @@ def _migrate_add_columns(engine_ref):
 
 
 def init_db():
+    log_func("init_db")
     # Ensure data directory exists when using local sqlite file path.
     if DATABASE_URL.startswith("sqlite:///"):
         sqlite_path = Path(DATABASE_URL.replace("sqlite:///", "", 1))
@@ -126,6 +130,7 @@ def init_db():
         _migrate_add_columns(engine)
 
 def get_db() -> Generator[Session, None, None]:
+    log_func("get_db")
     db = SessionLocal()
     try:
         yield db

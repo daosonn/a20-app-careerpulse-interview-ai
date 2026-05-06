@@ -2,13 +2,10 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from app.core.auth import CurrentUser
-from app.services.tts_service import (
-    Provider,
-    normalize_character,
-    synthesize_interview_tts_base64,
-)
+from app.core.logger import log_func
 from app.services.trace_logger import trace_event
-
+from app.services.tts_service import (Provider, normalize_character,
+                                     synthesize_interview_tts_base64)
 
 router = APIRouter()
 
@@ -23,6 +20,7 @@ class TTSRequest(BaseModel):
 
 @router.post("/speak")
 async def speak(req: TTSRequest, current_user: CurrentUser):
+    log_func("speak")
     text = req.text.strip()
     if not text:
         raise HTTPException(status_code=400, detail="Text is required.")

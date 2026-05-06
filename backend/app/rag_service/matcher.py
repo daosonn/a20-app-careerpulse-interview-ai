@@ -1,14 +1,21 @@
-from typing import List, Dict, Any
 import json
+from typing import Any, Dict, List
+
 from sqlalchemy.orm import Session
+
+from app.core.logger import log_func
 from app.models.models import SuggestedJob
+
 from .rag_service import rag_service
+
 
 class JobMatcherService:
     def __init__(self, db: Session):
+        log_func("JobMatcherService.__init__", level=2)
         self.db = db
 
     async def match_and_persist(self, user_id: int, skills: List[str] = None, tools: List[str] = None, projects: List[Any] = None, current_position: str = None, precomputed_vector: List[float] = None) -> List[Dict[str, Any]]:
+        log_func("JobMatcherService.match_and_persist")
         """
         Quy trình khớp kỹ năng:
         1. Xây dựng câu query tổng hợp (nếu không có vector sẵn).

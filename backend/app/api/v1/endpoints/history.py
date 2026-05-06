@@ -1,11 +1,14 @@
 from fastapi import APIRouter, HTTPException
-from app.core.database import SessionDep
+
 from app.core.auth import CurrentUser
+from app.core.database import SessionDep
+from app.core.logger import log_func
 from app.models.models import Interview, InterviewTurn, User
 
 router = APIRouter()
 
 def _turns_from_transcript(transcript, evaluations):
+    log_func("_turns_from_transcript", level=2)
     if not isinstance(transcript, list):
         return []
     evaluations = evaluations if isinstance(evaluations, list) else []
@@ -42,6 +45,7 @@ def _turns_from_transcript(transcript, evaluations):
 
 @router.get("/")
 async def get_history(db: SessionDep, current_user: CurrentUser):
+    log_func("get_history")
     if not current_user.is_onboarded:
         raise HTTPException(status_code=403, detail="Onboarding required")
         
@@ -50,6 +54,7 @@ async def get_history(db: SessionDep, current_user: CurrentUser):
 
 @router.get("/{interview_id}")
 async def get_interview_detail(interview_id: int, current_user: CurrentUser, db: SessionDep):
+    log_func("get_interview_detail")
     hist = db.query(Interview).filter(Interview.id == interview_id, Interview.user_id == current_user.id).first()
     if not hist: raise HTTPException(status_code=404, detail="Interview not found or unauthorized")
     turns = (

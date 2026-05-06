@@ -1,16 +1,21 @@
-from typing import List, Dict, Any, Optional
-import os
-import datetime
 import asyncio
+import datetime
 import json
-from langchain_chroma import Chroma
-from langchain_core.documents import Document
 import uuid
 from pathlib import Path
-from app.core.config import embedding_model, EMBEDDING_PROVIDER, PROJECT_ROOT, VECTOR_DATA_DIR
+from typing import Any, Dict, List, Optional
+
+from langchain_chroma import Chroma
+from langchain_core.documents import Document
+
+from app.core.config import (EMBEDDING_PROVIDER, PROJECT_ROOT, VECTOR_DATA_DIR,
+                             embedding_model)
+from app.core.logger import log_func
+
 
 class RAGService:
     def __init__(self):
+        log_func("RAGService.__init__", level=2)
         self.embeddings = embedding_model
         # Lưu vào thư mục tương ứng trong database/vector/ (VD: database/vector/chroma_db_jina)
         self.persist_directory = str(VECTOR_DATA_DIR / f"chroma_db_{EMBEDDING_PROVIDER}")
@@ -22,6 +27,7 @@ class RAGService:
         )
 
     def add_jobs_to_vector_db(self, jobs_data: List[Dict[str, Any]]):
+        log_func("RAGService.add_jobs_to_vector_db")
         """
         Lưu trực tiếp dữ liệu job vào ChromaDB.
         Metadata chứa: title, company, url, skills, requirements, etc.
@@ -59,11 +65,13 @@ class RAGService:
             print(f"Added {len(documents)} jobs directly to ChromaDB.")
 
     def retrieve_recommendations(self, user_skills: List[str], limit: int = 5) -> List[Dict[str, Any]]:
+        log_func("RAGService.retrieve_recommendations")
         """Truy xuất job từ ChromaDB dựa trên kỹ năng."""
         query = f"Tìm công việc phù hợp với các kỹ năng: {', '.join(user_skills)}"
         return self.retrieve_by_text(query, limit)
 
     async def embed_text(self, text: str) -> List[float]:
+        log_func("RAGService.embed_text", level=2)
         """Chuyển văn bản thành vector embedding dùng model Jina (chạy trong thread để không block)."""
         if not text:
             return []
@@ -74,11 +82,13 @@ class RAGService:
             return []
 
     async def embed_text_multi(self, text: str) -> Dict[str, List[float]]:
+        log_func("RAGService.embed_text_multi", level=2)
         """Chuyển văn bản thành vector Jina (giữ lại cấu trúc dict để tương thích code cũ)."""
         vector = await self.embed_text(text)
         return {"jina": vector}
 
     async def retrieve_by_text(self, query: str, limit: int = 5, only_active: bool = True) -> List[Dict[str, Any]]:
+        log_func("RAGService.retrieve_by_text")
         """Truy xuất job từ ChromaDB dựa trên đoạn văn bản (CV hoặc query)."""
         filter_metadata = None
         if only_active:
@@ -102,6 +112,7 @@ class RAGService:
             return []
 
     async def retrieve_by_vector(self, embedding: List[float], limit: int = 5, only_active: bool = True) -> List[Dict[str, Any]]:
+        log_func("RAGService.retrieve_by_vector")
         """Truy xuất job từ ChromaDB dựa trên vector đã có sẵn."""
         if not embedding:
             return []
@@ -128,6 +139,7 @@ class RAGService:
             return []
 
     async def _process_results_async(self, results: List[Document], limit: int) -> List[Dict[str, Any]]:
+        log_func("RAGService._process_results_async", level=2)
         """Xử lý kết quả tìm kiếm một cách tối ưu, tránh loop query DB quá nhiều."""
         recommendations = []
         seen_urls = set()

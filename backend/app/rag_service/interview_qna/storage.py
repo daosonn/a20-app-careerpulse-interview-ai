@@ -5,7 +5,7 @@ from typing import Any, Dict, Iterable, List, Optional, Set
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
-DATA_ROOT = PROJECT_ROOT / "raw_data" / "interview_qna"
+DATA_ROOT = PROJECT_ROOT / "database" / "interview_qna"
 PARTITIONS_DIR = DATA_ROOT / "partitions"
 NORMALIZED_DIR = DATA_ROOT / "normalized"
 SEEN_URLS_PATH = DATA_ROOT / "seen_urls.json"
@@ -81,3 +81,15 @@ def select_skills(skill_names: Optional[List[str]] = None) -> Dict[str, Dict[str
     if missing:
         raise ValueError(f"Unknown skills: {', '.join(missing)}")
     return {name: skills[name] for name in skill_names}
+
+
+def load_jsonl(path: Path) -> List[Dict[str, Any]]:
+    if not path.exists():
+        return []
+    records = []
+    with path.open("r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                records.append(json.loads(line))
+    return records

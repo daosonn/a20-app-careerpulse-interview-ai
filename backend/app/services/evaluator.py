@@ -1,9 +1,10 @@
-from app.core.config import evaluator_llm
-from typing import Any
 import json
 import re
 import unicodedata
+from typing import Any
 
+from app.core.config import evaluator_llm
+from app.core.logger import log_func
 
 DEFAULT_SCORES = {
     "clarity": 3,
@@ -22,6 +23,7 @@ DEFAULT_STAR = {
 
 
 def _clamp_score(value: Any, default: int) -> int:
+    log_func("_clamp_score", level=2)
     try:
         return max(1, min(5, int(round(float(value)))))
     except (TypeError, ValueError):
@@ -29,6 +31,7 @@ def _clamp_score(value: Any, default: int) -> int:
 
 
 def _parse_json(raw_content: str) -> dict[str, Any] | None:
+    log_func("_parse_json", level=2)
     content = raw_content.strip()
     if content.startswith("```"):
         parts = content.split("```")
@@ -43,6 +46,7 @@ def _parse_json(raw_content: str) -> dict[str, Any] | None:
 
 
 def _normalize_evaluation(raw_content: str) -> dict[str, Any]:
+    log_func("_normalize_evaluation", level=2)
     payload = _parse_json(raw_content)
     if payload is None:
         return {
@@ -85,17 +89,20 @@ def _normalize_evaluation(raw_content: str) -> dict[str, Any]:
 
 
 def _strip_accents(value: str) -> str:
+    log_func("_strip_accents", level=2)
     normalized = unicodedata.normalize("NFD", value or "")
     stripped = "".join(ch for ch in normalized if unicodedata.category(ch) != "Mn")
     return stripped.replace("đ", "d").replace("Đ", "D").lower().strip()
 
 
 def _is_candidate_question(question: str) -> bool:
+    log_func("_is_candidate_question", level=2)
     text = _strip_accents(question)
     return "co cau hoi nao" in text or "cau hoi nao cho" in text or "questions for us" in text
 
 
 def _is_no_question_answer(answer: str) -> bool:
+    log_func("_is_no_question_answer", level=2)
     text = re.sub(r"[^\w\s]", " ", _strip_accents(answer))
     text = re.sub(r"\s+", " ", text).strip()
     return (
@@ -108,6 +115,7 @@ def _is_no_question_answer(answer: str) -> bool:
 
 
 def _candidate_question_evaluation(answer: str, language: str) -> dict[str, Any]:
+    log_func("_candidate_question_evaluation", level=2)
     if language == "vi":
         if _is_no_question_answer(answer):
             feedback = (
@@ -141,11 +149,13 @@ def _candidate_question_evaluation(answer: str, language: str) -> dict[str, Any]
 
 
 def _answer_asks_for_clarification(answer: str) -> bool:
+    log_func("_answer_asks_for_clarification", level=2)
     text = _strip_accents(answer)
     return any(pattern in text for pattern in ("la gi", "khong hieu", "chua hieu", "giai thich", "nghia la gi"))
 
 
 def _evaluation_mode(question: str) -> str:
+    log_func("_evaluation_mode", level=2)
     text = _strip_accents(question)
     if _is_candidate_question(question):
         return "candidate_question"
@@ -159,6 +169,7 @@ def _evaluation_mode(question: str) -> str:
 
 
 def _clarification_evaluation(answer: str, language: str) -> dict[str, Any]:
+    log_func("_clarification_evaluation", level=2)
     feedback = (
         "Ứng viên đang yêu cầu làm rõ câu hỏi. Đây là hành vi giao tiếp hợp lệ, chưa nên chấm như một câu trả lời sai. "
         "Sau khi được giải thích bằng ngôn ngữ đơn giản hơn, ứng viên cần trả lời lại bằng ví dụ cụ thể."
@@ -181,6 +192,7 @@ def _clarification_evaluation(answer: str, language: str) -> dict[str, Any]:
 
 
 async def evaluate_star_logic(req_data: Any) -> dict[str, Any]:
+    log_func("evaluate_star_logic")
     if _is_candidate_question(req_data.last_ai_msg):
         return _candidate_question_evaluation(req_data.last_user_msg, req_data.language)
     if _answer_asks_for_clarification(req_data.last_user_msg):
@@ -227,4 +239,3 @@ async def evaluate_star_logic(req_data: Any) -> dict[str, Any]:
             "feedback": f"Error: {str(e)}",
             "betterVersion": "",
         }
-

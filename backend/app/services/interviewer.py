@@ -2,20 +2,23 @@ import json
 from typing import Any, List, Tuple
 
 from app.core.config import async_client
-
+from app.core.logger import log_func
 
 async def astream_ai_batch(req_data: Any):
+    log_func("astream_ai_batch", level=2)
     """Reserved for a future structured streaming implementation."""
     return
 
 
 def _get_value(req_data: Any, key: str, default=None):
+    log_func("_get_value", level=2)
     if isinstance(req_data, dict):
         return req_data.get(key, default)
     return getattr(req_data, key, default)
 
 
 def _type_guidance(interview_type: str) -> str:
+    log_func("_type_guidance", level=2)
     guidance = {
         "Technical": (
             "Focus on technical depth, trade-offs, debugging, architecture, "
@@ -34,6 +37,7 @@ def _type_guidance(interview_type: str) -> str:
 
 
 async def generate_ai_batch(req_data: Any) -> List[dict]:
+    log_func("generate_ai_batch")
     """Generate the next structured question batch as pure JSON."""
     language = _get_value(req_data, "language", "vi")
     is_stress_test = bool(_get_value(req_data, "is_stress_test", False))
@@ -143,5 +147,6 @@ Return ONLY a JSON object with this exact shape:
 
 
 def generate_question_logic(req_data: Any) -> Tuple[str, str, int, str]:
+    log_func("generate_question_logic", level=2)
     """Wrapper mainly for backward compatibility."""
     return "", "", req_data.current_question_count, ""

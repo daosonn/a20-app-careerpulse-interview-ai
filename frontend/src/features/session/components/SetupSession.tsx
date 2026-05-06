@@ -182,25 +182,40 @@ export function SetupSession() {
       .then(async (data) => {
         setSavedResumes(data || []);
         if (data && data.length > 0 && !cvText.trim()) {
-          // Fetch full detail for the first one
-          try {
-            const detailRes = await authenticatedFetch(apiUrl(`/api/v1/user/resumes/${data[0].id}`));
-            const detailData = await detailRes.json();
-            setCvText(detailData.raw_text);
-            setFileName(detailData.file_name || 'CV đã lưu');
-            setSelectedCvId(detailData.id);
+          // Tối ưu: Sử dụng luôn dữ liệu chi tiết đã được gộp (Combine) trong bản ghi đầu tiên
+          const firstResume = data[0];
+          if (firstResume.raw_text) {
+            setCvText(firstResume.raw_text);
+            setFileName(firstResume.file_name || 'CV đã lưu');
+            setSelectedCvId(firstResume.id);
             
-            // Use pre-fetched jobs from initial detail response
-            const jobsData = detailData.suggested_jobs || [];
+            const jobsData = firstResume.suggested_jobs || [];
             setRecommendedJobs(jobsData);
             if (jobsData.length > 0) {
               setSelectedJobIndex(0);
               setJobDescription(jobsData[0].description);
             }
-          } catch (e) {
-            console.error("Failed to fetch resume detail", e);
-          } finally {
             setIsFetchingRecommendations(false);
+          } else {
+            // Fallback nếu Backend chưa gộp dữ liệu
+            try {
+              const detailRes = await authenticatedFetch(apiUrl(`/api/v1/user/resumes/${firstResume.id}`));
+              const detailData = await detailRes.json();
+              setCvText(detailData.raw_text);
+              setFileName(detailData.file_name || 'CV đã lưu');
+              setSelectedCvId(detailData.id);
+              
+              const jobsData = detailData.suggested_jobs || [];
+              setRecommendedJobs(jobsData);
+              if (jobsData.length > 0) {
+                setSelectedJobIndex(0);
+                setJobDescription(jobsData[0].description);
+              }
+            } catch (e) {
+              console.error("Failed to fetch resume detail", e);
+            } finally {
+              setIsFetchingRecommendations(false);
+            }
           }
         } else if (profile.cvText && !cvText.trim()) {
           setCvText(profile.cvText);
@@ -247,19 +262,44 @@ export function SetupSession() {
       });
       const uploadData = await uploadRes.json();
       
-      // If backend returned suggested jobs, show them immediately
-      if (uploadData.suggested_jobs && uploadData.suggested_jobs.length > 0) {
-        setRecommendedJobs(uploadData.suggested_jobs);
-        setSelectedJobIndex(0);
-        setJobDescription(uploadData.suggested_jobs[0].description);
-      }
+      // Tối ưu: Cập nhật state cục bộ từ dữ liệu trả về của Backend mà không cần gọi lại danh sách
+      if (uploadData.resume) {
+        const newResume = uploadData.resume;
+        setCvText(newResume.raw_text);
+        setFileName(newResume.file_name);
+        setSelectedCvId(newResume.id);
+        
+        const jobsData = newResume.suggested_jobs || [];
+        setRecommendedJobs(jobsData);
+        if (jobsData.length > 0) {
+          setSelectedJobIndex(0);
+          setJobDescription(jobsData[0].description);
+        }
+        
+        // Cập nhật mảng local
+        setSavedResumes(prev => {
+          const exists = prev.some(r => r.id === newResume.id);
+          if (exists) return prev;
+          return [{
+            id: newResume.id,
+            file_name: newResume.file_name,
+            created_at: newResume.created_at
+          }, ...prev];
+        });
+      } else {
+        // Fallback nếu Backend chưa cập nhật schema mới
+        if (uploadData.suggested_jobs && uploadData.suggested_jobs.length > 0) {
+          setRecommendedJobs(uploadData.suggested_jobs);
+          setSelectedJobIndex(0);
+          setJobDescription(uploadData.suggested_jobs[0].description);
+        }
 
-      const updatedRes = await authenticatedFetch(apiUrl('/api/v1/user/resumes'));
-      const resumesData = await updatedRes.json();
-      setSavedResumes(resumesData || []);
-      // Auto select the newly uploaded resume
-      if (resumesData && resumesData.length > 0) {
-        setSelectedCvId(resumesData[0].id);
+        const updatedRes = await authenticatedFetch(apiUrl('/api/v1/user/resumes'));
+        const resumesData = await updatedRes.json();
+        setSavedResumes(resumesData || []);
+        if (resumesData && resumesData.length > 0) {
+          setSelectedCvId(resumesData[0].id);
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Lỗi khi đọc hoặc lưu file CV.');

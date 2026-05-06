@@ -12,6 +12,9 @@ chroma/
 chroma_db/
 chroma_db_jina/
 chroma_db_gemini/
+vector/
+logs/
+
 
 venv/
 .env

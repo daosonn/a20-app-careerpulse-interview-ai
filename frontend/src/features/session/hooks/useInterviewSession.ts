@@ -194,11 +194,16 @@ export function useInterviewSession(
     }
   }, [speakText]);
 
+  const isStartingRef = useRef(false);
+
   const loadData = useCallback(async () => {
-    if (!id || !user) return;
+    if (!id || !user || isStartingRef.current) return;
+    isStartingRef.current = true; // Block further calls immediately
+
     if (!/^\d+$/.test(id)) {
       setError(`Session id không hợp lệ: ${id}`);
       setLoading(false);
+      isStartingRef.current = false;
       return;
     }
     try {
@@ -265,6 +270,8 @@ export function useInterviewSession(
           await handleStream(startResp, data.language);
         } else {
           setError(await parseErrorMessage(startResp, 'Failed to start interview session.'));
+          // Allow retrying if the start request itself failed
+          isStartingRef.current = false;
         }
         setIsProcessing(false);
       } else if (data.status === 'completed') {
@@ -273,6 +280,8 @@ export function useInterviewSession(
     } catch (err) {
       console.error(err);
       setError((err as Error)?.message || "Failed to load interview session.");
+      // Reset on error to allow the effect to potentially retry or be manually re-run
+      isStartingRef.current = false;
     } finally {
       setLoading(false);
     }

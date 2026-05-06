@@ -4,8 +4,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-
 from app.core.config import LOGS_DIR
+from app.core.logger import log_func
+
 DEFAULT_TRACE_PATH = LOGS_DIR / "interview-ai-trace.jsonl"
 TRACE_PATH = Path(os.getenv("INTERVIEW_TRACE_LOG_PATH", str(DEFAULT_TRACE_PATH)))
 MAX_TEXT_CHARS = int(os.getenv("INTERVIEW_TRACE_MAX_TEXT_CHARS", "6000"))
@@ -16,6 +17,7 @@ def trace_event(
     event: str,
     payload: dict[str, Any] | None = None,
 ) -> None:
+    log_func("trace_event", level=2)
     """Append one JSONL trace event for interview debugging.
 
     Secrets are not logged. Long text fields are truncated to keep the file usable.
@@ -35,6 +37,7 @@ def trace_event(
 
 
 def trace_path() -> str:
+    log_func("trace_path", level=2)
     return str(TRACE_PATH)
 
 

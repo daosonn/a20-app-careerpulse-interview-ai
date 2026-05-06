@@ -1,16 +1,20 @@
-from app.core.config import PROJECT_ROOT
-from dotenv import load_dotenv
 import os
+import traceback
+import uvicorn
+from datetime import datetime
+from dotenv import load_dotenv
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
+from app.core.config import PROJECT_ROOT
+from app.api.v1.api import api_router
+from app.core.database import init_db
+from app.core.logger import log_func
 
 # Load variables from root .env file
 env_path = PROJECT_ROOT / '.env'
 load_dotenv(str(env_path))
-
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from app.api.v1.api import api_router
-from app.core.database import init_db
 
 app = FastAPI(title="AI Interviewer Unified Backend")
 
@@ -30,21 +34,21 @@ app.include_router(api_router, prefix="/api/v1")
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
-    import traceback
+    log_func("unhandled_exception_handler")
     traceback.print_exc()
     return JSONResponse(status_code=500, content={"detail": str(exc) or "Internal Server Error"})
 
 @app.get("/")
 def health_check():
+    log_func("health_check")
     return {"status": "ok", "service": "backend"}
 
 @app.on_event("startup")
 def on_startup():
+    log_func("on_startup")
     init_db()
 
 if __name__ == "__main__":
-    import uvicorn
-    
     # Custom Logging Configuration for precise timestamps
     LOGGING_CONFIG = {
         "version": 1,

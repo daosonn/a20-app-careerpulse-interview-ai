@@ -1,7 +1,9 @@
 import os
 import sys
 from pathlib import Path
+
 from dotenv import load_dotenv
+from sqlalchemy.orm import Session
 
 # Adjust path to find .env in project root
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
@@ -11,8 +13,8 @@ load_dotenv(PROJECT_ROOT / ".env")
 BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(BACKEND_DIR))
 
-from sqlalchemy.orm import Session
-from app.core.database import SessionLocal, engine, Base
+from app.core.database import Base, SessionLocal, engine
+from app.core.logger import log_func
 from app.models.models import QuestionBank
 
 # Ensure tables exist
@@ -85,6 +87,7 @@ SAMPLE_QUESTIONS = [
 ]
 
 def seed():
+    log_func("seed")
     db = SessionLocal()
     try:
         count = db.query(QuestionBank).count()

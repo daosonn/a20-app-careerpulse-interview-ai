@@ -1,7 +1,11 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, JSON, ForeignKey, Boolean
-from sqlalchemy.orm import relationship
 import datetime
+
+from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
+                        String, Text)
+from sqlalchemy.orm import relationship
+
 from app.core.database import Base
+from app.core.logger import log_func
 
 
 def utcnow() -> datetime.datetime:
@@ -179,7 +183,3 @@ class QuestionBank(Base):
     language = Column(String, default="vi")
     created_at = Column(DateTime, default=utcnow, nullable=False)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
-
-
-
-

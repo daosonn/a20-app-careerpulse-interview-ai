@@ -9,6 +9,7 @@ from typing import Literal
 from dotenv import load_dotenv
 from openai import OpenAI
 
+from app.core.logger import log_func
 
 Provider = Literal["auto", "gemini", "openai"]
 TTSProvider = Literal["gemini", "openai"]
@@ -78,6 +79,7 @@ PERSONA_TO_CHARACTER = {
 
 
 def normalize_character(character: str | None = None, persona_id: str | None = None) -> str:
+    log_func("normalize_character", level=2)
     raw = (character or persona_id or "Ms. Linh").strip()
     if raw in CHARACTER_VOICES:
         return raw
@@ -91,6 +93,7 @@ def normalize_character(character: str | None = None, persona_id: str | None = N
 
 
 def character_from_phase(phase: str | int | None) -> str:
+    log_func("character_from_phase", level=2)
     phase_text = str(phase or "")
     if any(keyword in phase_text for keyword in ("Introduction", "Motivation", "HR")):
         return "Ms. Linh"
@@ -108,6 +111,7 @@ async def synthesize_interview_tts_base64(
     openai_model: str = DEFAULT_OPENAI_MODEL,
     load_env: bool = True,
 ) -> TTSResult:
+    log_func("synthesize_interview_tts_base64")
     if load_env:
         load_dotenv()
 
@@ -140,6 +144,7 @@ async def synthesize_interview_tts_base64(
 
 
 def _get_voice_profile(character: str) -> VoiceProfile:
+    log_func("_get_voice_profile", level=2)
     try:
         return CHARACTER_VOICES[character]
     except KeyError as exc:
@@ -148,6 +153,7 @@ def _get_voice_profile(character: str) -> VoiceProfile:
 
 
 def _generate_gemini_wav_bytes(text: str, profile: VoiceProfile, model: str) -> bytes:
+    log_func("_generate_gemini_wav_bytes", level=2)
     if not os.getenv("GEMINI_API_KEY") and not os.getenv("GOOGLE_API_KEY"):
         raise RuntimeError("Missing GEMINI_API_KEY or GOOGLE_API_KEY.")
 
@@ -173,6 +179,7 @@ def _generate_gemini_wav_bytes(text: str, profile: VoiceProfile, model: str) -> 
 
 
 def _generate_openai_wav_bytes(text: str, profile: VoiceProfile, model: str) -> bytes:
+    log_func("_generate_openai_wav_bytes", level=2)
     if not os.getenv("OPENAI_API_KEY"):
         raise RuntimeError("Missing OPENAI_API_KEY.")
 
@@ -188,6 +195,7 @@ def _generate_openai_wav_bytes(text: str, profile: VoiceProfile, model: str) -> 
 
 
 def _first_gemini_audio_bytes(response) -> bytes:
+    log_func("_first_gemini_audio_bytes", level=2)
     for candidate in response.candidates or []:
         if not candidate.content:
             continue
@@ -200,6 +208,7 @@ def _first_gemini_audio_bytes(response) -> bytes:
 
 
 def _wave_bytes(pcm: bytes) -> bytes:
+    log_func("_wave_bytes", level=2)
     buffer = io.BytesIO()
     with wave.open(buffer, "wb") as wf:
         wf.setnchannels(WAV_CHANNELS)
@@ -217,6 +226,7 @@ def _result(
     character: str,
     fallback_reason: str | None = None,
 ) -> TTSResult:
+    log_func("_result", level=2)
     return TTSResult(
         audio_base64=base64.b64encode(audio).decode("utf-8"),
         mime_type=WAV_MIME_TYPE,

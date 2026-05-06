@@ -1,9 +1,12 @@
-from fastapi import APIRouter, HTTPException
 import datetime
 import json
 import logging
 from typing import Optional
+
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
+from sqlalchemy import func, select
+
 from app.schemas.user import (
     OnboardReq,
     ProfileUpdateReq,
@@ -20,15 +23,20 @@ from app.core.auth import CurrentUser
 from app.models.models import User, Education, ResumeUpload, SuggestedJob, UserActivity, QuestionBank
 from app.services.profiler import extract_cv_info_logic, extract_cv_info_stream, map_cv_skills_to_canonical
 from app.rag_service.matcher import JobMatcherService
+from app.rag_service.rag_service import rag_service
+from app.core.config import EMBEDDING_PROVIDER
+from app.core.logger import log_func
 
 router = APIRouter()
 
 
 def _utcnow() -> datetime.datetime:
+    log_func("_utcnow", level=2)
     return datetime.datetime.utcnow()
 
 
 def _log_activity(db: SessionDep, user_id: int, event_type: str, details: Optional[dict] = None) -> None:
+    log_func("_log_activity", level=2)
     db.add(
         UserActivity(
             user_id=user_id,
@@ -40,6 +48,7 @@ def _log_activity(db: SessionDep, user_id: int, event_type: str, details: Option
 
 
 def _profile_payload(user: User) -> dict:
+    log_func("_profile_payload", level=2)
     return {
         "onboarded": user.is_onboarded,
         "cv_text": user.cv_text,
@@ -54,6 +63,7 @@ def _profile_payload(user: User) -> dict:
 
 
 def _preferences_payload(user: User) -> dict:
+    log_func("_preferences_payload", level=2)
     return {
         field: getattr(user, field)
         for field in PREF_FIELDS
@@ -61,6 +71,7 @@ def _preferences_payload(user: User) -> dict:
 
 
 def _settings_payload(user: User) -> dict:
+    log_func("_settings_payload", level=2)
     return {
         field: getattr(user, field)
         for field in SETTINGS_FIELDS
@@ -68,6 +79,7 @@ def _settings_payload(user: User) -> dict:
 
 
 def _education_payload(entries: list[Education]) -> list[dict]:
+    log_func("_education_payload", level=2)
     return [
         {
             "id": entry.id,
@@ -81,6 +93,7 @@ def _education_payload(entries: list[Education]) -> list[dict]:
 
 
 def _jobs_payload(jobs: list[SuggestedJob]) -> list[dict]:
+    log_func("_jobs_payload", level=2)
     return [
         {
             "title": job.title,
@@ -101,6 +114,7 @@ def _jobs_payload(jobs: list[SuggestedJob]) -> list[dict]:
 
 @router.post("/onboard")
 async def onboard_user(req: OnboardReq, db: SessionDep, current_user: CurrentUser):
+    log_func("onboard_user")
     try:
         info = await extract_cv_info_logic(req.cv_text)
         skills = info.get("skills", ["Kỹ năng chung"])
@@ -119,7 +133,6 @@ async def onboard_user(req: OnboardReq, db: SessionDep, current_user: CurrentUse
         current_user.last_activity_at = _utcnow()
 
         # Skill Mapping Logic
-        from sqlalchemy import func
         all_canonical_skills = db.query(QuestionBank.skills).all()
         # Flatten and unique the skills list
         flat_skills = set()
@@ -132,7 +145,6 @@ async def onboard_user(req: OnboardReq, db: SessionDep, current_user: CurrentUse
         matched_skills = await map_cv_skills_to_canonical(req.cv_text, list(flat_skills))
 
         # Generate CV Vector for Job Matching (One-time)
-        from app.rag_service.rag_service import rag_service
         query_parts = []
         if current_user.current_position: query_parts.append(f"Vị trí: {current_user.current_position}")
         if skills: query_parts.append(f"Kỹ năng: {', '.join(skills)}")
@@ -181,11 +193,13 @@ async def onboard_user(req: OnboardReq, db: SessionDep, current_user: CurrentUse
 
 @router.get("/profile")
 async def get_user_profile(current_user: CurrentUser):
+    log_func("get_user_profile")
     return _profile_payload(current_user)
 
 
 @router.put("/profile")
 async def update_profile(req: ProfileUpdateReq, db: SessionDep, current_user: CurrentUser):
+    log_func("update_profile")
     try:
         if req.full_name is not None:
             current_user.full_name = req.full_name
@@ -227,48 +241,73 @@ async def update_profile(req: ProfileUpdateReq, db: SessionDep, current_user: Cu
 
 @router.get("/resumes")
 async def list_resumes(db: SessionDep, current_user: CurrentUser):
+    log_func("list_resumes")
     try:
         # Chỉ lấy các trường cần thiết để hiển thị danh sách
-        from sqlalchemy import select
-        from app.models.models import ResumeUpload
-        
         stmt = select(ResumeUpload.id, ResumeUpload.file_name, ResumeUpload.created_at)\
             .where(ResumeUpload.user_id == current_user.id)\
             .order_by(ResumeUpload.created_at.desc())
         
         results = db.execute(stmt).all()
-        return [
-            {
+        if not results:
+            return []
+
+        resumes = []
+        for idx, r in enumerate(results):
+            item = {
                 "id": r.id, 
                 "file_name": r.file_name, 
                 "created_at": r.created_at.isoformat() if r.created_at else None
-            } for r in results
-        ]
+            }
+            # Tối ưu: Gộp (Combine) nội dung chi tiết cho CV mới nhất để tiết kiệm 1 round-trip khi load trang /setup
+            if idx == 0:
+                # Lấy thêm thông tin chi tiết cho bản ghi đầu tiên
+                first_resume = db.query(ResumeUpload).filter(ResumeUpload.id == r.id).first()
+                if first_resume:
+                    item["raw_text"] = first_resume.raw_text
+                    suggested_jobs = []
+                    if isinstance(first_resume.cv_vector, dict) and first_resume.cv_vector.get("jina"):
+                        suggested_jobs = await rag_service.retrieve_by_vector(first_resume.cv_vector["jina"], limit=5)
+                    item["suggested_jobs"] = suggested_jobs
+            
+            resumes.append(item)
+        return resumes
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/resumes/{resume_id}")
 async def get_resume_detail(resume_id: int, db: SessionDep, current_user: CurrentUser):
-    from app.rag_service.rag_service import rag_service
-    resume = db.query(ResumeUpload).filter(ResumeUpload.id == resume_id, ResumeUpload.user_id == current_user.id).first()
-    if not resume:
+    log_func("get_resume_detail")
+    
+    # Tối ưu: Chỉ select các cột cần thiết, tránh lấy cv_vector (rất nặng) truyền qua mạng
+    stmt = select(
+        ResumeUpload.id, 
+        ResumeUpload.raw_text, 
+        ResumeUpload.file_name, 
+        ResumeUpload.cv_vector,
+        ResumeUpload.created_at
+    ).where(ResumeUpload.id == resume_id, ResumeUpload.user_id == current_user.id)
+    
+    result = db.execute(stmt).first()
+    if not result:
         raise HTTPException(status_code=404, detail="Resume not found")
     
-    # Lấy luôn Job gợi ý trong cùng 1 nốt nhạc
+    # Backend vẫn dùng cv_vector để tìm job nhưng không trả về cho Frontend
     suggested_jobs = []
-    if isinstance(resume.cv_vector, dict) and resume.cv_vector.get("jina"):
-        suggested_jobs = await rag_service.retrieve_by_vector(resume.cv_vector["jina"], limit=5)
+    if isinstance(result.cv_vector, dict) and result.cv_vector.get("jina"):
+        suggested_jobs = await rag_service.retrieve_by_vector(result.cv_vector["jina"], limit=5)
         
     return {
-        "id": resume.id,
-        "raw_text": resume.raw_text,
-        "file_name": resume.file_name,
-        "suggested_jobs": suggested_jobs # Trả về luôn để Frontend không phải gọi thêm
+        "id": result.id,
+        "raw_text": result.raw_text,
+        "file_name": result.file_name,
+        "created_at": result.created_at.isoformat() if result.created_at else None,
+        "suggested_jobs": suggested_jobs 
     }
 
 @router.get("/resumes/{resume_id}/jobs")
 async def get_resume_jobs(resume_id: int, db: SessionDep, current_user: CurrentUser):
-    from app.rag_service.rag_service import rag_service
+    log_func("get_resume_jobs")
     resume = db.query(ResumeUpload).filter(ResumeUpload.id == resume_id, ResumeUpload.user_id == current_user.id).first()
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
@@ -287,6 +326,7 @@ async def get_resume_jobs(resume_id: int, db: SessionDep, current_user: CurrentU
 
 @router.put("/cv")
 async def update_cv(req: CVUpdateReq, db: SessionDep, current_user: CurrentUser):
+    log_func("update_cv")
     if not req.cv_text.strip():
         raise HTTPException(status_code=400, detail="CV text cannot be empty.")
     try:
@@ -308,7 +348,6 @@ async def update_cv(req: CVUpdateReq, db: SessionDep, current_user: CurrentUser)
         current_user.last_activity_at = _utcnow()
 
         # Skill Mapping Logic (One-time during CV upload)
-        from sqlalchemy import func
         all_canonical_skills = db.query(QuestionBank.skills).all()
         flat_skills = set()
         for item in all_canonical_skills:
@@ -320,7 +359,6 @@ async def update_cv(req: CVUpdateReq, db: SessionDep, current_user: CurrentUser)
         matched_skills = await map_cv_skills_to_canonical(req.cv_text, list(flat_skills))
 
         # Generate CV Vector for Job Matching (One-time)
-        from app.rag_service.rag_service import rag_service
         query_parts = []
         if current_user.current_position: query_parts.append(f"Vị trí: {current_user.current_position}")
         if skills: query_parts.append(f"Kỹ năng: {', '.join(skills)}")
@@ -330,20 +368,19 @@ async def update_cv(req: CVUpdateReq, db: SessionDep, current_user: CurrentUser)
         # Generate vectors for both providers
         cv_vectors = await rag_service.embed_text_multi(query_str) if query_str else {}
 
-        db.add(
-            ResumeUpload(
-                user_id=current_user.id,
-                file_name=req.file_name or "profile_cv_update.pdf",
-                source="cv_update",
-                raw_text=req.cv_text,
-                status="processed",
-                parsed_skills=skills,
-                matched_skills=matched_skills,
-                rich_summary=query_str,
-                cv_vector=cv_vectors, # Store dictionary of vectors
-                processed_at=_utcnow(),
-            )
+        new_resume = ResumeUpload(
+            user_id=current_user.id,
+            file_name=req.file_name or "profile_cv_update.pdf",
+            source="cv_update",
+            raw_text=req.cv_text,
+            status="processed",
+            parsed_skills=skills,
+            matched_skills=matched_skills,
+            rich_summary=query_str,
+            cv_vector=cv_vectors, # Store dictionary of vectors
+            processed_at=_utcnow(),
         )
+        db.add(new_resume)
         _log_activity(
             db,
             current_user.id,
@@ -355,18 +392,27 @@ async def update_cv(req: CVUpdateReq, db: SessionDep, current_user: CurrentUser)
         )
         db.commit()
         db.refresh(current_user)
+        db.refresh(new_resume)
+
         # Tự động tìm kiếm Job gợi ý bằng Vector Jina (mặc định)
         suggested_jobs = []
         if cv_vectors.get("jina"):
             suggested_jobs = await rag_service.retrieve_by_vector(cv_vectors["jina"], limit=5)
 
+        # Trả về cả bản ghi vừa tạo để Frontend cập nhật state ngay lập tức mà không cần gọi lại danh sách
         return {
             "status": "success",
+            "resume": {
+                "id": new_resume.id,
+                "file_name": new_resume.file_name,
+                "raw_text": new_resume.raw_text,
+                "created_at": new_resume.created_at.isoformat() if new_resume.created_at else _utcnow().isoformat(),
+                "suggested_jobs": suggested_jobs
+            },
             "skills": current_user.skills,
             "matched_skills": matched_skills,
             "full_name": current_user.full_name,
             "current_position": current_user.current_position,
-            "suggested_jobs": suggested_jobs
         }
     except Exception as e:
         db.rollback()
@@ -375,8 +421,10 @@ async def update_cv(req: CVUpdateReq, db: SessionDep, current_user: CurrentUser)
 
 @router.post("/cv/analyze-stream")
 async def analyze_cv_stream(req: CVUpdateReq, current_user: CurrentUser):
+    log_func("analyze_cv_stream")
     """Endpoint stream để Frontend hiển thị tiến trình bóc tách CV."""
     async def event_generator():
+        log_func("event_generator", level=2)
         async for update in extract_cv_info_stream(req.cv_text):
             yield f"data: {update}\n\n"
 
@@ -389,11 +437,13 @@ async def analyze_cv_stream(req: CVUpdateReq, current_user: CurrentUser):
 
 @router.get("/education", response_model=list[EducationResp])
 async def list_education(db: SessionDep, current_user: CurrentUser):
+    log_func("list_education")
     return db.query(Education).filter(Education.user_id == current_user.id).all()
 
 
 @router.post("/education", response_model=EducationResp, status_code=201)
 async def add_education(req: EducationReq, db: SessionDep, current_user: CurrentUser):
+    log_func("add_education")
     try:
         edu = Education(
             user_id=current_user.id,
@@ -421,6 +471,7 @@ async def add_education(req: EducationReq, db: SessionDep, current_user: Current
 
 @router.put("/education/{edu_id}", response_model=EducationResp)
 async def update_education(edu_id: int, req: EducationReq, db: SessionDep, current_user: CurrentUser):
+    log_func("update_education")
     edu = db.query(Education).filter(
         Education.id == edu_id, Education.user_id == current_user.id
     ).first()
@@ -449,6 +500,7 @@ async def update_education(edu_id: int, req: EducationReq, db: SessionDep, curre
 
 @router.delete("/education/{edu_id}")
 async def delete_education(edu_id: int, db: SessionDep, current_user: CurrentUser):
+    log_func("delete_education")
     edu = db.query(Education).filter(
         Education.id == edu_id, Education.user_id == current_user.id
     ).first()
@@ -484,11 +536,13 @@ PREF_FIELDS = [
 
 @router.get("/preferences", response_model=PreferencesResp)
 async def get_preferences(current_user: CurrentUser):
+    log_func("get_preferences")
     return PreferencesResp.model_validate(current_user)
 
 
 @router.put("/preferences", response_model=PreferencesResp)
 async def update_preferences(req: PreferencesReq, db: SessionDep, current_user: CurrentUser):
+    log_func("update_preferences")
     try:
         data = req.model_dump(exclude_unset=True)
         for field in PREF_FIELDS:
@@ -521,11 +575,13 @@ SETTINGS_FIELDS = [
 
 @router.get("/settings", response_model=SettingsResp)
 async def get_settings(current_user: CurrentUser):
+    log_func("get_settings")
     return SettingsResp.model_validate(current_user)
 
 
 @router.put("/settings", response_model=SettingsResp)
 async def update_settings(req: SettingsReq, db: SessionDep, current_user: CurrentUser):
+    log_func("update_settings")
     try:
         data = req.model_dump(exclude_unset=True)
         for field in SETTINGS_FIELDS:
@@ -552,6 +608,7 @@ async def update_settings(req: SettingsReq, db: SessionDep, current_user: Curren
 
 @router.get("/me")
 async def get_user_bundle(db: SessionDep, current_user: CurrentUser):
+    log_func("get_user_bundle")
     education = (
         db.query(Education)
         .filter(Education.user_id == current_user.id)
@@ -579,6 +636,7 @@ async def get_user_bundle(db: SessionDep, current_user: CurrentUser):
 
 @router.get("/suggested-jobs")
 async def get_suggested_jobs(db: SessionDep, current_user: CurrentUser, refresh: bool = False):
+    log_func("get_suggested_jobs")
     """Lấy danh sách job gợi ý, tự động khớp nếu chưa có dữ liệu."""
     saved_suggestions = db.query(SuggestedJob).filter(
         SuggestedJob.user_id == current_user.id,
@@ -593,7 +651,6 @@ async def get_suggested_jobs(db: SessionDep, current_user: CurrentUser, refresh:
         cv_vector = None
         if latest_cv and isinstance(latest_cv.cv_vector, dict):
             # Tự động chọn vector dựa trên EMBEDDING_PROVIDER hiện tại
-            from app.core.config import EMBEDDING_PROVIDER
             cv_vector = latest_cv.cv_vector.get(EMBEDDING_PROVIDER)
             
             # Fallback nếu provider hiện tại chưa có vector trong bản ghi này
