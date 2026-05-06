@@ -1,0 +1,131 @@
+[
+    {
+        "url": "https://www.topcv.vn/viec-lam/junior-full-stack-developer/2125286.html",
+        "scraped_at": "2026-04-26T16:09:49.058000",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Junior Full-Stack Developer",
+            "company_name": "CÔNG TY CỔ PHẦN DEVBRIX",
+            "company_scale": "25-99 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Số 02,Đường 7C,KP4, Phường Bình Trưng, TP.HCM",
+            "salary": "8 - 12 triệu",
+            "location": "Hồ Chí Minh",
+            "experience": "Không yêu cầu",
+            "deadline": "16/06/2026",
+            "tags": [
+                "Không yêu cầu kinh nghiệm",
+                "Cao Đẳng trở lên",
+                "Fullstack Developer",
+                "IT - Phần mềm",
+                "Điện toán đám mây (Cloud)"
+            ]
+        },
+        "content": {
+            "job_description": "Tham gia phát triển các hệ thống Web/Mobile ứng dụng thực tế\nLàm việc với:\nBackend: .NET / NodeJS (tuỳ project)\nFrontend: ReactJS / Blazor / HMTL\nTham gia xây dựng:\nRESTful APIs, các dự án IOT\nDatabase (SQL Server / PostgreSQL, MongoDB)\nTham gia trực tiếp dự án, hỗ trợ fix bug, tối ưu performance và cải tiến hệ thống\nLàm việc theo quy trình Agile/Scrum\nTham gia review code, học best practices từ Senior",
+            "job_requirement": "Bắt buộc- Sinh viên năm cuối hoặc đã tốt nghiệp ngành CNTT- Có kiến thức cơ bản về: HTML, CSS, JavaScript OOP, Data structures- Có kinh nghiệm với ít nhất 1 backend language: C# (.NET) hoặc NodeJS- Biết sử dụng Git (GitHub / GitLab)- Tư duy logic tốt, chịu khó học hỏiƯu tiên (không bắt buộc)- Có kinh nghiệm với: ReactJS / Blazor, REST API / Microservices, Docker / Kubernetes (cơ bản)- Có project cá nhân (GitHub là điểm cộng lớn)- Có hiểu biết về: Cloud (Azure / AWS), CI/CD, MassTransit , SignalR",
+            "job_benefit": "Mức lương: 8 – 12 triệu/thángReview lương sau 6 thángĐược training trực tiếp từ Senior EngineerTham gia dự án thực tếMôi trường startup năng động, phát triển nhanhCơ hội trở thành Full-time Developer Lộ trình phát triểnIntern → Junior → Middle → Senior -> Tech LeadĐược tham gia các dự án:- Microservices architecture- Cloud deployment (K8s, CI/CD)- Real-world product- IOT systems- Robot automation.",
+            "working_location": "- Hồ Chí Minh: Số 02 đường 7C, Phường Bình Trưng (Thành phố Thủ Đức cũ)",
+            "working_time": "Thứ 2 - Thứ 7 (từ 08:30 đến 17:30)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/analytics-engineer/2113334.html",
+        "scraped_at": "2026-04-26T17:43:22.099516",
+        "metadata": {
+            "category": "Data",
+            "job_title": "Analytics Engineer",
+            "company_name": "CÔNG TY TNHH THƯƠNG MẠI VÀ TRUYỀN THÔNG QUẢNG CÁO GOLDEN PHOENIX",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "Marketing / Truyền thông / Quảng cáo",
+            "company_address": "Tòa nhà SHG, số 8 Quang Trung, Hà Đông, Hà Nội",
+            "salary": "30 - 50 triệu",
+            "location": "Hà Nội",
+            "experience": "2 năm",
+            "deadline": "15/06/2026",
+            "tags": [
+                "2 năm kinh nghiệm",
+                "Cao Đẳng trở lên",
+                "Tuổi 25 - 40",
+                "Thưởng tháng 13",
+                "Bảo hiểm xã hội",
+                "Team building",
+                "Data Analyst",
+                "Thương mại điện tử"
+            ]
+        },
+        "content": {
+            "job_description": "Thiết lập Metric Layer chuẩn hóa, định nghĩa và quản trị các chỉ số cốt lõi (Core Metrics) xuyên suốt vòng đời kinh doanh để đảm bảo mọi phòng ban vận hành trên cùng một nguồn tham chiếu chính thức.Xây dựng hệ thống BI Self-service Platform, giúp các team Marketing, P&L và Operations có thể độc lập khai thác dữ liệu mà không bị phụ thuộc vào đội ngũ Data cho các truy vấn thường nhật.Chủ động thực hiện các phân tích chuyên sâu, chuyển hóa những bài toán kinh doanh mơ hồ thành các Insight có giá trị hành động cụ thể.Thiết kế hệ thống kiểm soát chất lượng dữ liệu (Data Quality & Observability) theo chiều sâu, đảm bảo phát hiện và xử lý sự cố ngay tại tầng Transformation trước khi ảnh hưởng đến người dùng cuối.Kiến trúc và triển khai hệ thống Data Warehouse nhiều tầng (từ Raw đến Gold Layer), đảm bảo mọi tập dữ liệu đều có nguồn gốc truy vết rõ ràng và sẵn sàng cho phân tích quy mô lớn.Dẫn dắt việc tích hợp các nguồn dữ liệu mới (TikTok Shop, Shopify, Advertising Platforms) vào hệ thống hiện hành một cách linh hoạt mà không làm mất ổn định cấu trúc chung.Xây dựng tài liệu (Documentation) và đào tạo, thúc đẩy văn hóa sử dụng dữ liệu (Data-driven culture) trong toàn công ty.",
+            "job_requirement": "Hiểu bản chất kinh doanh eCommerce (Revenue, Refund, Attribution, SCM) để đặt đúng câu hỏi phân tích và xây dựng các giả thuyết có giá trị thực tiễn.Thành thạo SQL trên Columnar Database (ưu tiên ClickHouse) và có tư duy tối ưu Query hiệu quả ở quy mô dữ liệu lớn.Chuyên gia thiết kế Data Warehouse (Dimensional Modeling) và thành thạo các framework như dbt để xây dựng lớp Transformation sạch, dễ bảo trì.Có tư duy thẩm mỹ và logic khi thiết kế Dashboard (trên Apache Superset hoặc tương đương), biết cách trình bày số liệu bằng ngôn ngữ kinh doanh.Kinh nghiệm vận hành Workflow Orchestration (Airflow) và các công cụ kiểm soát chất lượng dữ liệu (Great Expectations, Elementary...).Tư duy chủ động xác định vấn đề, có khả năng phân biệt và ưu tiên các công việc có tác động cao (High-impact) thay vì chỉ chạy theo các yêu cầu khẩn cấp.Khả năng làm việc đa chức năng, chuyển hóa nhu cầu nghiệp vụ thành yêu cầu kỹ thuật và quản lý kỳ vọng của các bên liên quan một cách hiệu quả.",
+            "job_benefit": "Thu nhập cạnh tranh nhất thị trường, tương xứng với năng lực và hiệu quả công việc.Thưởng tháng 13 và thưởng kinh doanh cuối năm rõ ràng, minh bạch.Chính sách làm việc linh hoạt (Hybrid / Work From Home), đảm bảo cân bằng giữa công việc và cuộc sống. Môi trường làm việc hạnh phúc & hiện đại. Ghế công thái học 100% nhân viên. Pantry luôn đầy đồ ăn.Tiệc sinh nhật hàng tháng, du lịch nước ngoài. Bàn bi-a, không gian giải trí và văn phòng view tàu điện trên cao cực chill.Làm việc trực tiếp với leadership: CEO, CTO, Head of Product, Head of Marketing – cơ hội học hỏi và ảnh hưởng trực tiếp tới các quyết định chiến lược.Tham gia xây dựng hệ thống cốt lõi: Trực tiếp thiết kế và vận hành nền tảng cho mô hình multi-brand eCommerce tốc độ cao.Lộ trình thăng tiến rõ ràng: Cơ hội phát triển Senior Analytics Engineer → Data Lead → Head of Data.Môi trường thực chiến – tốc độ – data-driven: Quy trình ra quyết định dựa trên dữ liệu, mức độ ownership cao, liên tục tối ưu & cải tiến.",
+            "working_location": "- Hà Nội: Toà SHG, số 8 đường Quang Trung, Phường Hà Đông (quận Hà Đông cũ)",
+            "working_time": "Thứ 2 - Thứ 7 (từ 08:30 đến 18:00)\n                                                            Làm thứ 7 cách tuần\nNghỉ trưa từ 12h - 13h30",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/fullstack-software-engineer/2143657.html",
+        "scraped_at": "2026-05-05T10:02:36.108403",
+        "metadata": {
+            "category": "Software",
+            "job_title": "Fullstack Software Engineer",
+            "company_name": "CÔNG TY CỔ PHẦN CMC OPENAI",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "IT - Phần mềm",
+            "company_address": "Tòa nhà CMC - Số 11 Duy Tân - Cầu Giấy - Hà Nội",
+            "salary": "Tới 45 triệu",
+            "location": "Hà Nội",
+            "experience": "5 năm",
+            "deadline": "15/06/2026",
+            "tags": [
+                "5 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Nghỉ thứ 7",
+                "Bảo hiểm sức khỏe",
+                "Bảo hiểm xã hội",
+                "Fullstack Developer",
+                "IT - Phần mềm"
+            ]
+        },
+        "content": {
+            "job_description": "Phân tích yêu cầu nghiệp vụ, phối hợp chặt chẽ với Product Owner, Business Analyst, QA và DevOps để xây dựng và phát triển các tính năng của sản phẩmLập trình, phát triển và tối ưu các thành phần cốt lõi của hệ thống, đảm bảo hiệu năng, tính sẵn sàng và khả năng mở rộngTham gia thiết kế kiến trúc tổng thể (system design), đề xuất các giải pháp kỹ thuật phù hợp với định hướng sản phẩmXây dựng và duy trì các API, dịch vụ backend và tích hợp với các hệ thống bên thứ baTối ưu hiệu năng, bộ nhớ, độ trễ và khả năng xử lý đồng thời của hệ thốngThiết kế cơ sở dữ liệu (SQL / NoSQL), tối ưu truy vấn và đảm bảo tính toàn vẹn dữ liệuXây dựng và duy trì quy trình CI/CD, đảm bảo chất lượng phần mềm thông qua unit test, integration test và code reviewHướng dẫn và cố vấn về mặt kỹ thuật cho các lập trình viên cấp junior và middleTham gia xử lý sự cố, debug và khắc phục lỗi trên môi trường production.",
+            "job_requirement": "Tốt nghiệp đại học chuyên ngành Công nghệ thông tin, Khoa học máy tính hoặc các ngành liên quanTối thiểu 5 năm kinh nghiệm phát triển phần mềm, trong đó có ít nhất 2 năm ở vị trí Senior hoặc tương đươngThành thạo ít nhất một ngôn ngữ lập trình backend: Java, Python, Golang hoặc Node.jsThành thạo làm việc với RESTful API / gRPC và các tiêu chuẩn thiết kế APIHiểu rõ về Design Patterns, Clean Code, SOLID Principles, OOP, Data Structures & AlgorithmsCó kinh nghiệm với các hệ thống xử lý lượng dữ liệu lớn hoặc hệ thống real-time phục vụ AI là một lợi thếCó kiến thức về bảo mật ứng dụng (authentication, authorization, OWASP Top 10) là điểm cộngKỹ năng tư duy hệ thống tốt, có khả năng phân tích và giải quyết vấn đề phức tạpChủ động, trách nhiệm cao và có khả năng làm việc độc lập cũng như theo nhóm",
+            "job_benefit": "Thu nhập upto 45tr/tháng (Gross)Bảo hiểm sức khỏe và các chương trình, chế độ phúc lợi của Tập đoàn CMC (ngày nghỉ sinh nhật, thưởng các dịp lễ/tết/sinh nhật Tập đoàn,…) cùng các chế độ BHXH, BHYT,v.v theo quy định Pháp luậtThưởng hiệu quả công việc, đánh giá năng lực, review lương hàng nămCơ hội học hỏi, tham gia đào tạo và phát triển bản thân tại một Tập đoàn công nghệ lớn hàng đầu Việt Nam, với lộ trình thăng tiến nghề nghiệp rõ ràngMôi trường làm việc trẻ trung, năng động, cởi mở, sáng tạo, đồng nghiệp vui vẻ và luôn được tạo cơ hội tiếp cận những công nghệ mới, tiên tiến nhất",
+            "working_location": "- Hà Nội: Tòa nhà CMC – số 11 Duy Tân, Phường Cầu Giấy (quận Cầu Giấy cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:30 đến 18:00)\n                                                            Từ 8h30 – 18h (Thứ 2- Thứ 6, nghỉ trưa từ 12h – 13h30)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    },
+    {
+        "url": "https://www.topcv.vn/viec-lam/business-data-analyst/2145629.html",
+        "scraped_at": "2026-05-05T10:13:30.957816",
+        "metadata": {
+            "category": "Data",
+            "job_title": "Business Data Analyst",
+            "company_name": "CÔNG TY TNHH DỊCH VỤ SỐ DIGILIFE VIỆT NAM",
+            "company_scale": "100-499 nhân viên",
+            "company_field": "Viễn thông",
+            "company_address": "Toà Peakview, 36 Hoàng Cầu, Ô Chợ Dừa, Hà Nội",
+            "salary": "Thoả thuận",
+            "location": "Hà Nội",
+            "experience": "2 năm",
+            "deadline": "15/06/2026",
+            "tags": [
+                "2 năm kinh nghiệm",
+                "Đại Học trở lên",
+                "Nghỉ thứ 7",
+                "Data Analyst",
+                "Viễn thông"
+            ]
+        },
+        "content": {
+            "job_description": "- Quản lý và Xử lý Dữ liệu:Thu thập và xử lý dữ liệu chi tiết cước (CDR) và dữ liệu hành vi sử dụng của thuê bao.Xây dựng, duy trì và tối ưu hóa database phục vụ việc trích xuất báo cáo tự động và phân tích chuyên sâu.- Theo dõi Hiệu quả Kinh doanh:Xây dựng hệ thống biểu mẫu báo cáo (Dashboard) theo dõi kết quả bán hàng thực tế so với KPI được giao.Phân tích chi tiết theo từng đơn vị và từng kênh bán hàng (Online, Offline, Đại lý...).Theo dõi, đánh giá các chính sách: Đánh giá kết quả triển khai chính sách (thời gian triển khai đúng hạn hay không, đúng đối tượng khách hàng không…); Đánh giá công tác điều hành bán hàng; Đánh giá các công tác truyền thôngĐánh giá, phân tích chuyên sâu về chính sách: Đánh giá, phân tích chuyên sâu về chính sách phải trả lời được câu hỏi: chính sách có hoàn thành được mục tiêu đã đề ra hay không?- Phân tích Tài chính Kinh doanh:Thực hiện báo cáo hiệu quả dựa trên các chỉ số cốt lõi: $Gross Margin$ (Lãi gộp), $COGS$ (Giá vốn), chi phí bán hàng trên mỗi thuê bao (SAC).Đánh giá $Profitability$ (Khả năng sinh lời) theo từng dòng sản phẩm và gói cước.- Báo cáo Tuân thủ:Chịu trách nhiệm lập và gửi các báo cáo định kỳ cho các cơ quan quản lý nhà nước (Bộ Thông tin và Truyền thông, Cục Viễn thông...) đảm bảo tính chính xác và đúng hạn.",
+            "job_requirement": "- Trình độ học vấn: Đại học (Ưu tiên các trường thuộc khối ngành kinh tế)- Từ 2 năm kinh nghiệm ở vị trí Data Analyst / Business Analyst / tương đương- Có kinh nghiệm trong lĩnh vực viễn thông / fintech là lợi thế lớn- Chuyên môn: Thành thạo SQL (bắt buộc), Có kinh nghiệm với BI tools (Power BI, Tableau…)Có thể sử dụng Python/R là lợi thế, Thành thạo Excel nâng cao (Power Pivot, VBA…).Hiểu các chỉ số kinh doanh: ARPU, Churn Rate, LTV…Tư duy data-driven & business-orientedCó khả năng chuyển đổi dữ liệu thành insight & đề xuất hành độngNhận dạng vấn đề nhanh và phát hiện ý tưởngViết các tài liệu đào tạo, quy trình, báo cáo, tham luậnPhân tích, tổng hợp, khái quát để tham mưu cho lãnh đạo cấp trênKỹ năng giao tiếp tốtKỹ năng sắp xếp và lập kế hoạch",
+            "job_benefit": "3.1 Thu nhập:Mức lương thỏa thuận theo năng lực;Thưởng hiệu quả công việc.3.2 Chế độ đãi ngộ:Môi trường làm việc trẻ trung năng động, chuyên nghiệp;Được tham gia các hoạt động do Công ty tổ chức: Teambuilding, Khám sức khoẻ định kỳ, Year End Party,..3.3 Chế độ chung:Được review lương hàng năm, thưởng thành tích dựa theo kết quả đánh giá năm;Đóng Bảo hiểm xã hội, bảo hiểm y tế, bảo hiểm thất nghiệp theo luật bảo hiểm;Được đóng bảo hiểm sức khỏe cao cấp;Ngày phép: 12 ngày/năm và 6 ngày nghỉ ốm nguyên lương.3.4 Trợ cấp:Trợ cấp ăn trưa: 40.000đ/bữa, trợ cấp ăn tối: 70.000đ/bữa;Phụ cấp trang điểm (Cho lao động nữ: 250.000/tháng);Tặng sim nội bộ VNSKY + Gói cước data, thoại hàng tháng;Có quà cho nhân viên có con nhỏ: Tết thiếu nhi, Tết Trung thu,…",
+            "working_location": "- Hà Nội: Toà Peakview, 36 Hoàng Cầu, Phường Đống Đa (quận Đống Đa cũ)",
+            "working_time": "Thứ 2 - Thứ 6 (từ 08:30 đến 17:30)",
+            "application_method": "Ứng viên nộp hồ sơ trực tuyến bằng cách bấm Ứng tuyển ngay dưới đây."
+        }
+    }
+]
