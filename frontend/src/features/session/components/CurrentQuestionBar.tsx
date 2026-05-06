@@ -95,13 +95,16 @@ export function CurrentQuestionBar({
           {displayText}
         </p>
 
-        {/* Tip */}
+        {/* Tip (Commented out as requested)
         {tip && (
           <div className="mt-2 flex items-start gap-1.5">
             <Lightbulb size={11} className="mt-0.5 shrink-0 text-gold-400/60" />
             <p className="font-headline text-[11px] text-cyan-200/55">{tip}</p>
           </div>
         )}
+        */}
+
+        {/* GateReason (Commented out as requested)
         {gateReason && attempt > 0 && (
           <div className="mt-2 rounded-xl border border-status-warning/25 bg-status-warning/10 px-3 py-2">
             <p className="font-headline text-[11px] text-status-warning">
@@ -110,6 +113,7 @@ export function CurrentQuestionBar({
             </p>
           </div>
         )}
+        */}
       </motion.div>
     </div>
   );
