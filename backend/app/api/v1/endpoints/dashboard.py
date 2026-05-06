@@ -38,8 +38,7 @@ def _average_score(scores: dict[str, float]) -> float:
 
 @router.get("/metrics")
 async def get_dashboard_metrics(db: SessionDep, current_user: CurrentUser):
-    if not current_user.is_onboarded:
-        raise HTTPException(status_code=403, detail="Onboarding required")
+    # Allow access even if not onboarded, will just return empty stats
 
     interviews = (
         db.query(Interview)
@@ -47,16 +46,16 @@ async def get_dashboard_metrics(db: SessionDep, current_user: CurrentUser):
         .order_by(Interview.created_at.desc())
         .all()
     )
-    turns = db.query(InterviewTurn).filter(InterviewTurn.user_id == current_user.id).all()
+    turns_data = db.query(InterviewTurn.interview_id, InterviewTurn.evaluation).filter(InterviewTurn.user_id == current_user.id).all()
 
     scores_by_interview: dict[int, list[dict[str, float]]] = defaultdict(list)
     all_scores: list[dict[str, float]] = []
 
-    for turn in turns:
-        scores = _scores_from_evaluation(turn.evaluation)
+    for t_interview_id, t_evaluation in turns_data:
+        scores = _scores_from_evaluation(t_evaluation)
         if not scores:
             continue
-        scores_by_interview[turn.interview_id].append(scores)
+        scores_by_interview[t_interview_id].append(scores)
         all_scores.append(scores)
 
     for interview in interviews:

@@ -5,8 +5,8 @@ from pathlib import Path
 from typing import Any
 
 
-ROOT_DIR = Path(__file__).resolve().parents[3]
-DEFAULT_TRACE_PATH = ROOT_DIR / "scratch" / "logs" / "interview-ai-trace.jsonl"
+from app.core.config import LOGS_DIR
+DEFAULT_TRACE_PATH = LOGS_DIR / "interview-ai-trace.jsonl"
 TRACE_PATH = Path(os.getenv("INTERVIEW_TRACE_LOG_PATH", str(DEFAULT_TRACE_PATH)))
 MAX_TEXT_CHARS = int(os.getenv("INTERVIEW_TRACE_MAX_TEXT_CHARS", "6000"))
 

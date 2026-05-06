@@ -10,6 +10,7 @@ class OnboardReq(BaseModel):
     name: str
     avatar: Optional[str] = None
     cv_text: str
+    file_name: Optional[str] = "onboarding_cv.pdf"
 
 
 # --- Profile update ---
@@ -24,6 +25,7 @@ class ProfileUpdateReq(BaseModel):
 
 class CVUpdateReq(BaseModel):
     cv_text: str
+    file_name: Optional[str] = "updated_cv.pdf"
 
 class ResumeResp(BaseModel):
     id: int

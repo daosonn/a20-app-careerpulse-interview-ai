@@ -6,7 +6,8 @@ from typing import Any, AsyncGenerator
 
 from app.core.config import async_client, generate_speech_base64_async
 from app.core.database import SessionLocal
-from app.models.models import Interview, InterviewTurn, User
+from app.models.models import Interview, InterviewTurn, User, QuestionBank
+from sqlalchemy import or_, any_
 from app.services.evaluator import DEFAULT_SCORES, DEFAULT_STAR, evaluate_star_logic
 from app.services.tts_service import WAV_MIME_TYPE, character_from_phase
 from app.services.trace_logger import trace_event
@@ -73,11 +74,47 @@ BRIDGE_QUESTION = {
 }
 
 
+def _fetch_bank_questions(db, skills: list[str], language: str) -> list[dict[str, Any]]:
+    """Lấy câu hỏi từ QuestionBank dựa trên kỹ năng đã khớp."""
+    if not skills:
+        return []
+    
+    try:
+        # Tìm câu hỏi có ít nhất một kỹ năng nằm trong danh sách matched_skills
+        # Vì skills trong DB là JSON list, ta cần dùng query phù hợp.
+        # Ở đây dùng logic đơn giản: Duyệt và filter.
+        all_qs = db.query(QuestionBank).filter(QuestionBank.language == language).all()
+        matched = []
+        for q in all_qs:
+            q_skills = q.skills if isinstance(q.skills, list) else []
+            if any(s in skills for s in q_skills):
+                matched.append({
+                    "id": f"bank-{q.id}",
+                    "question": q.question,
+                    "tip": q.tip or "Dựa trên kỹ năng chuyên môn của bạn.",
+                    "intent": q.intent,
+                    "phase": "Technical Assessment",
+                    "persona": q.persona or "Ms. Linh",
+                    "evaluation_type": q.evaluation_type or "technical",
+                    "model_answer": "", # Placeholder
+                })
+        
+        # Lấy tối đa 3 câu từ bank
+        import random
+        random.shuffle(matched)
+        return matched[:3]
+    except Exception as e:
+        print(f"Error fetching bank questions: {e}")
+        return []
+
+
 def create_initial_flow_state(language: str, max_questions: int) -> dict[str, Any]:
     return {
         "version": FLOW_VERSION,
         "question_plan_status": "pending",
         "question_plan": [],
+        "bank_questions": [],
+        "bank_index": 0,
         "main_index": 0,
         "warmup_index": 0,
         "bridge_used": False,
@@ -92,6 +129,7 @@ def create_initial_flow_state(language: str, max_questions: int) -> dict[str, An
         "max_question_count": max_questions or 5,
         "last_gate_reason": "",
         "last_gate_pass": None,
+        "hybrid_interleave_mode": True,
     }
 
 
@@ -133,6 +171,15 @@ async def start_flow(
     current_user: User,
 ) -> AsyncGenerator[str, None]:
     state = get_flow_state(interview)
+    
+    # NEW: Fetch bank questions if we have matched skills and bank is empty
+    if not state.get("bank_questions") and interview.matched_skills:
+        bank_qs = _fetch_bank_questions(db, interview.matched_skills, interview.language or "vi")
+        if bank_qs:
+            state["bank_questions"] = bank_qs
+            interview.pending_questions = state
+            db.commit()
+
     if state.get("question_plan_status") == "pending":
         ensure_planner_started(interview.id)
 
@@ -468,33 +515,48 @@ async def _planner_job(interview_id: int) -> None:
 
 
 async def generate_question_plan(interview: Interview) -> list[dict[str, Any]]:
+    db = SessionLocal()
+    rich_summary = ""
+    try:
+        # Lấy "Văn bản dài" (Rich Summary) từ bảng ResumeUpload nếu có liên kết
+        if interview.resume_upload_id:
+            from app.models.models import ResumeUpload
+            resume = db.query(ResumeUpload).filter(ResumeUpload.id == interview.resume_upload_id).first()
+            if resume and resume.rich_summary:
+                rich_summary = resume.rich_summary
+    finally:
+        db.close()
+
     language = interview.language or "vi"
     interview_type = interview.interview_type or "Behavioral"
     lang_instruction = "Vietnamese" if language == "vi" else "English"
     count = interview.question_count or 5
+    
+    # Sử dụng Rich Summary làm ngữ cảnh chính, nếu không có thì mới dùng CV thô
+    cv_context = rich_summary if rich_summary else (interview.cv_text or "")[:6000]
+
+    # Tiền xử lý JD để AI tập trung vào các yêu cầu cốt lõi
+    cleaned_jd = _summarize_jd_simple(interview.jd_text or "")
+
     system_prompt = f"""You are the Question Planner AI for a realistic interview.
 Create a structured interview plan in {lang_instruction}.
 Return ONLY JSON with key "questions".
 Each item must include: question, intent, expected_signals, model_answer, tip, phase, persona, evaluation_type.
-persona must be one of: Ms. Linh, Mr. Hung, Ms. Nguyen.
-evaluation_type must be one of: project, technical, behavioral, motivation, candidate_question.
 Planning policy:
-- Ask concrete questions grounded in the candidate CV and JD. At least 60% of questions must reference a project, skill, company, responsibility, or requirement found in the CV/JD.
-- Start main questions with CV deep-dive before generic behavioral questions.
-- Avoid generic questions such as "diverse team" unless the JD/CV directly supports that topic.
-- In Vietnamese, do not ask "nhóm đa dạng". If teamwork is needed, ask: "nhóm có nhiều thành viên khác nhau về chuyên môn, tính cách, kinh nghiệm hoặc cách làm việc".
-- The final Candidate Questions item is optional for the candidate; if they say they have no question, it is acceptable and should not be retried.
-- Write natural, fully accented Vietnamese when language is Vietnamese."""
+- Anchor questions to the candidate's specific projects, skills, and the job requirements.
+- Use the provided 'CV Profile' which summarizes the candidate's portrait for faster planning.
+- Propose deep-dive questions for projects mentioned in the 'CV Profile'.
+- Ensure questions are directly relevant to the selected Job Description (JD)."""
+
     user_prompt = {
         "interview_type": interview_type,
         "question_count": count,
-        "cv": (interview.cv_text or "")[:6000],
-        "jd": (interview.jd_text or "")[:4000],
+        "cv_profile": cv_context,
+        "selected_job_jd": cleaned_jd,
         "question_quality_requirements": [
-            "Anchor questions to the strongest CV/JD evidence.",
-            "Probe candidate role, technical choices, tradeoffs, metrics, and impact.",
-            "Use follow-up hints that help the candidate answer with Situation, Task, Action, Result.",
-            "If the CV mentions computer vision, traffic/license plate recognition, Django, AI automation, embedded/IoT, or internships, include targeted deep-dive questions about those details.",
+            "Probe candidate's role, technical choices, tradeoffs, metrics, and impact in the projects listed in CV Profile.",
+            "If CV mentions specific tech stacks like Python, FastAPI, Django, Docker, AI, deep-dive into those.",
+            "Connect candidate's past experience directly with the JD requirements."
         ],
         "phases": [
             "CV Deep-dive",
@@ -537,6 +599,67 @@ Planning policy:
     if not normalized:
         raise ValueError("Planner returned no valid questions")
     return normalized[:count]
+
+
+def _summarize_jd_simple(jd_text: str) -> str:
+    """
+    Heuristic-based JD cleaning to remove boilerplate (company intros, benefits, application process)
+    and keep core requirements for the Question Planner.
+    """
+    if not jd_text:
+        return ""
+    
+    # If it's already reasonably short, don't risk losing context
+    if len(jd_text) < 1200:
+        return jd_text
+        
+    lines = jd_text.split('\n')
+    important_sections = []
+    
+    # Keywords to prioritize (headers usually contain these)
+    keep_keywords = [
+        "yêu cầu", "kỹ năng", "trách nhiệm", "mô tả", "công việc", "tech stack", 
+        "technology", "experience", "kinh nghiệm", "requirement", "responsibility",
+        "must have", "nice to have", "competency", "qualifications"
+    ]
+    
+    # Keywords to skip (usually boilerplate)
+    skip_keywords = [
+        "về chúng tôi", "giới thiệu công ty", "quy trình", "liên hệ", "apply", "ứng tuyển",
+        "hồ sơ", "vòng phỏng vấn", "about us", "company profile", "how to apply",
+        "benefits", "phúc lợi", "chế độ", "thời gian làm việc", "văn phòng", "location"
+    ]
+    
+    current_section_is_important = True
+    
+    for line in lines:
+        clean_line = line.strip().lower()
+        if not clean_line or len(clean_line) < 2:
+            continue
+            
+        # Detect if this line is likely a header
+        is_header = len(clean_line) < 60 and any(k in clean_line for k in keep_keywords + skip_keywords)
+        
+        if is_header:
+            if any(k in clean_line for k in skip_keywords):
+                current_section_is_important = False
+            elif any(k in clean_line for k in keep_keywords):
+                current_section_is_important = True
+        
+        if current_section_is_important:
+            important_sections.append(line)
+            
+    # Join and ensure it doesn't exceed a safe budget
+    result = "\n".join(important_sections)
+    if len(result) > 2800:
+        # If still too long, take the first 2800 chars of the 'filtered' text
+        return result[:2800]
+    
+    # Fallback if filter was too aggressive
+    if len(result) < 300 and len(jd_text) > 500:
+        return jd_text[:2000]
+        
+    return result
 
 
 async def generate_candidate_qa_response(
@@ -727,31 +850,60 @@ def _select_next_question(interview: Interview, state: dict[str, Any]) -> tuple[
     language = interview.language or "vi"
     warmups = WARMUP_QUESTIONS.get(language, WARMUP_QUESTIONS["en"])
     plan = state.get("question_plan") if isinstance(state.get("question_plan"), list) else []
+    bank = state.get("bank_questions") if isinstance(state.get("bank_questions"), list) else []
+    
     warmup_index = int(state.get("warmup_index", 0))
+    main_index = int(state.get("main_index", 0))
+    bank_index = int(state.get("bank_index", 0))
+    
     plan_ready = bool(plan) and state.get("question_plan_status") == "ready"
+    max_count = int(state.get("max_question_count", 5) or 5)
+
+    # 1. Warm-up phase
     if warmup_index < len(warmups) and not (plan_ready and warmup_index >= 1):
         item = dict(warmups[warmup_index])
         state["warmup_index"] = warmup_index + 1
         return _activate_question(state, item, "warmup")
 
-    if plan and int(state.get("main_index", 0)) < min(len(plan), int(state.get("max_question_count", 5) or 5)):
-        item = dict(plan[int(state.get("main_index", 0))])
-        state["main_index"] = int(state.get("main_index", 0)) + 1
-        if _is_candidate_question(item):
-            state["candidate_qa_status"] = "asking"
-            return _activate_question(state, item, "candidate_qa")
-        return _activate_question(state, item, "main")
+    # 2. Hybrid / Main phase (Interleaving Bank and Plan)
+    total_asked = main_index + bank_index
+    if total_asked < max_count:
+        # Decide whether to take from Bank or Plan
+        # Logic: Turn 1 (Bank), Turn 2 (Plan), Turn 3 (Bank), etc.
+        # But if Plan is not ready, take from Bank. If Bank is empty, take from Plan.
+        
+        take_from_bank = False
+        if bank_index < len(bank):
+            if not plan_ready:
+                take_from_bank = True
+            elif bank_index <= main_index: # Interleave: Bank Q first or equal to Plan count
+                take_from_bank = True
+        
+        if take_from_bank:
+            item = dict(bank[bank_index])
+            state["bank_index"] = bank_index + 1
+            return _activate_question(state, item, "main")
+        
+        if plan_ready and main_index < len(plan):
+            item = dict(plan[main_index])
+            state["main_index"] = main_index + 1
+            if _is_candidate_question(item):
+                state["candidate_qa_status"] = "asking"
+                return _activate_question(state, item, "candidate_qa")
+            return _activate_question(state, item, "main")
 
+    # 3. Fallbacks (Bridge or Generation)
     if state.get("question_plan_status") == "pending" and not state.get("bridge_used"):
         item = dict(BRIDGE_QUESTION.get(language, BRIDGE_QUESTION["en"]))
         state["bridge_used"] = True
         return _activate_question(state, item, "warmup")
 
-    if not plan and state.get("question_plan_status") == "pending":
+    if not plan and state.get("question_plan_status") == "pending" and not bank:
         state["question_plan_status"] = "failed"
         state["question_plan"] = fallback_question_plan(language, interview.interview_type or "Behavioral")
         return _select_next_question(interview, state)
 
+    # 4. Closing / Candidate QA
     if state.get("candidate_qa_status", "not_started") == "not_started":
         state["candidate_qa_status"] = "asking"
         return _activate_question(state, _default_candidate_qa_item(language), "candidate_qa")

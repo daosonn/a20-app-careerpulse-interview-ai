@@ -140,7 +140,8 @@ def _postgres_checkpoint_url() -> str:
 
 def _build_checkpointer():
     if DATABASE_URL.startswith("sqlite"):
-        default_path = Path(__file__).resolve().parents[2] / "data" / "langgraph_checkpoints.sqlite"
+        from app.core.config import SQL_DATA_DIR
+        default_path = SQL_DATA_DIR / "langgraph_checkpoints.sqlite"
         checkpoint_path = Path(os.getenv("LANGGRAPH_CHECKPOINT_SQLITE_PATH", str(default_path)))
         checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
         conn = sqlite3.connect(str(checkpoint_path), check_same_thread=False)

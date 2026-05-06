@@ -6,7 +6,7 @@ export function Login() {
   const { user, signInWithGoogle } = useAuth();
 
   if (user) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/setup" replace />;
   }
 
   return (

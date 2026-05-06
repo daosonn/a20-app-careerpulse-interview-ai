@@ -1,17 +1,19 @@
 from typing import List, Dict, Any, Optional
 import os
 import datetime
+import asyncio
+import json
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 import uuid
 from pathlib import Path
-from app.core.config import embedding_model, EMBEDDING_PROVIDER, PROJECT_ROOT
+from app.core.config import embedding_model, EMBEDDING_PROVIDER, PROJECT_ROOT, VECTOR_DATA_DIR
 
 class RAGService:
     def __init__(self):
         self.embeddings = embedding_model
-        # Lưu vào thư mục tương ứng với từng loại model (VD: chroma_db_jina, chroma_db_openai, chroma_db_gemini)
-        self.persist_directory = str(PROJECT_ROOT / f"chroma_db_{EMBEDDING_PROVIDER}")
+        # Lưu vào thư mục tương ứng trong database/vector/ (VD: database/vector/chroma_db_jina)
+        self.persist_directory = str(VECTOR_DATA_DIR / f"chroma_db_{EMBEDDING_PROVIDER}")
         self.collection_name = "jobs_collection"
         self.vector_db = Chroma(
             collection_name=self.collection_name,
@@ -61,51 +63,104 @@ class RAGService:
         query = f"Tìm công việc phù hợp với các kỹ năng: {', '.join(user_skills)}"
         return self.retrieve_by_text(query, limit)
 
-    def retrieve_by_text(self, query: str, limit: int = 5, only_active: bool = True) -> List[Dict[str, Any]]:
+    async def embed_text(self, text: str) -> List[float]:
+        """Chuyển văn bản thành vector embedding dùng model Jina (chạy trong thread để không block)."""
+        if not text:
+            return []
+        try:
+            return await asyncio.to_thread(self.embeddings.embed_query, text)
+        except Exception as e:
+            print(f"⚠️ Jina Embedding Error: {e}")
+            return []
+
+    async def embed_text_multi(self, text: str) -> Dict[str, List[float]]:
+        """Chuyển văn bản thành vector Jina (giữ lại cấu trúc dict để tương thích code cũ)."""
+        vector = await self.embed_text(text)
+        return {"jina": vector}
+
+    async def retrieve_by_text(self, query: str, limit: int = 5, only_active: bool = True) -> List[Dict[str, Any]]:
         """Truy xuất job từ ChromaDB dựa trên đoạn văn bản (CV hoặc query)."""
         filter_metadata = None
         if only_active:
-            # Tạo danh sách các partition hợp lệ (tuần hiện tại và 12 tuần tới)
-            # Vì deadline thường không quá 3 tháng
             active_partitions = []
             now = datetime.date.today()
-            for i in range(12): # Lấy các tuần trong 3 tháng tới
+            for i in range(12): 
                 target_date = now + datetime.timedelta(weeks=i)
                 year, week, _ = target_date.isocalendar()
                 active_partitions.append(f"{year}_W{week:02d}")
-            
-            # ChromaDB filter syntax: {"partition": {"$in": ["2026_W17", "2026_W18", ...]}}
             filter_metadata = {"partition": {"$in": active_partitions}}
 
         try:
-            # Query nhiều hơn (x4) để dự phòng trường hợp bị trùng URL (do 1 job có nhiều chunk)
-            results = self.vector_db.similarity_search(query, k=limit * 4, filter=filter_metadata)
+            # Chạy search trong thread pool
+            results = await asyncio.to_thread(
+                self.vector_db.similarity_search, 
+                query, k=limit * 3, filter=filter_metadata
+            )
+            return await self._process_results_async(results, limit)
         except Exception as e:
             print(f"RAG Retrieval Error: {e}")
             return []
-        
+
+    async def retrieve_by_vector(self, embedding: List[float], limit: int = 5, only_active: bool = True) -> List[Dict[str, Any]]:
+        """Truy xuất job từ ChromaDB dựa trên vector đã có sẵn."""
+        if not embedding:
+            return []
+            
+        filter_metadata = None
+        if only_active:
+            active_partitions = []
+            now = datetime.date.today()
+            for i in range(12):
+                target_date = now + datetime.timedelta(weeks=i)
+                year, week, _ = target_date.isocalendar()
+                active_partitions.append(f"{year}_W{week:02d}")
+            filter_metadata = {"partition": {"$in": active_partitions}}
+
+        try:
+            # Chạy search trong thread pool
+            results = await asyncio.to_thread(
+                self.vector_db.similarity_search_by_vector,
+                embedding, k=limit * 3, filter=filter_metadata
+            )
+            return await self._process_results_async(results, limit)
+        except Exception as e:
+            print(f"RAG Retrieval by Vector Error: {e}")
+            return []
+
+    async def _process_results_async(self, results: List[Document], limit: int) -> List[Dict[str, Any]]:
+        """Xử lý kết quả tìm kiếm một cách tối ưu, tránh loop query DB quá nhiều."""
         recommendations = []
         seen_urls = set()
         
+        # Lọc ra các URL duy nhất trước
+        unique_docs = []
         for doc in results:
+            url = doc.metadata.get("url")
+            if url and url not in seen_urls:
+                seen_urls.add(url)
+                unique_docs.append(doc)
+            if len(unique_docs) >= limit:
+                break
+
+        # Tối ưu: Lấy Full JD chỉ khi thực sự cần hoặc lấy theo batch (hiện tại lấy từng cái nhưng chạy async)
+        for doc in unique_docs:
             meta = doc.metadata
             url = meta.get("url")
             
-            if not url or url in seen_urls:
-                continue
-                
-            seen_urls.add(url)
-            
-            # Khôi phục toàn bộ JD (Full Job Description) bằng cách query tất cả các chunk có cùng URL
+            # Thay vì query lại toàn bộ chunks, nếu page_content đã đủ dài thì dùng luôn
+            # Hoặc chỉ query nếu metadata chỉ ra đây là job có nhiều phần
             full_description = doc.page_content
+            
+            # Nếu muốn lấy full JD, hãy dùng get() một lần cho tất cả thay vì loop (nếu Chroma hỗ trợ tốt)
+            # Ở đây ta giữ logic lấy từng cái nhưng bọc trong to_thread để không treo main thread
             try:
-                # Tìm tất cả chunks của job này
-                job_chunks = self.vector_db.get(where={"url": url})
-                if job_chunks and job_chunks.get('documents'):
-                    # Ghép các mẩu chunk lại với nhau để ra JD hoàn chỉnh
-                    full_description = "\n\n".join(job_chunks['documents'])
-            except Exception as e:
-                print(f"Lỗi khi ghép chunks cho JD: {e}")
+                # Chỉ lấy thêm chunks nếu nội dung hiện tại quá ngắn (vd < 500 ký tự)
+                if len(full_description) < 500:
+                    job_chunks = await asyncio.to_thread(self.vector_db.get, where={"url": url})
+                    if job_chunks and job_chunks.get('documents'):
+                        full_description = "\n\n".join(job_chunks['documents'])
+            except: 
+                pass
                 
             recommendations.append({
                 "title": meta.get("title"),
@@ -114,15 +169,11 @@ class RAGService:
                 "salary": meta.get("salary"),
                 "location": meta.get("location"),
                 "skills": meta.get("skills", "").split(",") if meta.get("skills") else [],
-                "description": full_description, # Trả về nội dung Full JD thay vì chỉ 1 chunk
+                "description": full_description,
                 "fit_score": 90, 
                 "reason": "Phù hợp với hồ sơ của bạn."
             })
-            
-            # Đủ số lượng yêu cầu thì dừng
-            if len(recommendations) >= limit:
-                break
-                
+        
         return recommendations
 
 # Instance duy nhất

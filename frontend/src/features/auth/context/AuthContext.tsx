@@ -164,10 +164,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        // Ensure user document exists in Firestore
+        // Non-blocking Firestore check
         const userRef = doc(db, 'users', currentUser.uid);
-        try {
-          const userSnap = await getDoc(userRef);
+        getDoc(userRef).then(async (userSnap) => {
           if (!userSnap.exists()) {
             await setDoc(userRef, {
               uid: currentUser.uid,
@@ -175,18 +174,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               displayName: currentUser.displayName,
               photoURL: currentUser.photoURL,
               createdAt: new Date().toISOString(),
-            });
+            }).catch(err => console.error("Firestore sync error", err));
           }
-        } catch (error) {
-          handleFirestoreError(error, OperationType.GET, `users/${currentUser.uid}`);
-        }
+        }).catch(err => console.error("Firestore fetch error", err));
 
-        await fetchProfile(currentUser);
+        // Instant unlock: allow UI to render as soon as we have the firebase user
+        setUser(currentUser);
+        setLoading(false);
+
+        // Fetch backend profile in the background
+        fetchProfile(currentUser).catch(err => {
+          console.error("Background profile fetch error:", err);
+        });
       } else {
         setProfile(null);
+        setUser(null);
+        setLoading(false);
       }
-      setUser(currentUser);
-      setLoading(false);
     });
 
     return () => unsubscribe();

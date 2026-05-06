@@ -6,9 +6,8 @@ import re
 from pathlib import Path
 from dotenv import load_dotenv
 
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain_community.embeddings import DashScopeEmbeddings, JinaEmbeddings
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+from langchain_openai import ChatOpenAI
+from langchain_community.embeddings import JinaEmbeddings
 from openai import AsyncOpenAI
 from google import genai
 from google.genai import types
@@ -16,67 +15,58 @@ from google.genai import types
 # ==========================================
 # 0. PATH CONFIGURATION
 # ==========================================
-# This file is in backend/app/core/config.py
-# ROOT_DIR is the root of the entire repository
 CORE_DIR = Path(__file__).resolve().parent
 APP_DIR = CORE_DIR.parent
 BACKEND_DIR = APP_DIR.parent
 PROJECT_ROOT = BACKEND_DIR.parent
 
-# Common Data Directories
-DATA_DIR = PROJECT_ROOT / "raw_data"
-LOGS_DIR = BACKEND_DIR / "logs"
+# Unified Storage Directory at Root
+GLOBAL_DATA_DIR = PROJECT_ROOT / "database"
+SQL_DATA_DIR = GLOBAL_DATA_DIR / "sql"
+VECTOR_DATA_DIR = GLOBAL_DATA_DIR / "vector"
+LOGS_DIR = GLOBAL_DATA_DIR / "logs"
+RAW_DATA_DIR = GLOBAL_DATA_DIR / "raw"
 
-# Ensure directories exist
-DATA_DIR.mkdir(parents=True, exist_ok=True)
-LOGS_DIR.mkdir(parents=True, exist_ok=True)
+# Ensure all storage directories exist
+for directory in [SQL_DATA_DIR, VECTOR_DATA_DIR, LOGS_DIR, RAW_DATA_DIR]:
+    directory.mkdir(parents=True, exist_ok=True)
+
+# Compatibility aliases
+DATA_DIR = RAW_DATA_DIR 
 
 # 1. Load môi trường
 load_dotenv()
 
-# Thêm cấu hình chọn loại embedding model
-EMBEDDING_PROVIDER = os.getenv("EMBEDDING_PROVIDER", "jina").lower() # Có thể chọn 'jina', 'openai', hoặc 'gemini'
+# Initialize Jina as the ONLY embedding model
+jina_embedding = JinaEmbeddings(
+    jina_api_key=os.getenv("JINA_API_KEY"),
+    model_name="jina-embeddings-v4"
+)
 
-if EMBEDDING_PROVIDER == "openai":
-    # Embedding model cho RAG dùng OpenAI
-    embedding_model = OpenAIEmbeddings(
-        model="text-embedding-3-small",
-        api_key=os.getenv("OPENAI_API_KEY")
-    )
-elif EMBEDDING_PROVIDER == "gemini":
-    # Embedding model cho RAG dùng Google Gemini
-    embedding_model = GoogleGenerativeAIEmbeddings(
-        model="text-embedding-004",
-        google_api_key=os.getenv("GEMINI_API_KEY")
-    )
-else:
-    # Mặc định: Embedding model cho RAG dùng Jina AI
-    EMBEDDING_PROVIDER = "jina"
-    embedding_model = JinaEmbeddings(
-        jina_api_key=os.getenv("JINA_API_KEY"),
-        model_name="jina-embeddings-v4"
-    )
+# Defaults
+EMBEDDING_PROVIDER = "jina"
+embedding_model = jina_embedding
 
 # ==========================================
 # 1. OPENAI CONFIGURATION
 # ==========================================
 
-# class LLMFactory:
-#     @staticmethod
-#     def get_llm(model_name: str = "gpt-4o-mini", temperature: float = 0.7):
-#         return ChatOpenAI(
-#             model=model_name,
-#             temperature=temperature,
-#             api_key=os.getenv("OPENAI_API_KEY"),
-#             streaming=True
-#         )
+class LLMFactory:
+    @staticmethod
+    def get_llm(model_name: str = "gpt-4o-mini", temperature: float = 0.7):
+        return ChatOpenAI(
+            model=model_name,
+            temperature=temperature,
+            api_key=os.getenv("OPENAI_API_KEY"),
+            streaming=True
+        )
 
-# # 1. LLM Initializations
-# CHAT_MODEL = "gpt-4o-mini"
-# interviewer_llm = LLMFactory.get_llm(CHAT_MODEL, 0.7).with_config({"tags": ["interviewer"]})
-# evaluator_llm = LLMFactory.get_llm(CHAT_MODEL, 0.2)
+# 1. LLM Initializations
+CHAT_MODEL = "gpt-4o-mini"
+interviewer_llm = LLMFactory.get_llm(CHAT_MODEL, 0.7).with_config({"tags": ["interviewer"]})
+evaluator_llm = LLMFactory.get_llm(CHAT_MODEL, 0.2)
 
-# # 2. Raw Async Client
+# 2. Raw Async Client
 openai_async_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 async_client = openai_async_client
 
@@ -151,7 +141,6 @@ async def generate_speech_base64_async(
 # ==========================================
 
 # GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-# gemini_client = genai.Client(api_key=GEMINI_API_KEY)
 # CHAT_MODEL = "gemini-1.5-flash"
 
 # class LLMFactory:
@@ -168,6 +157,7 @@ async def generate_speech_base64_async(
 # evaluator_llm = LLMFactory.get_llm(CHAT_MODEL, 0.2)
 
 # # 2. Async Client (Native Wrapper or None)
+# gemini_client = genai.Client(api_key=GEMINI_API_KEY)
 # async_client = gemini_client
 
 # # 3. STT (Speech-to-Text) Centralized Helper
@@ -232,22 +222,22 @@ async def generate_speech_base64_async(
 # # Base URL cho các dịch vụ gốc (Dùng cho STT, TTS, Embedding)
 # DASHSCOPE_API_BASE_URL = "https://dashscope-intl.aliyuncs.com/api/v1"
 
-class LLMFactory:
-    @staticmethod
-    def get_llm(model_name: str = "qwen-plus", temperature: float = 0.7):
-        """Khởi tạo LangChain ChatOpenAI tương thích với Alibaba Qwen."""
-        return ChatOpenAI(
-            model=model_name, 
-            temperature=temperature, 
-            api_key=DASHSCOPE_API_KEY,
-            base_url=DASHSCOPE_COMPATIBLE_BASE_URL,
-            streaming=True
-        )
+# class LLMFactory:
+#     @staticmethod
+#     def get_llm(model_name: str = "qwen-plus", temperature: float = 0.7):
+#         """Khởi tạo LangChain ChatOpenAI tương thích với Alibaba Qwen."""
+#         return ChatOpenAI(
+#             model=model_name, 
+#             temperature=temperature, 
+#             api_key=DASHSCOPE_API_KEY,
+#             base_url=DASHSCOPE_COMPATIBLE_BASE_URL,
+#             streaming=True
+#         )
 
-# Khởi tạo các instance chính
-CHAT_MODEL = "qwen-plus"
-interviewer_llm = LLMFactory.get_llm(CHAT_MODEL, 0.7).with_config({"tags": ["interviewer"]})
-evaluator_llm = LLMFactory.get_llm("qwen-turbo", 0.2)
+# # Khởi tạo các instance chính
+# CHAT_MODEL = "qwen-plus"
+# interviewer_llm = LLMFactory.get_llm(CHAT_MODEL, 0.7).with_config({"tags": ["interviewer"]})
+# evaluator_llm = LLMFactory.get_llm(CHAT_MODEL, 0.2)
 
 # # Async Client theo mẫu chuẩn
 # alibaba_async_client = AsyncOpenAI(

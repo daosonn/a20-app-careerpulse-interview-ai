@@ -3,6 +3,8 @@ import hashlib
 from typing import List, Dict, Any, AsyncGenerator
 import json
 from app.core.config import async_client, CHAT_MODEL
+from app.models.models import QuestionBank
+from sqlalchemy.orm import Session
 
 # Simple in-memory cache for the session (optional, but good for speed)
 _cv_cache = {}
@@ -47,6 +49,35 @@ CV: {cv_text[:4000]}  # Limit text to avoid token bloat
     except Exception as e:
         print(f"Error extracting CV info: {e}")
         return {"skills": ["Kỹ năng chung"], "full_name": "Unknown"}
+
+async def map_cv_skills_to_canonical(cv_text: str, canonical_skills: List[str]) -> List[str]:
+    """Sử dụng LLM để khớp kỹ năng trong CV với danh sách kỹ năng chuẩn trong DB."""
+    if not cv_text or not canonical_skills:
+        return []
+
+    prompt = f"""CV text: {cv_text[:3000]}
+
+Available Canonical Skills: {', '.join(canonical_skills)}
+
+Task: Identify which of the "Available Canonical Skills" match the expertise mentioned in the CV. 
+Return ONLY a JSON object with key "matched_skills" containing a list of strings from the "Available Canonical Skills" list. 
+If no skills match, return an empty list [].
+"""
+    try:
+        completion = await async_client.chat.completions.create(
+            model=CHAT_MODEL,
+            messages=[
+                {"role": "system", "content": "You are a recruitment expert. Match CV skills to the provided list accurately. Return ONLY valid JSON."},
+                {"role": "user", "content": prompt}
+            ],
+            response_format={"type": "json_object"},
+            temperature=0,
+        )
+        data = json.loads(completion.choices[0].message.content)
+        return data.get("matched_skills", [])
+    except Exception as e:
+        print(f"Error mapping canonical skills: {e}")
+        return []
 
 async def extract_cv_info_stream(cv_text: str) -> AsyncGenerator[str, None]:
     """Stream progress events for UI to show what's happening."""

@@ -6,11 +6,10 @@ from pathlib import Path
 from typing import Annotated, Generator
 from fastapi import Depends
 
-from app.core.config import BACKEND_DIR, PROJECT_ROOT
+from app.core.config import BACKEND_DIR, PROJECT_ROOT, SQL_DATA_DIR
 
-# Path to database
-# data dir is in backend/data/
-DEFAULT_SQLITE_PATH = BACKEND_DIR / 'data' / 'interview_coach.db'
+# Path to database in the unified data/sql directory
+DEFAULT_SQLITE_PATH = SQL_DATA_DIR / 'interview_coach.db'
 
 
 def _normalize_database_url(raw_url: str | None) -> str:
@@ -85,6 +84,12 @@ def _migrate_add_columns(engine_ref):
             ("pending_questions", "JSON"),
             ("is_stress_test", "BOOLEAN DEFAULT 0"),
             ("question_count", "INTEGER DEFAULT 5"),
+            ("resume_upload_id", "INTEGER"),
+            ("matched_skills", "JSON"),
+        ],
+        "resume_uploads": [
+            ("matched_skills", "JSON"),
+            ("cv_vector", "JSON"),
         ],
         "suggested_jobs": [
             ("url", "VARCHAR"),
@@ -92,12 +97,6 @@ def _migrate_add_columns(engine_ref):
             ("is_active", "BOOLEAN DEFAULT 1"),
             ("created_at", "DATETIME"),
             ("updated_at", "DATETIME"),
-        ],
-        "interview_turns": [
-            ("audio_meta", "JSON"),
-            ("updated_at", "DATETIME"),
-        ],
-        "suggested_jobs": [
             ("deadline", "VARCHAR"),
         ],
     }

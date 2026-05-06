@@ -23,6 +23,8 @@ export function Layout() {
     return <Navigate to="/login" replace />;
   }
 
+  // Removed forced onboarding redirect to allow direct access to /setup
+
 
   return (
     <div className="min-h-screen bg-navy-950 font-sans text-text-primary flex">

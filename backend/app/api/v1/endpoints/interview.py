@@ -6,7 +6,7 @@ from app.services.reporter import generate_report_logic
 from app.rag_service.rag_service import rag_service
 from app.core.database import SessionDep
 from app.core.auth import CurrentUser
-from app.models.models import Interview, InterviewTurn, UserActivity, User
+from app.models.models import Interview, InterviewTurn, UserActivity, User, ResumeUpload
 from app.core.config import async_client, transcribe_audio_async, generate_speech_base64_async, CHAT_MODEL
 from app.services.tts_service import WAV_MIME_TYPE, character_from_phase
 from app.services.interview_flow import (
@@ -244,7 +244,7 @@ async def _transcribe_logic(file: UploadFile) -> str:
 @router.post("/recommend-jobs")
 async def recommend_jobs(req: RecommendationReq, db: SessionDep, current_user: CurrentUser):
     try:
-        recommendations = rag_service.retrieve_by_text(req.cv_text, limit=req.limit or 5)
+        recommendations = await rag_service.retrieve_by_text(req.cv_text, limit=req.limit or 5)
         return recommendations
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -262,6 +262,12 @@ async def setup_interview(req: SetupReq, db: SessionDep, current_user: CurrentUs
             "cv_text": req.cv_text,
             "jd_text": req.jd_text,
         })
+        matched_skills = []
+        if req.cv_id:
+            resume = db.query(ResumeUpload).filter(ResumeUpload.id == req.cv_id, ResumeUpload.user_id == current_user.id).first()
+            if resume:
+                matched_skills = resume.matched_skills or []
+
         new_interview = Interview(
             user_id=current_user.id,
             cv_text=req.cv_text,
@@ -272,6 +278,8 @@ async def setup_interview(req: SetupReq, db: SessionDep, current_user: CurrentUs
             pending_questions=initial_state,
             is_stress_test=req.is_stress_test,
             question_count=req.question_count,
+            resume_upload_id=req.cv_id,
+            matched_skills=matched_skills,
             status="setup"
         )
         db.add(new_interview)
@@ -430,8 +438,7 @@ async def _stream_interview_logic(
 
 @router.post("/start")
 async def start_interview(session_id: int, db: SessionDep, current_user: CurrentUser):
-    if not current_user.is_onboarded:
-         raise HTTPException(status_code=403, detail="Tài khoản chưa hoàn thành Onboarding.")
+    # Removed onboarding requirement to allow immediate start from /setup
 
     interview = db.query(Interview).filter(Interview.id == session_id, Interview.user_id == current_user.id).first()
     if not interview: raise HTTPException(status_code=404, detail="Session not found")

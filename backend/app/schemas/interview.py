@@ -17,6 +17,7 @@ class SetupReq(BaseModel):
     language: str = "vi"
     is_stress_test: bool = False
     question_count: int = 5
+    cv_id: Optional[int] = None
     session_id: Optional[str] = "default_user"
 
 class ChatReq(BaseModel):

@@ -56,6 +56,7 @@ export function Onboarding() {
           name: user.displayName || 'User',
           avatar: user.photoURL,
           cv_text: cvText,
+          file_name: file.name
         }),
       });
 
