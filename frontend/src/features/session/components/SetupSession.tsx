@@ -161,7 +161,9 @@ export function SetupSession() {
   const [isFetchingRecommendations, setIsFetchingRecommendations] = useState(false);
   const [selectedJobIndex, setSelectedJobIndex] = useState<number | null>(null);
   const [savedResumes, setSavedResumes] = useState<any[]>([]);
+  const [selectedCvId, setSelectedCvId] = useState<number | null>(null);
   const [isUploadingCv, setIsUploadingCv] = useState(false);
+  const [isLoadingResumes, setIsLoadingResumes] = useState(false);
   const defaultsLoadedRef = useRef(false);
 
   const clearJobRecommendations = () => {
@@ -174,19 +176,54 @@ export function SetupSession() {
     defaultsLoadedRef.current = true;
 
     // Fetch saved resumes
+    setIsLoadingResumes(true);
     authenticatedFetch(apiUrl('/api/v1/user/resumes'))
       .then((res) => res.json())
-      .then((data) => {
+      .then(async (data) => {
         setSavedResumes(data || []);
         if (data && data.length > 0 && !cvText.trim()) {
-          setCvText(data[0].raw_text);
-          setFileName(data[0].file_name || 'CV đã lưu');
+          // Tối ưu: Sử dụng luôn dữ liệu chi tiết đã được gộp (Combine) trong bản ghi đầu tiên
+          const firstResume = data[0];
+          if (firstResume.raw_text) {
+            setCvText(firstResume.raw_text);
+            setFileName(firstResume.file_name || 'CV đã lưu');
+            setSelectedCvId(firstResume.id);
+            
+            const jobsData = firstResume.suggested_jobs || [];
+            setRecommendedJobs(jobsData);
+            if (jobsData.length > 0) {
+              setSelectedJobIndex(0);
+              setJobDescription(jobsData[0].description);
+            }
+            setIsFetchingRecommendations(false);
+          } else {
+            // Fallback nếu Backend chưa gộp dữ liệu
+            try {
+              const detailRes = await authenticatedFetch(apiUrl(`/api/v1/user/resumes/${firstResume.id}`));
+              const detailData = await detailRes.json();
+              setCvText(detailData.raw_text);
+              setFileName(detailData.file_name || 'CV đã lưu');
+              setSelectedCvId(detailData.id);
+              
+              const jobsData = detailData.suggested_jobs || [];
+              setRecommendedJobs(jobsData);
+              if (jobsData.length > 0) {
+                setSelectedJobIndex(0);
+                setJobDescription(jobsData[0].description);
+              }
+            } catch (e) {
+              console.error("Failed to fetch resume detail", e);
+            } finally {
+              setIsFetchingRecommendations(false);
+            }
+          }
         } else if (profile.cvText && !cvText.trim()) {
           setCvText(profile.cvText);
           setFileName('CV đã lưu trong hồ sơ');
         }
       })
-      .catch(console.error);
+      .catch(console.error)
+      .finally(() => setIsLoadingResumes(false));
 
     const prefs = profile.preferences;
     if (!prefs) return;
@@ -214,16 +251,56 @@ export function SetupSession() {
       setFileName(file.name);
       clearJobRecommendations();
 
-      // Automatically save the newly uploaded CV to database
+      // Automatically save the newly uploaded CV to database and get recommendations
       setIsUploadingCv(true);
-      await authenticatedFetch(apiUrl('/api/v1/user/cv'), {
+      const uploadRes = await authenticatedFetch(apiUrl('/api/v1/user/cv'), {
         method: 'PUT',
-        body: JSON.stringify({ cv_text: text }),
+        body: JSON.stringify({ 
+          cv_text: text,
+          file_name: file.name
+        }),
       });
-      // Refresh the saved resumes list
-      const res = await authenticatedFetch(apiUrl('/api/v1/user/resumes'));
-      const data = await res.json();
-      setSavedResumes(data || []);
+      const uploadData = await uploadRes.json();
+      
+      // Tối ưu: Cập nhật state cục bộ từ dữ liệu trả về của Backend mà không cần gọi lại danh sách
+      if (uploadData.resume) {
+        const newResume = uploadData.resume;
+        setCvText(newResume.raw_text);
+        setFileName(newResume.file_name);
+        setSelectedCvId(newResume.id);
+        
+        const jobsData = newResume.suggested_jobs || [];
+        setRecommendedJobs(jobsData);
+        if (jobsData.length > 0) {
+          setSelectedJobIndex(0);
+          setJobDescription(jobsData[0].description);
+        }
+        
+        // Cập nhật mảng local
+        setSavedResumes(prev => {
+          const exists = prev.some(r => r.id === newResume.id);
+          if (exists) return prev;
+          return [{
+            id: newResume.id,
+            file_name: newResume.file_name,
+            created_at: newResume.created_at
+          }, ...prev];
+        });
+      } else {
+        // Fallback nếu Backend chưa cập nhật schema mới
+        if (uploadData.suggested_jobs && uploadData.suggested_jobs.length > 0) {
+          setRecommendedJobs(uploadData.suggested_jobs);
+          setSelectedJobIndex(0);
+          setJobDescription(uploadData.suggested_jobs[0].description);
+        }
+
+        const updatedRes = await authenticatedFetch(apiUrl('/api/v1/user/resumes'));
+        const resumesData = await updatedRes.json();
+        setSavedResumes(resumesData || []);
+        if (resumesData && resumesData.length > 0) {
+          setSelectedCvId(resumesData[0].id);
+        }
+      }
     } catch (err: any) {
       setError(err.message || 'Lỗi khi đọc hoặc lưu file CV.');
     } finally {
@@ -285,6 +362,7 @@ export function SetupSession() {
           language: language,
           is_stress_test: isStressTest,
           question_count: questionsPerSession,
+          cv_id: selectedCvId,
         }),
       });
 
@@ -414,39 +492,89 @@ export function SetupSession() {
                   </div>
                 )}
 
-                {savedResumes.length > 0 && (
-                  <div className="mt-4 border-t border-navy-600 pt-4">
-                    <p className="text-sm font-medium text-text-primary mb-2">Hoặc chọn CV đã lưu:</p>
-                    <div className="grid gap-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                {/* Selection from saved resumes */}
+                <div className="mt-6 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-text-primary">Sử dụng CV đã có:</p>
+                    {isLoadingResumes && (
+                      <span className="flex items-center gap-1.5 text-[10px] text-gold-400 font-medium animate-pulse">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        Đang đồng bộ...
+                      </span>
+                    )}
+                  </div>
+                  
+                  {savedResumes.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
                       {savedResumes.map(r => (
                         <div
                           key={r.id}
-                          onClick={() => {
-                            setCvText(r.raw_text);
-                            setFileName(r.file_name || `CV lưu ngày ${new Date(r.created_at).toLocaleDateString()}`);
-                            clearJobRecommendations();
+                          onClick={async () => {
+                            if (selectedCvId === r.id) return;
+                            setIsLoadingResumes(true);
+                            setIsFetchingRecommendations(true);
+                            try {
+                              const detailRes = await authenticatedFetch(apiUrl(`/api/v1/user/resumes/${r.id}`));
+                              const detailData = await detailRes.json();
+                              
+                              setCvText(detailData.raw_text);
+                              setFileName(detailData.file_name || `CV lưu ngày ${new Date(r.created_at).toLocaleDateString()}`);
+                              setSelectedCvId(r.id);
+                              
+                              // Use pre-fetched jobs from detail response
+                              const jobsData = detailData.suggested_jobs || [];
+                              setRecommendedJobs(jobsData);
+                              if (jobsData.length > 0) {
+                                setSelectedJobIndex(0);
+                                setJobDescription(jobsData[0].description);
+                              } else {
+                                setSelectedJobIndex(null);
+                                setJobDescription('');
+                              }
+                            } catch (e) {
+                              console.error("Failed to select resume", e);
+                              setError("Không thể tải nội dung CV này.");
+                            } finally {
+                              setIsLoadingResumes(false);
+                              setIsFetchingRecommendations(false);
+                            }
                           }}
                           className={cn(
-                            "flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors border",
-                            cvText === r.raw_text
-                              ? "bg-gold-500/10 border-gold-500 text-gold-400"
-                              : "bg-navy-800 border-navy-600 text-text-muted hover:border-gold-500/40"
+                            "flex flex-col p-3 rounded-xl cursor-pointer transition-all border relative overflow-hidden group",
+                            selectedCvId === r.id
+                              ? "bg-gold-500/10 border-gold-500 ring-1 ring-gold-500/30"
+                              : "bg-navy-800/50 border-navy-600 hover:border-gold-500/40 hover:bg-navy-800"
                           )}
                         >
-                          <div className="flex items-center gap-2 truncate">
-                            <FileText className="w-4 h-4 shrink-0" />
-                            <span className="text-sm truncate font-medium">
-                              {r.file_name || "CV Upload"}
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <FileText className={cn(
+                              "w-4 h-4 shrink-0",
+                              selectedCvId === r.id ? "text-gold-400" : "text-text-muted"
+                            )} />
+                            <span className={cn(
+                              "text-xs font-bold truncate",
+                              selectedCvId === r.id ? "text-text-primary" : "text-text-muted group-hover:text-text-primary"
+                            )}>
+                              {r.file_name || "Hồ sơ cá nhân"}
                             </span>
                           </div>
-                          <span className="text-[10px] opacity-70 shrink-0 ml-2">
-                            {new Date(r.created_at).toLocaleDateString()}
-                          </span>
+                          <div className="flex items-center justify-between mt-auto">
+                            <span className="text-[10px] text-text-muted/60">
+                              {new Date(r.created_at).toLocaleDateString('vi-VN')}
+                            </span>
+                            {selectedCvId === r.id && (
+                              <CheckCircle2 className="w-3.5 h-3.5 text-gold-400" />
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
-                  </div>
-                )}
+                  ) : !isLoadingResumes && (
+                    <div className="text-center py-4 bg-navy-800/30 rounded-xl border border-navy-700 border-dashed">
+                      <p className="text-xs text-text-muted italic">Bạn chưa có CV nào được lưu.</p>
+                    </div>
+                  )}
+                </div>
 
                 {isParsingFile && (
                   <div className="flex items-center gap-2 text-sm text-gold-400 mt-2 font-medium">

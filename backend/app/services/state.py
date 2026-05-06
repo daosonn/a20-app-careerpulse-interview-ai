@@ -1,5 +1,5 @@
-from typing import TypedDict, Annotated
 import operator
+from typing import Annotated, TypedDict
 
 class InterviewState(TypedDict):
     cv_content: str

@@ -1,7 +1,11 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, JSON, ForeignKey, Boolean
-from sqlalchemy.orm import relationship
 import datetime
+
+from sqlalchemy import (JSON, Boolean, Column, DateTime, ForeignKey, Integer,
+                        String, Text)
+from sqlalchemy.orm import relationship
+
 from app.core.database import Base
+from app.core.logger import log_func
 
 
 def utcnow() -> datetime.datetime:
@@ -86,6 +90,8 @@ class Interview(Base):
     pending_questions = Column(JSON) # To survive session interruptions
     is_stress_test = Column(Boolean, default=False)
     question_count = Column(Integer, default=5)
+    resume_upload_id = Column(Integer, ForeignKey("resume_uploads.id"), nullable=True)
+    matched_skills = Column(JSON) # To store skills used for this interview session
     created_at = Column(DateTime, default=utcnow, nullable=False)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
     ended_at = Column(DateTime, nullable=True)
@@ -122,6 +128,9 @@ class ResumeUpload(Base):
     raw_text = Column(Text)
     status = Column(String, default="processed")  # pending, processed, failed
     parsed_skills = Column(JSON)
+    matched_skills = Column(JSON) # Canonical skills matched against QuestionBank
+    rich_summary = Column(Text) # The "Van ban dai" for AI planning and job matching
+    cv_vector = Column(JSON) # To store precomputed embedding vector for job matching
     created_at = Column(DateTime, default=utcnow, nullable=False)
     processed_at = Column(DateTime, nullable=True)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
@@ -161,5 +170,16 @@ class UserActivity(Base):
     user = relationship("User", back_populates="activities")
 
 
+class QuestionBank(Base):
+    __tablename__ = "question_bank"
 
-
+    id = Column(Integer, primary_key=True, index=True)
+    question = Column(Text, nullable=False)
+    skills = Column(JSON, nullable=False)  # List of canonical skills, e.g. ["Python", "Backend"]
+    intent = Column(Text)
+    tip = Column(Text)
+    persona = Column(String, default="Ms. Linh")
+    evaluation_type = Column(String, default="technical") # technical, behavioral, project, etc.
+    language = Column(String, default="vi")
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)

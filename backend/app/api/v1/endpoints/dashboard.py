@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException
 
 from app.core.auth import CurrentUser
 from app.core.database import SessionDep
+from app.core.logger import log_func
 from app.models.models import Interview, InterviewTurn
 
 router = APIRouter()
@@ -13,10 +14,12 @@ COMPETENCY_KEYS = ("relevance", "structure", "specificity", "clarity", "confiden
 
 
 def _iso(value: Any) -> str | None:
+    log_func("_iso", level=2)
     return value.isoformat() if value else None
 
 
 def _scores_from_evaluation(evaluation: Any) -> dict[str, float] | None:
+    log_func("_scores_from_evaluation", level=2)
     if not isinstance(evaluation, dict):
         return None
     raw_scores = evaluation.get("scores")
@@ -33,13 +36,14 @@ def _scores_from_evaluation(evaluation: Any) -> dict[str, float] | None:
 
 
 def _average_score(scores: dict[str, float]) -> float:
+    log_func("_average_score", level=2)
     return sum(scores.values()) / len(COMPETENCY_KEYS)
 
 
 @router.get("/metrics")
 async def get_dashboard_metrics(db: SessionDep, current_user: CurrentUser):
-    if not current_user.is_onboarded:
-        raise HTTPException(status_code=403, detail="Onboarding required")
+    log_func("get_dashboard_metrics")
+    # Allow access even if not onboarded, will just return empty stats
 
     interviews = (
         db.query(Interview)
@@ -47,16 +51,16 @@ async def get_dashboard_metrics(db: SessionDep, current_user: CurrentUser):
         .order_by(Interview.created_at.desc())
         .all()
     )
-    turns = db.query(InterviewTurn).filter(InterviewTurn.user_id == current_user.id).all()
+    turns_data = db.query(InterviewTurn.interview_id, InterviewTurn.evaluation).filter(InterviewTurn.user_id == current_user.id).all()
 
     scores_by_interview: dict[int, list[dict[str, float]]] = defaultdict(list)
     all_scores: list[dict[str, float]] = []
 
-    for turn in turns:
-        scores = _scores_from_evaluation(turn.evaluation)
+    for t_interview_id, t_evaluation in turns_data:
+        scores = _scores_from_evaluation(t_evaluation)
         if not scores:
             continue
-        scores_by_interview[turn.interview_id].append(scores)
+        scores_by_interview[t_interview_id].append(scores)
         all_scores.append(scores)
 
     for interview in interviews:
@@ -108,6 +112,7 @@ async def get_dashboard_metrics(db: SessionDep, current_user: CurrentUser):
 
 @router.delete("/sessions/{session_id}")
 async def delete_dashboard_session(session_id: int, db: SessionDep, current_user: CurrentUser):
+    log_func("delete_dashboard_session")
     interview = (
         db.query(Interview)
         .filter(Interview.id == session_id, Interview.user_id == current_user.id)

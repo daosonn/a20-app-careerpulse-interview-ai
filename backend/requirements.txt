@@ -25,3 +25,9 @@ beautifulsoup4
 selenium 
 webdriver-manager
 dashscope
+google-auth>=2.35.0
+requests>=2.32.0
+python-jose[cryptography]>=3.3.0
+aiofiles>=24.1.0
+tenacity>=9.0.0
+langchain-google-genai>=2.0.0

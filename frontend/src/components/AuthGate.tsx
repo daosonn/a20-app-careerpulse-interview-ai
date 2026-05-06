@@ -28,6 +28,8 @@ export function AuthGate() {
     return <Navigate to="/login" replace />;
   }
 
+  // Removed forced onboarding redirect to allow direct access to /setup
+
 
   return <Outlet />;
 }

@@ -1,12 +1,14 @@
 import asyncio
-from contextlib import ExitStack
 import os
-from pathlib import Path
 import sqlite3
+from contextlib import ExitStack
+from pathlib import Path
 
 from langgraph.graph import StateGraph, END, START
 from langgraph.checkpoint.sqlite import SqliteSaver
+
 from app.core.database import DATABASE_URL
+from app.core.logger import log_func
 from .state import InterviewState
 from .profiler import extract_cv_info_logic, search_questions_logic
 from .interviewer import generate_ai_batch
@@ -17,6 +19,7 @@ retry_policy = {"max_attempts": 3}
 _CHECKPOINT_STACK = ExitStack()
 
 async def profiler_node(state: InterviewState):
+    log_func("profiler_node")
     """Integrates Profiler logic directly."""
     # Parallelize extraction and search (though search is mock now)
     info = await extract_cv_info_logic(state["cv_content"])
@@ -34,6 +37,7 @@ async def profiler_node(state: InterviewState):
     }
 
 async def interviewer_node(state: InterviewState):
+    log_func("interviewer_node")
     """Orchestrates dynamic batch generation and question popping."""
     pending = list(state.get("pending_questions", []))
     count = state.get("total_question_count", 0)
@@ -74,11 +78,13 @@ async def interviewer_node(state: InterviewState):
     }
 
 async def evaluator_node(state: InterviewState):
+    log_func("evaluator_node")
     """Integrates Evaluator logic with model answer comparison."""
     if len(state['chat_history']) < 2: return {}
     
     class MockReq:
         def __init__(self, state):
+            log_func("MockReq.__init__", level=2)
             self.last_ai_msg = state['chat_history'][-2]['content']
             self.last_user_msg = state['chat_history'][-1]['content']
             self.language = state['language']
@@ -89,6 +95,7 @@ async def evaluator_node(state: InterviewState):
     return {"evaluations": [evaluation]}
 
 async def unified_node(state: InterviewState):
+    log_func("unified_node")
     """
     RUNS EVALUATOR AND INTERVIEWER IN PARALLEL.
     This is the key to reducing latency.
@@ -110,6 +117,7 @@ async def unified_node(state: InterviewState):
     return final_result
 
 def route_next(state: InterviewState):
+    log_func("route_next", level=2)
     """Determines the next step based on the phase."""
     if not state.get("current_phase"):
         # Optimization: Skip profiler if skills are already extracted
@@ -135,12 +143,15 @@ workflow.add_edge("profiler", "unified")
 workflow.add_edge("unified", END)
 
 def _postgres_checkpoint_url() -> str:
+    log_func("_postgres_checkpoint_url", level=2)
     return DATABASE_URL.replace("postgresql+psycopg2://", "postgresql://", 1)
 
 
 def _build_checkpointer():
+    log_func("_build_checkpointer", level=2)
     if DATABASE_URL.startswith("sqlite"):
-        default_path = Path(__file__).resolve().parents[2] / "data" / "langgraph_checkpoints.sqlite"
+        from app.core.config import SQL_DATA_DIR
+        default_path = SQL_DATA_DIR / "langgraph_checkpoints.sqlite"
         checkpoint_path = Path(os.getenv("LANGGRAPH_CHECKPOINT_SQLITE_PATH", str(default_path)))
         checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
         conn = sqlite3.connect(str(checkpoint_path), check_same_thread=False)
@@ -171,4 +182,3 @@ checkpointer = _build_checkpointer()
 
 # Compile
 app_graph = workflow.compile(checkpointer=checkpointer)
-

@@ -1,23 +1,26 @@
 import asyncio
+import datetime
 import json
+import random
 import re
 import unicodedata
 from typing import Any, AsyncGenerator
 
+from sqlalchemy import or_
+
 from app.core.config import async_client, generate_speech_base64_async
 from app.core.database import SessionLocal
-from app.models.models import Interview, InterviewTurn, User
+from app.models.models import Interview, InterviewTurn, User, QuestionBank
 from app.services.evaluator import DEFAULT_SCORES, DEFAULT_STAR, evaluate_star_logic
 from app.services.tts_service import WAV_MIME_TYPE, character_from_phase
 from app.services.trace_logger import trace_event
-
+from app.core.logger import log_func
 
 FLOW_VERSION = 2
 MAX_RETRIES = 3
 CANDIDATE_QA_LIMIT = 3
 PLANNER_TASKS: dict[int, asyncio.Task] = {}
 STAR_TASKS: dict[int, set[asyncio.Task]] = {}
-
 
 WARMUP_QUESTIONS = {
     "vi": [
@@ -54,7 +57,6 @@ WARMUP_QUESTIONS = {
     ],
 }
 
-
 BRIDGE_QUESTION = {
     "vi": {
         "id": "warmup-bridge",
@@ -72,12 +74,43 @@ BRIDGE_QUESTION = {
     },
 }
 
+def _fetch_bank_questions(db, skills: list[str], language: str) -> list[dict[str, Any]]:
+    log_func("_fetch_bank_questions", level=2)
+    """Lấy câu hỏi từ QuestionBank dựa trên kỹ năng đã khớp."""
+    if not skills:
+        return []
+    
+    try:
+        all_qs = db.query(QuestionBank).filter(QuestionBank.language == language).all()
+        matched = []
+        for q in all_qs:
+            q_skills = q.skills if isinstance(q.skills, list) else []
+            if any(s in skills for s in q_skills):
+                matched.append({
+                    "id": f"bank-{q.id}",
+                    "question": q.question,
+                    "tip": q.tip or "Dựa trên kỹ năng chuyên môn của bạn.",
+                    "intent": q.intent,
+                    "phase": "Technical Assessment",
+                    "persona": q.persona or "Ms. Linh",
+                    "evaluation_type": q.evaluation_type or "technical",
+                    "model_answer": "", # Placeholder
+                })
+        
+        random.shuffle(matched)
+        return matched[:3]
+    except Exception as e:
+        print(f"Error fetching bank questions: {e}")
+        return []
 
 def create_initial_flow_state(language: str, max_questions: int) -> dict[str, Any]:
+    log_func("create_initial_flow_state")
     return {
         "version": FLOW_VERSION,
         "question_plan_status": "pending",
         "question_plan": [],
+        "bank_questions": [],
+        "bank_index": 0,
         "main_index": 0,
         "warmup_index": 0,
         "bridge_used": False,
@@ -92,10 +125,11 @@ def create_initial_flow_state(language: str, max_questions: int) -> dict[str, An
         "max_question_count": max_questions or 5,
         "last_gate_reason": "",
         "last_gate_pass": None,
+        "hybrid_interleave_mode": True,
     }
 
-
 def get_flow_state(interview: Interview) -> dict[str, Any]:
+    log_func("get_flow_state")
     if isinstance(interview.pending_questions, dict) and interview.pending_questions.get("version") == FLOW_VERSION:
         state = dict(interview.pending_questions)
     else:
@@ -113,8 +147,8 @@ def get_flow_state(interview: Interview) -> dict[str, Any]:
     state.setdefault("candidate_qa_history", [])
     return state
 
-
 def ensure_planner_started(interview_id: int) -> None:
+    log_func("ensure_planner_started")
     task = PLANNER_TASKS.get(interview_id)
     if task and not task.done():
         return
@@ -126,49 +160,65 @@ def ensure_planner_started(interview_id: int) -> None:
     trace_event(interview_id, "planner.start_background_task", {})
     PLANNER_TASKS[interview_id] = loop.create_task(_planner_job(interview_id))
 
-
 async def start_flow(
     interview: Interview,
     db,
     current_user: User,
 ) -> AsyncGenerator[str, None]:
+    log_func("start_flow")
     state = get_flow_state(interview)
+    
+    if not state.get("bank_questions") and interview.matched_skills:
+        bank_qs = _fetch_bank_questions(db, interview.matched_skills, interview.language or "vi")
+        if bank_qs:
+            state["bank_questions"] = bank_qs
+            interview.pending_questions = state
+            db.commit()
+
     if state.get("question_plan_status") == "pending":
         ensure_planner_started(interview.id)
 
+    # 1. If already in progress, handle resumption
     last_message = _last_transcript_message(interview)
-    if interview.status == "in_progress" and _is_unanswered_ai_message(last_message):
-        item = dict(state.get("active_question") or _fallback_active_question(interview))
-        item["question_type"] = state.get("active_question_type") or item.get("question_type", "main")
-        item = _localize_item_for_language(item, interview.language or "vi")
-        state["active_question"] = item
-        interview.pending_questions = state
+    if interview.status == "in_progress":
+        # If there's an active question that hasn't been answered, resend it
+        if _is_unanswered_ai_message(last_message) or not last_message:
+            item = dict(state.get("active_question") or _fallback_active_question(interview))
+            item["question_type"] = state.get("active_question_type") or item.get("question_type", "main")
+            item = _localize_item_for_language(item, interview.language or "vi")
+            state["active_question"] = item
+            interview.pending_questions = state
+            current_user.last_activity_at = _utcnow()
+            db.commit()
+            trace_event(interview.id, "interview.start_resend_active_question", {
+                "question": item,
+                "state": _state_snapshot(state),
+            })
+            yield _metadata_event(interview, state, item)
+            async for event in _stream_question_audio(item, interview.id, include_audio=False):
+                yield event
+            return
+
+    # 2. Transition from setup to in_progress (First Start)
+    if interview.status == "setup":
+        interview.status = "in_progress"
+        item, state = _select_next_question(interview, state)
+        _persist_ai_question(interview, item, state)
         current_user.last_activity_at = _utcnow()
         db.commit()
-        trace_event(interview.id, "interview.start_resend_active_question", {
+        if state.get("question_plan_status") == "pending":
+            ensure_planner_started(interview.id)
+        trace_event(interview.id, "interview.start_question", {
             "question": item,
             "state": _state_snapshot(state),
         })
         yield _metadata_event(interview, state, item)
-        async for event in _stream_question_audio(item, interview.id, include_audio=False):
+        async for event in _stream_question_audio(item, interview.id):
             yield event
-        return
-
-    interview.status = "in_progress"
-    item, state = _select_next_question(interview, state)
-    _persist_ai_question(interview, item, state)
-    current_user.last_activity_at = _utcnow()
-    db.commit()
-    if state.get("question_plan_status") == "pending":
-        ensure_planner_started(interview.id)
-    trace_event(interview.id, "interview.start_question", {
-        "question": item,
-        "state": _state_snapshot(state),
-    })
-    yield _metadata_event(interview, state, item)
-    async for event in _stream_question_audio(item, interview.id):
-        yield event
-
+    else:
+        # Already completed or other status
+        yield _metadata_event(interview, state, {"phase": "Closing"})
+        yield "data: [DONE]\n\n"
 
 async def handle_answer_flow(
     interview: Interview,
@@ -176,6 +226,7 @@ async def handle_answer_flow(
     db,
     current_user: User,
 ) -> AsyncGenerator[str, None]:
+    log_func("handle_answer_flow")
     state = get_flow_state(interview)
     active = state.get("active_question") or _fallback_active_question(interview)
     active = _localize_item_for_language(active, interview.language or "vi")
@@ -314,8 +365,8 @@ async def handle_answer_flow(
     async for event in _stream_question_audio(next_item, interview.id):
         yield event
 
-
 async def handle_candidate_qa(interview: Interview, message: str, state: dict[str, Any]) -> dict[str, Any]:
+    log_func("handle_candidate_qa")
     language = interview.language or "vi"
     intent = _candidate_qa_intent(message)
     state["candidate_qa_status"] = "asking"
@@ -389,15 +440,15 @@ async def handle_candidate_qa(interview: Interview, message: str, state: dict[st
     })
     return {"intent": intent, "evaluation": evaluation, "next_item": item}
 
-
 async def wait_for_pending_evaluations(interview_id: int, timeout: float = 2.5) -> None:
+    log_func("wait_for_pending_evaluations")
     pending = [task for task in STAR_TASKS.get(interview_id, set()) if not task.done()]
     if pending:
         trace_event(interview_id, "star.wait_pending", {"pending_count": len(pending), "timeout_seconds": timeout})
         await asyncio.wait(pending, timeout=timeout)
 
-
 def fill_missing_evaluations(db, interview: Interview) -> None:
+    log_func("fill_missing_evaluations")
     evaluations = interview.evaluations if isinstance(interview.evaluations, list) else []
     changed = False
     turns = (
@@ -431,12 +482,12 @@ def fill_missing_evaluations(db, interview: Interview) -> None:
     if changed:
         interview.evaluations = evaluations
 
-
 def refresh_flow_state_for_interview(interview: Interview) -> dict[str, Any]:
+    log_func("refresh_flow_state_for_interview")
     return get_flow_state(interview)
 
-
 async def _planner_job(interview_id: int) -> None:
+    log_func("_planner_job", level=2)
     db = SessionLocal()
     try:
         interview = db.query(Interview).filter(Interview.id == interview_id).first()
@@ -466,35 +517,45 @@ async def _planner_job(interview_id: int) -> None:
     finally:
         db.close()
 
-
 async def generate_question_plan(interview: Interview) -> list[dict[str, Any]]:
+    log_func("generate_question_plan")
+    db = SessionLocal()
+    rich_summary = ""
+    try:
+        if interview.resume_upload_id:
+            from app.models.models import ResumeUpload
+            resume = db.query(ResumeUpload).filter(ResumeUpload.id == interview.resume_upload_id).first()
+            if resume and resume.rich_summary:
+                rich_summary = resume.rich_summary
+    finally:
+        db.close()
+
     language = interview.language or "vi"
     interview_type = interview.interview_type or "Behavioral"
     lang_instruction = "Vietnamese" if language == "vi" else "English"
     count = interview.question_count or 5
+    cv_context = rich_summary if rich_summary else (interview.cv_text or "")[:6000]
+    cleaned_jd = _summarize_jd_simple(interview.jd_text or "")
+
     system_prompt = f"""You are the Question Planner AI for a realistic interview.
 Create a structured interview plan in {lang_instruction}.
 Return ONLY JSON with key "questions".
 Each item must include: question, intent, expected_signals, model_answer, tip, phase, persona, evaluation_type.
-persona must be one of: Ms. Linh, Mr. Hung, Ms. Nguyen.
-evaluation_type must be one of: project, technical, behavioral, motivation, candidate_question.
 Planning policy:
-- Ask concrete questions grounded in the candidate CV and JD. At least 60% of questions must reference a project, skill, company, responsibility, or requirement found in the CV/JD.
-- Start main questions with CV deep-dive before generic behavioral questions.
-- Avoid generic questions such as "diverse team" unless the JD/CV directly supports that topic.
-- In Vietnamese, do not ask "nhóm đa dạng". If teamwork is needed, ask: "nhóm có nhiều thành viên khác nhau về chuyên môn, tính cách, kinh nghiệm hoặc cách làm việc".
-- The final Candidate Questions item is optional for the candidate; if they say they have no question, it is acceptable and should not be retried.
-- Write natural, fully accented Vietnamese when language is Vietnamese."""
+- Anchor questions to the candidate's specific projects, skills, and the job requirements.
+- Use the provided 'CV Profile' which summarizes the candidate's portrait for faster planning.
+- Propose deep-dive questions for projects mentioned in the 'CV Profile'.
+- Ensure questions are directly relevant to the selected Job Description (JD)."""
+
     user_prompt = {
         "interview_type": interview_type,
         "question_count": count,
-        "cv": (interview.cv_text or "")[:6000],
-        "jd": (interview.jd_text or "")[:4000],
+        "cv_profile": cv_context,
+        "selected_job_jd": cleaned_jd,
         "question_quality_requirements": [
-            "Anchor questions to the strongest CV/JD evidence.",
-            "Probe candidate role, technical choices, tradeoffs, metrics, and impact.",
-            "Use follow-up hints that help the candidate answer with Situation, Task, Action, Result.",
-            "If the CV mentions computer vision, traffic/license plate recognition, Django, AI automation, embedded/IoT, or internships, include targeted deep-dive questions about those details.",
+            "Probe candidate's role, technical choices, tradeoffs, metrics, and impact in the projects listed in CV Profile.",
+            "If CV mentions specific tech stacks like Python, FastAPI, Django, Docker, AI, deep-dive into those.",
+            "Connect candidate's past experience directly with the JD requirements."
         ],
         "phases": [
             "CV Deep-dive",
@@ -538,6 +599,43 @@ Planning policy:
         raise ValueError("Planner returned no valid questions")
     return normalized[:count]
 
+def _summarize_jd_simple(jd_text: str) -> str:
+    log_func("_summarize_jd_simple", level=2)
+    if not jd_text:
+        return ""
+    if len(jd_text) < 1200:
+        return jd_text
+    lines = jd_text.split('\n')
+    important_sections = []
+    keep_keywords = [
+        "yêu cầu", "kỹ năng", "trách nhiệm", "mô tả", "công việc", "tech stack", 
+        "technology", "experience", "kinh nghiệm", "requirement", "responsibility",
+        "must have", "nice to have", "competency", "qualifications"
+    ]
+    skip_keywords = [
+        "về chúng tôi", "giới thiệu công ty", "quy trình", "liên hệ", "apply", "ứng tuyển",
+        "hồ sơ", "vòng phỏng vấn", "about us", "company profile", "how to apply",
+        "benefits", "phúc lợi", "chế độ", "thời gian làm việc", "văn phòng", "location"
+    ]
+    current_section_is_important = True
+    for line in lines:
+        clean_line = line.strip().lower()
+        if not clean_line or len(clean_line) < 2:
+            continue
+        is_header = len(clean_line) < 60 and any(k in clean_line for k in keep_keywords + skip_keywords)
+        if is_header:
+            if any(k in clean_line for k in skip_keywords):
+                current_section_is_important = False
+            elif any(k in clean_line for k in keep_keywords):
+                current_section_is_important = True
+        if current_section_is_important:
+            important_sections.append(line)
+    result = "\n".join(important_sections)
+    if len(result) > 2800:
+        return result[:2800]
+    if len(result) < 300 and len(jd_text) > 500:
+        return jd_text[:2000]
+    return result
 
 async def generate_candidate_qa_response(
     interview: Interview,
@@ -545,6 +643,7 @@ async def generate_candidate_qa_response(
     state: dict[str, Any],
     turn_count: int,
 ) -> dict[str, Any]:
+    log_func("generate_candidate_qa_response")
     language = interview.language or "vi"
     lang_instruction = "Vietnamese" if language == "vi" else "English"
     transcript = interview.transcript if isinstance(interview.transcript, list) else []
@@ -611,49 +710,32 @@ Return ONLY JSON with keys: answer, answered_questions, unresolved_questions, so
         })
         return fallback
 
-
 async def evaluate_answer_gate(
     interview: Interview,
     question: dict[str, Any],
     answer: str,
     state: dict[str, Any],
 ) -> dict[str, Any]:
-    if _is_candidate_question(question):
-        result = _candidate_question_gate(answer, interview.language or "vi")
-        trace_event(interview.id, "answer_gate.candidate_question_rule", {
-            "question": question,
-            "answer": answer,
-            "result": result,
-        })
-        return result
-
-    if _answer_asks_for_clarification(answer):
-        result = _clarification_gate(question, answer, interview.language or "vi")
-        trace_event(interview.id, "answer_gate.clarification_rule", {
-            "question": question,
-            "answer": answer,
-            "result": result,
-        })
-        return result
-
-    slot_result = _slot_gate_for_question(question, state, interview.language or "vi")
-    if slot_result:
-        trace_event(interview.id, "answer_gate.slot_rule", {
-            "question": question,
-            "answer": answer,
-            "answer_context": state.get("active_question_answer_context", []),
-            "result": slot_result,
-        })
-        return slot_result
-
-    if len(answer.strip()) < 20:
-        result = _short_answer_gate(question, interview.language or "vi")
-        trace_event(interview.id, "answer_gate.short_answer_rule", {
-            "question": question,
-            "answer": answer,
-            "result": result,
-        })
-        return result
+    log_func("evaluate_answer_gate")
+    
+    # Temporarily bypass all strict evaluation logic as requested by USER.
+    # Always return pass=True to proceed to the next question immediately.
+    
+    trace_event(interview.id, "answer_gate.bypassed", {
+        "question": question,
+        "answer": answer,
+        "reason": "Evaluation bypassed to focus on flow continuity."
+    })
+    
+    return {
+        "pass": True,
+        "reason": "Bypassed for flow testing.",
+        "retry_prompt": "",
+        "confidence": 1.0,
+        "attempt_delta": 1,
+        "max_retry_recommended": 0,
+        "should_score_star": True,
+    }
 
     lang_instruction = "Vietnamese" if interview.language == "vi" else "English"
     prompt = {
@@ -722,32 +804,53 @@ Return ONLY JSON:
         })
         return result
 
-
 def _select_next_question(interview: Interview, state: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+    log_func("_select_next_question", level=2)
     language = interview.language or "vi"
     warmups = WARMUP_QUESTIONS.get(language, WARMUP_QUESTIONS["en"])
     plan = state.get("question_plan") if isinstance(state.get("question_plan"), list) else []
+    bank = state.get("bank_questions") if isinstance(state.get("bank_questions"), list) else []
+    
     warmup_index = int(state.get("warmup_index", 0))
+    main_index = int(state.get("main_index", 0))
+    bank_index = int(state.get("bank_index", 0))
+    
     plan_ready = bool(plan) and state.get("question_plan_status") == "ready"
+    max_count = int(state.get("max_question_count", 5) or 5)
+
     if warmup_index < len(warmups) and not (plan_ready and warmup_index >= 1):
         item = dict(warmups[warmup_index])
         state["warmup_index"] = warmup_index + 1
         return _activate_question(state, item, "warmup")
 
-    if plan and int(state.get("main_index", 0)) < min(len(plan), int(state.get("max_question_count", 5) or 5)):
-        item = dict(plan[int(state.get("main_index", 0))])
-        state["main_index"] = int(state.get("main_index", 0)) + 1
-        if _is_candidate_question(item):
-            state["candidate_qa_status"] = "asking"
-            return _activate_question(state, item, "candidate_qa")
-        return _activate_question(state, item, "main")
+    total_asked = main_index + bank_index
+    if total_asked < max_count:
+        take_from_bank = False
+        if bank_index < len(bank):
+            if not plan_ready:
+                take_from_bank = True
+            elif bank_index <= main_index:
+                take_from_bank = True
+        
+        if take_from_bank:
+            item = dict(bank[bank_index])
+            state["bank_index"] = bank_index + 1
+            return _activate_question(state, item, "main")
+        
+        if plan_ready and main_index < len(plan):
+            item = dict(plan[main_index])
+            state["main_index"] = main_index + 1
+            if _is_candidate_question(item):
+                state["candidate_qa_status"] = "asking"
+                return _activate_question(state, item, "candidate_qa")
+            return _activate_question(state, item, "main")
 
     if state.get("question_plan_status") == "pending" and not state.get("bridge_used"):
         item = dict(BRIDGE_QUESTION.get(language, BRIDGE_QUESTION["en"]))
         state["bridge_used"] = True
         return _activate_question(state, item, "warmup")
 
-    if not plan and state.get("question_plan_status") == "pending":
+    if not plan and state.get("question_plan_status") == "pending" and not bank:
         state["question_plan_status"] = "failed"
         state["question_plan"] = fallback_question_plan(language, interview.interview_type or "Behavioral")
         return _select_next_question(interview, state)
@@ -758,25 +861,25 @@ def _select_next_question(interview: Interview, state: dict[str, Any]) -> tuple[
 
     return _activate_question(state, _closing_item(language), "warmup")
 
-
 def _activate_question(state: dict[str, Any], item: dict[str, Any], question_type: str) -> tuple[dict[str, Any], dict[str, Any]]:
+    log_func("_activate_question", level=2)
     item["question_type"] = question_type
     state["active_question"] = item
     state["active_question_type"] = question_type
-    state["active_question_attempt"] = 0 if question_type == "main" else 0
+    state["active_question_attempt"] = 0
     state["active_question_answer_context"] = []
     return item, state
 
-
 def _default_candidate_qa_item(language: str) -> dict[str, Any]:
+    log_func("_default_candidate_qa_item", level=2)
     return _candidate_qa_prompt_item(
         "Bạn có câu hỏi nào cho chúng tôi không?" if language == "vi" else "Do you have any questions for us?",
         language,
         "candidate-qa-start",
     )
 
-
 def _candidate_qa_prompt_item(question: str, language: str, item_id: str) -> dict[str, Any]:
+    log_func("_candidate_qa_prompt_item", level=2)
     return {
         "id": item_id,
         "question": question,
@@ -790,8 +893,8 @@ def _candidate_qa_prompt_item(question: str, language: str, item_id: str) -> dic
         "evaluation_type": "candidate_question",
     }
 
-
 def _closing_item(language: str) -> dict[str, Any]:
+    log_func("_closing_item", level=2)
     return {
         "id": "closing",
         "question": (
@@ -804,7 +907,6 @@ def _closing_item(language: str) -> dict[str, Any]:
         "persona": "Ms. Linh",
     }
 
-
 def _localize_item_for_language(item: dict[str, Any], language: str) -> dict[str, Any]:
     if language != "vi":
         return item
@@ -812,7 +914,6 @@ def _localize_item_for_language(item: dict[str, Any], language: str) -> dict[str
     localized["question"] = _localize_text_for_language(str(localized.get("question", "")), language)
     localized["tip"] = _localize_text_for_language(str(localized.get("tip", "")), language)
     return localized
-
 
 def _localize_gate_for_language(gate: dict[str, Any], language: str) -> dict[str, Any]:
     if language != "vi":
@@ -822,7 +923,6 @@ def _localize_gate_for_language(gate: dict[str, Any], language: str) -> dict[str
     localized["retry_prompt"] = _localize_text_for_language(str(localized.get("retry_prompt", "")), language)
     localized["coaching_note"] = _localize_text_for_language(str(localized.get("coaching_note", "")), language)
     return localized
-
 
 def _localize_text_for_language(text: str, language: str) -> str:
     if language != "vi" or not text:
@@ -862,8 +962,8 @@ def _localize_text_for_language(text: str, language: str) -> str:
         localized = localized.replace(source, target)
     return localized
 
-
 def _retry_question(active: dict[str, Any], gate: dict[str, Any], retry_count: int, language: str) -> dict[str, Any]:
+    log_func("_retry_question", level=2)
     item = dict(active)
     item["id"] = f"{active.get('id', 'question')}-retry-{retry_count}"
     item["question"] = _localize_text_for_language(gate.get("retry_prompt") or active.get("question", ""), language)
@@ -872,8 +972,8 @@ def _retry_question(active: dict[str, Any], gate: dict[str, Any], retry_count: i
     item["is_retry"] = True
     return item
 
-
 def _persist_ai_question(interview: Interview, item: dict[str, Any], state: dict[str, Any]) -> None:
+    log_func("_persist_ai_question", level=2)
     localized_item = _localize_item_for_language(item, interview.language or "vi")
     item.clear()
     item.update(localized_item)
@@ -889,7 +989,6 @@ def _persist_ai_question(interview: Interview, item: dict[str, Any], state: dict
     })
     interview.pending_questions = state
 
-
 def _persist_user_turn(
     interview: Interview,
     user_id: int,
@@ -898,6 +997,7 @@ def _persist_user_turn(
     question_type: str,
     state: dict[str, Any],
 ) -> InterviewTurn:
+    log_func("_persist_user_turn", level=2)
     active = _localize_item_for_language(active, interview.language or "vi")
     existing_count = len(interview.turns or [])
     turn = InterviewTurn(
@@ -918,11 +1018,9 @@ def _persist_user_turn(
     interview.turns.append(turn)
     return turn
 
-
 def _append_transcript(interview: Interview, message: dict[str, Any]) -> None:
     transcript = interview.transcript if isinstance(interview.transcript, list) else []
     interview.transcript = [*transcript, message]
-
 
 def _metadata_event(
     interview: Interview,
@@ -933,6 +1031,7 @@ def _metadata_event(
     evaluations: list[dict[str, Any]] | None = None,
     evaluation_status: str | None = None,
 ) -> str:
+    log_func("_metadata_event", level=2)
     item = _localize_item_for_language(item, interview.language or "vi")
     if gate_result:
         gate_result = _localize_gate_for_language(gate_result, interview.language or "vi")
@@ -957,13 +1056,13 @@ def _metadata_event(
     }
     return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
 
-
 async def _stream_question_audio(
     item: dict[str, Any],
     session_id: int,
     *,
     include_audio: bool = True,
 ) -> AsyncGenerator[str, None]:
+    log_func("_stream_question_audio", level=2)
     question = item.get("question", "")
     if question:
         yield f"data: {json.dumps({'type': 't', 'c': question}, ensure_ascii=False)}\n\n"
@@ -989,10 +1088,7 @@ async def _stream_question_audio(
         yield f"data: {json.dumps({'type': 'a', 'c': audio_b64, 'mime_type': WAV_MIME_TYPE, 'character': character}, ensure_ascii=False)}\n\n"
     yield "data: [DONE]\n\n"
 
-
 def _text_for_tts(text: str) -> str:
-    # UI can show honorifics, but spoken text should sound natural and avoid
-    # sentence splitting/abbreviation artifacts in TTS providers.
     replacements = {
         "Ms. Linh": "Linh",
         "Ms Linh": "Linh",
@@ -1007,7 +1103,6 @@ def _text_for_tts(text: str) -> str:
     for source, target in replacements.items():
         tts_text = re.sub(rf"\b{re.escape(source)}\b", target, tts_text)
     return tts_text.strip()
-
 
 def _split_sentences(text: str) -> list[str]:
     protected = text
@@ -1024,8 +1119,8 @@ def _split_sentences(text: str) -> list[str]:
             restored.append(sentence)
     return restored
 
-
 def _normalize_plan_item(item: dict[str, Any], index: int, interview_type: str) -> dict[str, Any]:
+    log_func("_normalize_plan_item", level=2)
     phase = str(item.get("phase") or interview_type or "Behavioral").strip()
     persona = str(item.get("persona") or character_from_phase(phase)).strip()
     expected = item.get("expected_signals", [])
@@ -1045,8 +1140,8 @@ def _normalize_plan_item(item: dict[str, Any], index: int, interview_type: str) 
         "persona": persona if persona in {"Ms. Linh", "Ms. Nguyen", "Mr. Hung"} else character_from_phase(phase),
     }
 
-
 def _rewrite_question_wording(question: str) -> str:
+    log_func("_rewrite_question_wording", level=2)
     text = _strip_accents(question)
     if "nhom da dang" in text:
         return (
@@ -1055,8 +1150,8 @@ def _rewrite_question_wording(question: str) -> str:
         )
     return question
 
-
 def _infer_evaluation_type(phase: str, question: str) -> str:
+    log_func("_infer_evaluation_type", level=2)
     text = _strip_accents(f"{phase} {question}")
     if "candidate questions" in text or "co cau hoi nao" in text:
         return "candidate_question"
@@ -1068,8 +1163,8 @@ def _infer_evaluation_type(phase: str, question: str) -> str:
         return "motivation"
     return "behavioral"
 
-
 def _normalize_gate(payload: dict[str, Any], question: dict[str, Any], language: str) -> dict[str, Any]:
+    log_func("_normalize_gate", level=2)
     passed = bool(payload.get("pass"))
     reason = str(payload.get("reason", "")).strip()
     retry_prompt = str(payload.get("retry_prompt", "")).strip()
@@ -1095,7 +1190,6 @@ def _normalize_gate(payload: dict[str, Any], question: dict[str, Any], language:
         "missing_slots": payload.get("missing_slots", []) if isinstance(payload.get("missing_slots", []), list) else [],
     }
 
-
 def _fallback_gate(
     passed: bool,
     reason: str,
@@ -1107,6 +1201,7 @@ def _fallback_gate(
     should_score_star: bool = True,
     retry_prompt: str | None = None,
 ) -> dict[str, Any]:
+    log_func("_fallback_gate", level=2)
     return _localize_gate_for_language({
         "pass": passed,
         "reason": reason,
@@ -1118,8 +1213,8 @@ def _fallback_gate(
         "should_score_star": should_score_star,
     }, language)
 
-
 def _heuristic_gate(question: dict[str, Any], answer: str, language: str) -> dict[str, Any]:
+    log_func("_heuristic_gate", level=2)
     answer_words = set(re.findall(r"\w+", answer.lower()))
     signal_words = set()
     for signal in question.get("expected_signals", []):
@@ -1129,8 +1224,8 @@ def _heuristic_gate(question: dict[str, Any], answer: str, language: str) -> dic
     reason = "Answer is relevant enough to continue." if passed else "Answer is still missing direct evidence for the question."
     return _fallback_gate(passed, reason, question, language, max_retry_recommended=0 if passed else 1)
 
-
 def _retry_prompt(question: dict[str, Any], reason: str, language: str) -> str:
+    log_func("_retry_prompt", level=2)
     if language == "vi":
         return (
             "Mình muốn làm rõ thêm một chút. "
@@ -1138,8 +1233,8 @@ def _retry_prompt(question: dict[str, Any], reason: str, language: str) -> str:
         )
     return f"I want to clarify this a bit. {reason} Can you answer this question more directly: {question.get('question', '')}"
 
-
 def _warmup_evaluation(answer: str, language: str) -> dict[str, Any]:
+    log_func("_warmup_evaluation", level=2)
     length_score = 4 if len(answer.strip()) >= 20 else 3
     feedback = (
         "Phần khởi động tốt. Câu trả lời giúp thiết lập trạng thái giao tiếp ban đầu."
@@ -1159,8 +1254,8 @@ def _warmup_evaluation(answer: str, language: str) -> dict[str, Any]:
         "weight": "light",
     }
 
-
 def _light_interaction_evaluation(gate_result: dict[str, Any], answer: str, language: str) -> dict[str, Any]:
+    log_func("_light_interaction_evaluation", level=2)
     feedback = gate_result.get("coaching_note") or gate_result.get("reason") or (
         "Tương tác này được ghi nhận như phần làm rõ câu hỏi, không chấm như một câu trả lời STAR."
         if language == "vi"
@@ -1183,8 +1278,8 @@ def _light_interaction_evaluation(gate_result: dict[str, Any], answer: str, lang
         "weight": "light",
     }
 
-
 def _schedule_star_evaluation(interview_id: int, turn_id: int, question: dict[str, Any], answer: str) -> None:
+    log_func("_schedule_star_evaluation", level=2)
     try:
         loop = asyncio.get_running_loop()
     except RuntimeError:
@@ -1193,8 +1288,8 @@ def _schedule_star_evaluation(interview_id: int, turn_id: int, question: dict[st
     STAR_TASKS.setdefault(interview_id, set()).add(task)
     task.add_done_callback(lambda done_task: STAR_TASKS.get(interview_id, set()).discard(done_task))
 
-
 async def _star_job(interview_id: int, turn_id: int, question: dict[str, Any], answer: str) -> None:
+    log_func("_star_job", level=2)
     await asyncio.sleep(0.1)
 
     class Req:
@@ -1250,8 +1345,8 @@ async def _star_job(interview_id: int, turn_id: int, question: dict[str, Any], a
     finally:
         db.close()
 
-
 def _score(evaluation: dict[str, Any]) -> float | None:
+    log_func("_score", level=2)
     scores = evaluation.get("scores")
     if not isinstance(scores, dict):
         return None
@@ -1263,8 +1358,8 @@ def _score(evaluation: dict[str, Any]) -> float | None:
             values.append(0)
     return sum(values) / len(values) if values else None
 
-
 def _fallback_active_question(interview: Interview) -> dict[str, Any]:
+    log_func("_fallback_active_question", level=2)
     transcript = interview.transcript if isinstance(interview.transcript, list) else []
     for message in reversed(transcript):
         if isinstance(message, dict) and message.get("role") in ("ai", "model"):
@@ -1283,7 +1378,6 @@ def _fallback_active_question(interview: Interview) -> dict[str, Any]:
         "question_type": "main",
     }
 
-
 def _last_transcript_message(interview: Interview) -> dict[str, Any] | None:
     transcript = interview.transcript if isinstance(interview.transcript, list) else []
     for message in reversed(transcript):
@@ -1291,16 +1385,13 @@ def _last_transcript_message(interview: Interview) -> dict[str, Any] | None:
             return message
     return None
 
-
 def _is_unanswered_ai_message(message: dict[str, Any] | None) -> bool:
     return bool(message and message.get("role") in ("ai", "model"))
-
 
 def _strip_accents(value: str) -> str:
     normalized = unicodedata.normalize("NFD", value or "")
     stripped = "".join(ch for ch in normalized if unicodedata.category(ch) != "Mn")
     return stripped.replace("đ", "d").replace("Đ", "D").lower().strip()
-
 
 def _is_candidate_question(question: dict[str, Any]) -> bool:
     phase = _strip_accents(str(question.get("phase", "")))
@@ -1313,8 +1404,8 @@ def _is_candidate_question(question: dict[str, Any]) -> bool:
         or "co cau hoi nao" in text
     )
 
-
 def _is_no_question_answer(answer: str) -> bool:
+    log_func("_is_no_question_answer", level=2)
     text = _strip_accents(answer)
     compact = re.sub(r"[^\w\s]", " ", text)
     compact = re.sub(r"\s+", " ", compact).strip()
@@ -1336,13 +1427,13 @@ def _is_no_question_answer(answer: str) -> bool:
         or bool(re.search(r"\bkhong\b.*\b(cau hoi|hoi gi)\b", compact))
     )
 
-
 def _answer_asks_for_clarification(answer: str) -> bool:
+    log_func("_answer_asks_for_clarification", level=2)
     text = _strip_accents(answer)
     return any(pattern in text for pattern in ("la gi", "khong hieu", "chua hieu", "giai thich", "nghia la gi"))
 
-
 def _candidate_qa_intent(answer: str) -> str:
+    log_func("_candidate_qa_intent", level=2)
     text = _strip_accents(answer)
     compact = re.sub(r"[^\w\s?]", " ", text)
     compact = re.sub(r"\s+", " ", compact).strip()
@@ -1350,32 +1441,17 @@ def _candidate_qa_intent(answer: str) -> str:
         return "no_more"
     has_question_mark = "?" in answer or "？" in answer
     question_keywords = (
-        "luong",
-        "du an",
-        "team",
-        "cong ty",
-        "quy trinh",
-        "co hoi",
-        "mentor",
-        "remote",
-        "thoi gian",
-        "phuc loi",
-        "benefit",
-        "van hoa",
-        "dao tao",
-        "thu viec",
-        "leader",
-        "manager",
-        "khach hang",
-        "san pham",
+        "luong", "du an", "team", "cong ty", "quy trinh", "co hoi", "mentor", "remote",
+        "thoi gian", "phuc loi", "benefit", "van hoa", "dao tao", "thu viec", "leader",
+        "manager", "khach hang", "san pham",
     )
     question_starters = ("ai", "gi", "o dau", "khi nao", "bao nhieu", "nhu the nao", "tai sao", "co ", "duoc ")
     if has_question_mark or any(keyword in compact for keyword in question_keywords) or any(compact.startswith(starter) for starter in question_starters):
         return "has_questions"
     return "unclear"
 
-
 def _candidate_question_gate(answer: str, language: str) -> dict[str, Any]:
+    log_func("_candidate_question_gate", level=2)
     if language == "vi":
         if _is_no_question_answer(answer):
             return {
@@ -1409,8 +1485,8 @@ def _candidate_question_gate(answer: str, language: str) -> dict[str, Any]:
         "should_score_star": False,
     }
 
-
 def _normalize_candidate_qa_response(payload: dict[str, Any], language: str, turn_count: int) -> dict[str, Any]:
+    log_func("_normalize_candidate_qa_response", level=2)
     answer = str(payload.get("answer", "")).strip()
     if not answer:
         answer = (
@@ -1445,8 +1521,8 @@ def _normalize_candidate_qa_response(payload: dict[str, Any], language: str, tur
         "should_close": bool(payload.get("should_close")) or turn_count >= CANDIDATE_QA_LIMIT,
     }
 
-
 def _fallback_candidate_qa_response(candidate_questions: str, language: str, turn_count: int, error: str) -> dict[str, Any]:
+    log_func("_fallback_candidate_qa_response", level=2)
     if language == "vi":
         answer = (
             "Mình chưa có đủ thông tin chính thức trong JD/session để trả lời chắc chắn câu hỏi này. "
@@ -1469,7 +1545,6 @@ def _fallback_candidate_qa_response(candidate_questions: str, language: str, tur
         "error": error,
     }
 
-
 def _candidate_qa_evaluation(
     answer: str,
     language: str,
@@ -1477,6 +1552,7 @@ def _candidate_qa_evaluation(
     intent: str,
     responder: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    log_func("_candidate_qa_evaluation", level=2)
     if language == "vi":
         if intent == "no_more":
             feedback = "Ứng viên không có câu hỏi thêm; đây là phản hồi hợp lệ. Lần sau nên chuẩn bị 1-2 câu hỏi về dự án, đội nhóm hoặc kỳ vọng 90 ngày đầu để thể hiện sự quan tâm."
@@ -1508,13 +1584,12 @@ def _candidate_qa_evaluation(
         "unresolvedQuestions": (responder or {}).get("unresolved_questions", []),
     }
 
-
 def _salary_focused_question(answer: str) -> bool:
     text = _strip_accents(answer)
     return any(marker in text for marker in ("luong", "salary", "thu nhap", "dai ngo", "phuc loi", "benefit"))
 
-
 def _short_answer_gate(question: dict[str, Any], language: str) -> dict[str, Any]:
+    log_func("_short_answer_gate", level=2)
     if language == "vi":
         if _is_project_question(question):
             return _fallback_gate(
@@ -1544,8 +1619,8 @@ def _short_answer_gate(question: dict[str, Any], language: str) -> dict[str, Any
         max_retry_recommended=1,
     )
 
-
 def _clarification_gate(question: dict[str, Any], answer: str, language: str) -> dict[str, Any]:
+    log_func("_clarification_gate", level=2)
     if language == "vi":
         if _is_diverse_team_question(question):
             retry_prompt = (
@@ -1578,8 +1653,8 @@ def _clarification_gate(question: dict[str, Any], answer: str, language: str) ->
         should_score_star=False,
     )
 
-
 def _slot_gate_for_question(question: dict[str, Any], state: dict[str, Any], language: str) -> dict[str, Any] | None:
+    log_func("_slot_gate_for_question", level=2)
     if language != "vi" or not _is_project_question(question):
         return None
     context = "\n".join(str(item) for item in state.get("active_question_answer_context", []) if str(item).strip())
@@ -1652,7 +1727,6 @@ def _slot_gate_for_question(question: dict[str, Any], state: dict[str, Any], lan
         "missing_slots": missing,
     }
 
-
 def _is_project_question(question: dict[str, Any]) -> bool:
     phase = _strip_accents(str(question.get("phase", "")))
     text = _strip_accents(str(question.get("question", "")))
@@ -1663,24 +1737,14 @@ def _is_project_question(question: dict[str, Any]) -> bool:
     return any(
         marker in f"{phase} {text} {intent}"
         for marker in (
-            "du an",
-            "project",
-            "cv deep",
-            "technical",
-            "kinh nghiem",
-            "vai tro",
-            "tham gia",
-            "computer vision",
-            "model",
-            "he thong",
+            "du an", "project", "cv deep", "technical", "kinh nghiem", "vai tro",
+            "tham gia", "computer vision", "model", "he thong",
         )
     )
-
 
 def _is_diverse_team_question(question: dict[str, Any]) -> bool:
     text = _strip_accents(f"{question.get('question', '')} {question.get('intent', '')}")
     return "nhom da dang" in text or "diverse team" in text
-
 
 def _project_answer_slots(answer_context: str) -> dict[str, bool]:
     text = _strip_accents(answer_context)
@@ -1692,17 +1756,8 @@ def _project_answer_slots(answer_context: str) -> dict[str, bool]:
         "situation": any(
             marker in text
             for marker in (
-                "nhan dien",
-                "bien so",
-                "cao toc",
-                "quang ninh",
-                "camera",
-                "video",
-                "hinh anh",
-                "du lieu xe",
-                "phat hien",
-                "quan ly",
-                "he thong",
+                "nhan dien", "bien so", "cao toc", "quang ninh", "camera", "video",
+                "hinh anh", "du lieu xe", "phat hien", "quan ly", "he thong",
             )
         ),
         "task": any(
@@ -1712,25 +1767,13 @@ def _project_answer_slots(answer_context: str) -> dict[str, bool]:
         "action": any(
             marker in text
             for marker in (
-                "computer vision",
-                "xu ly",
-                "huan luyen",
-                "train",
-                "model",
-                "dataset",
-                "du lieu",
-                "gan nhan",
-                "trien khai",
-                "danh gia",
-                "phan cong",
-                "chon mo hinh",
-                "yolo",
-                "ocr",
+                "computer vision", "xu ly", "huan luyen", "train", "model", "dataset",
+                "du lieu", "gan nhan", "trien khai", "danh gia", "phan cong", "chon mo hinh",
+                "yolo", "ocr",
             )
         ),
         "result": has_metric,
     }
-
 
 def _max_retries_for_question(question: dict[str, Any], gate_result: dict[str, Any]) -> int:
     if gate_result.get("pass") or _is_candidate_question(question):
@@ -1744,8 +1787,8 @@ def _max_retries_for_question(question: dict[str, Any], gate_result: dict[str, A
         recommended = 1
     return max(0, min(MAX_RETRIES, recommended))
 
-
 def fallback_question_plan(language: str, interview_type: str) -> list[dict[str, Any]]:
+    log_func("fallback_question_plan")
     raw = (
         [
             "Hãy giới thiệu ngắn gọn về kinh nghiệm gần đây nhất của bạn.",
@@ -1779,12 +1822,8 @@ def fallback_question_plan(language: str, interview_type: str) -> list[dict[str,
         for idx, question in enumerate(raw)
     ]
 
-
 def _utcnow():
-    import datetime
-
     return datetime.datetime.utcnow()
-
 
 def _state_snapshot(state: dict[str, Any]) -> dict[str, Any]:
     return {

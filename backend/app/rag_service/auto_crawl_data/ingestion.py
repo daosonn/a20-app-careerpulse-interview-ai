@@ -71,9 +71,10 @@ class JobIngestor:
         # Mặc định gọi hàm xử lý partition mới nếu không truyền file_path cụ thể
         self.process_partitions()
 
-    def process_partitions(self, partitions_dir: str = "raw_data/partitions", start_partition: str = None):
-        """Xử lý các file JSON phân vùng trong thư mục partitions."""
-        partitions_path = PROJECT_ROOT / partitions_dir
+    def process_partitions(self, partitions_dir: str = "partitions", start_partition: str = None):
+        """Xử lý các file JSON phân vùng trong thư mục database/raw/partitions."""
+        from app.core.config import RAW_DATA_DIR
+        partitions_path = RAW_DATA_DIR / partitions_dir
         # Theo dõi trạng thái đã ingest cho từng model
         state_file = DATA_DIR / f"ingestion_state_{EMBEDDING_PROVIDER}.json"
 
@@ -133,16 +134,18 @@ class JobIngestor:
                     else:
                         print(f"    Ingesting {len(new_docs)} new chunks from {filename} (Total: {len(all_docs)})...")
                         
-                        # 4. Ingest theo batch để tránh rate limit của Jina AI (100k tokens/min)
-                        batch_size = 40 # Khoảng 15-20k tokens mỗi batch
+                        # Ingest theo batch để tránh rate limit (Jina AI: 100k tokens/min)
+                        batch_size = 100 
+                        sleep_time = 15
+
                         for i in range(0, len(new_docs), batch_size):
                             batch = new_docs[i:i + batch_size]
                             print(f"      -> Batch {i//batch_size + 1}/{(len(new_docs)-1)//batch_size + 1} ({len(batch)} chunks)...")
                             rag_service.vector_db.add_documents(batch)
                             
-                            # Nếu còn batch tiếp theo, nghỉ một chút
+                            # Nghỉ một chút giữa các batch
                             if i + batch_size < len(new_docs):
-                                time.sleep(15) # Nghỉ 15s giữa các batch nhỏ
+                                time.sleep(sleep_time)
                         
                         print(f"    Successfully ingested {filename}")
                     
@@ -235,7 +238,7 @@ class JobIngestor:
 
 def run_ingestion(start_partition: str = None):
     """Hàm helper để chạy nhanh quá trình nạp dữ liệu."""
-    print(f"=== Bắt đầu nạp dữ liệu với Embedding Provider: {EMBEDDING_PROVIDER.upper()} ===")
+    print(f"=== Starting data ingestion with Embedding Provider: {EMBEDDING_PROVIDER.upper()} ===")
     ingestor = JobIngestor()
     ingestor.process_partitions(start_partition=start_partition)
 

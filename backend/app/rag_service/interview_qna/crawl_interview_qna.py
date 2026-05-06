@@ -61,9 +61,9 @@ def crawl_github(args: argparse.Namespace, skills: Dict[str, Dict[str, Any]]) ->
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Crawl interview Q&A records into raw_data/interview_qna.")
+    parser = argparse.ArgumentParser(description="Crawl interview Q&A records into database/interview_qna.")
     parser.add_argument("--source", choices=["stackexchange", "github", "all"], default="stackexchange")
-    parser.add_argument("--skills", nargs="*", help="Skill keys from raw_data/interview_qna/taxonomy.json")
+    parser.add_argument("--skills", nargs="*", help="Skill keys from database/interview_qna/taxonomy.json")
     parser.add_argument("--partition", help="Override partition name, e.g. 2026_W19")
     parser.add_argument("--dry-run", action="store_true", help="Print count without writing JSONL")
     parser.add_argument("--stack-site", default="stackoverflow")

@@ -1,12 +1,22 @@
+import asyncio
+import base64
+import datetime
+import json
+import os
+import re
+import tempfile
+from typing import Any
+
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi.responses import StreamingResponse
+
 from app.schemas.interview import SetupReq, ChatReq, RecommendationReq
 from app.services.graph import app_graph
 from app.services.reporter import generate_report_logic
 from app.rag_service.rag_service import rag_service
 from app.core.database import SessionDep
 from app.core.auth import CurrentUser
-from app.models.models import Interview, InterviewTurn, UserActivity, User
+from app.models.models import Interview, InterviewTurn, UserActivity, User, ResumeUpload
 from app.core.config import async_client, transcribe_audio_async, generate_speech_base64_async, CHAT_MODEL
 from app.services.tts_service import WAV_MIME_TYPE, character_from_phase
 from app.services.interview_flow import (
@@ -17,18 +27,12 @@ from app.services.interview_flow import (
     wait_for_pending_evaluations,
 )
 from app.services.trace_logger import trace_event
-import base64
-import os
-import tempfile
-import json
-import re
-from typing import Any
-import datetime
-import asyncio
+from app.core.logger import log_func
 
 router = APIRouter()
 
 def _utcnow() -> datetime.datetime:
+    log_func("_utcnow", level=2)
     return datetime.datetime.utcnow()
 
 DEFAULT_QUESTIONS_VI = [
@@ -48,9 +52,11 @@ DEFAULT_QUESTIONS_EN = [
 ]
 
 def _fallback_questions(language: str) -> list[str]:
+    log_func("_fallback_questions", level=2)
     return DEFAULT_QUESTIONS_VI if language == "vi" else DEFAULT_QUESTIONS_EN
 
 async def _generate_predicted_questions(req: SetupReq) -> list[str]:
+    log_func("_generate_predicted_questions", level=2)
     target_lang = "Vietnamese (Tiếng Việt)" if req.language == "vi" else "English"
     system_msg = f"You are a professional recruiter. You must respond ONLY in {target_lang}."
     prompt = (
@@ -75,6 +81,7 @@ async def _generate_predicted_questions(req: SetupReq) -> list[str]:
         return _fallback_questions(req.language)
 
 def _normalize_transcript(history: Any) -> list[dict[str, str]]:
+    log_func("_normalize_transcript", level=2)
     if not isinstance(history, list): return []
     normalized: list[dict[str, str]] = []
     for msg in history:
@@ -90,12 +97,14 @@ def _normalize_transcript(history: Any) -> list[dict[str, str]]:
     return normalized
 
 def _last_ai_message(history: Any) -> str:
+    log_func("_last_ai_message", level=2)
     for msg in reversed(_normalize_transcript(history)):
         if msg.get("role") in ("ai", "model"):
             return msg.get("content", "")
     return ""
 
 def _evaluation_score(evaluation: Any) -> float | None:
+    log_func("_evaluation_score", level=2)
     if not isinstance(evaluation, dict):
         return None
     scores = evaluation.get("scores")
@@ -118,6 +127,7 @@ def _sync_interview_state_from_graph(
     answered_question: str | None = None,
     user_message: str | None = None,
 ) -> None:
+    log_func("_sync_interview_state_from_graph", level=2)
     if not final_result:
         return
 
@@ -169,6 +179,7 @@ def _replace_turns_from_history(
     history: list[dict[str, str]],
     evaluations: list[dict],
 ) -> None:
+    log_func("_replace_turns_from_history", level=2)
     db.query(InterviewTurn).filter(InterviewTurn.interview_id == interview.id).delete(synchronize_session=False)
 
     turn_order = 1
@@ -205,6 +216,7 @@ def _replace_turns_from_history(
         interview.score = round(sum(scored) / len(scored))
 
 def _build_base_state(interview: Interview, user: User, req: ChatReq | None = None) -> dict[str, Any]:
+    log_func("_build_base_state", level=2)
     max_question_count = (
         req.question_count
         if req and req.question_count
@@ -231,6 +243,7 @@ def _build_base_state(interview: Interview, user: User, req: ChatReq | None = No
     }
 
 async def _transcribe_logic(file: UploadFile) -> str:
+    log_func("_transcribe_logic", level=2)
     tmp_path = None
     try:
         fd, tmp_path = tempfile.mkstemp(suffix=".wav")
@@ -243,14 +256,16 @@ async def _transcribe_logic(file: UploadFile) -> str:
 
 @router.post("/recommend-jobs")
 async def recommend_jobs(req: RecommendationReq, db: SessionDep, current_user: CurrentUser):
+    log_func("recommend_jobs")
     try:
-        recommendations = rag_service.retrieve_by_text(req.cv_text, limit=req.limit or 5)
+        recommendations = await rag_service.retrieve_by_text(req.cv_text, limit=req.limit or 5)
         return recommendations
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/setup")
 async def setup_interview(req: SetupReq, db: SessionDep, current_user: CurrentUser):
+    log_func("setup_interview")
     try:
         initial_state = create_initial_flow_state(req.language, req.question_count)
         trace_event(None, "interview.setup_request", {
@@ -262,6 +277,12 @@ async def setup_interview(req: SetupReq, db: SessionDep, current_user: CurrentUs
             "cv_text": req.cv_text,
             "jd_text": req.jd_text,
         })
+        matched_skills = []
+        if req.cv_id:
+            resume = db.query(ResumeUpload).filter(ResumeUpload.id == req.cv_id, ResumeUpload.user_id == current_user.id).first()
+            if resume:
+                matched_skills = resume.matched_skills or []
+
         new_interview = Interview(
             user_id=current_user.id,
             cv_text=req.cv_text,
@@ -272,6 +293,8 @@ async def setup_interview(req: SetupReq, db: SessionDep, current_user: CurrentUs
             pending_questions=initial_state,
             is_stress_test=req.is_stress_test,
             question_count=req.question_count,
+            resume_upload_id=req.cv_id,
+            matched_skills=matched_skills,
             status="setup"
         )
         db.add(new_interview)
@@ -308,6 +331,7 @@ async def setup_interview(req: SetupReq, db: SessionDep, current_user: CurrentUs
 
 @router.post("/transcribe")
 async def transcribe_audio(file: UploadFile = File(...), current_user: CurrentUser = None):
+    log_func("transcribe_audio")
     try:
         text = await _transcribe_logic(file)
         return {"text": text}
@@ -323,6 +347,7 @@ async def _stream_interview_logic(
     current_user: User = None,
     answered_question: str = None,
 ):
+    log_func("_stream_interview_logic", level=2)
     """
     Streams LangGraph events, extracts LLM tokens for the next question,
     splits into sentences, and generates TTS chunks.
@@ -430,9 +455,7 @@ async def _stream_interview_logic(
 
 @router.post("/start")
 async def start_interview(session_id: int, db: SessionDep, current_user: CurrentUser):
-    if not current_user.is_onboarded:
-         raise HTTPException(status_code=403, detail="Tài khoản chưa hoàn thành Onboarding.")
-
+    log_func("start_interview")
     interview = db.query(Interview).filter(Interview.id == session_id, Interview.user_id == current_user.id).first()
     if not interview: raise HTTPException(status_code=404, detail="Session not found")
 
@@ -442,6 +465,7 @@ async def start_interview(session_id: int, db: SessionDep, current_user: Current
     )
 
 async def _chat_logic(session_id: int, message: str, db: SessionDep, current_user: CurrentUser):
+    log_func("_chat_logic", level=2)
     interview = db.query(Interview).filter(Interview.id == session_id, Interview.user_id == current_user.id).first()
     if not interview: raise HTTPException(status_code=404, detail="Session not found")
 
@@ -452,6 +476,7 @@ async def _chat_logic(session_id: int, message: str, db: SessionDep, current_use
 
 @router.post("/chat")
 async def chat_interview(req: ChatReq, db: SessionDep, current_user: CurrentUser):
+    log_func("chat_interview")
     if not req.message: raise HTTPException(status_code=400, detail="Empty message")
     return await _chat_logic(int(req.session_id), req.message, db, current_user)
 
@@ -462,6 +487,7 @@ async def transcribe_and_chat(
     db: SessionDep = None,
     current_user: CurrentUser = None
 ):
+    log_func("transcribe_and_chat")
     try:
         text = await _transcribe_logic(file)
         if not text: raise HTTPException(status_code=400, detail="Could not transcribe audio")
@@ -476,6 +502,7 @@ async def transcribe_and_chat(
 
 @router.post("/end")
 async def end_interview(req: ChatReq, db: SessionDep, current_user: CurrentUser):
+    log_func("end_interview")
     try:
         session_id = int(req.session_id)
     except (ValueError, TypeError):
