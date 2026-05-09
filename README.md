@@ -1,98 +1,176 @@
-# AI Interview Coach (Modular Microservices)
+# CareerPulse — AI Interview Coach
 
-AI Interview Coach is an advanced practice platform designed to simulate realistic, high-pressure professional interviews. Unlike generic chatbots, this system uses a multi-agent microservices architecture to provide structured, context-aware, and challenging interview sessions.
+An AI-powered interview practice platform. Users upload a CV, provide a job description, configure an interview session (type, language, stress-test mode), conduct a live text or voice interview with an AI coach, and review structured STAR-based feedback.
 
-## 🚀 Key Features
+## Features
 
-- **Multi-Agent Orchestration**: Powered by **LangGraph**, the system coordinates between specialized agents for profiling, interviewing, and evaluation.
-- **RAG-Integrated Question Bank**: Uses **ChromaDB** to retrieve relevant interview questions based on extracted skills from the candidate's CV.
-- **Microservices Architecture**: Five decoupled services (Profiler, Interviewer, Evaluator, Reporter, Gateway) communicating via REST.
-- **Audio Interaction**: Real-time voice interaction using **OpenAI Whisper (STT)** and **OpenAI TTS**.
-- **Context-Aware Setup**: Analyzes both **CV (PDF/Docx)** and **Job Description** to tailor the interview.
-- **Professional Evaluation**: Rubric-based scoring and STAR/PAR-oriented feedback for every response.
-- **Stress-Test Mode**: Intentionally challenging "Harsh" mode to prepare candidates for high-pressure scenarios.
+- **LangGraph state machine** — profiler, interviewer, and evaluator run in a coordinated graph; evaluator and interviewer execute in parallel to minimize response latency.
+- **Context-aware sessions** — CV and JD are analysed to generate phase-aware questions across Introduction, CV Deep-dive, Job-fit Assessment, Behavioral, Motivation, and Closing phases.
+- **STAR evaluation** — every answer receives rubric-based scoring and model-answer comparison.
+- **Voice interaction** — OpenAI Whisper for speech-to-text, OpenAI TTS for question read-back.
+- **RAG question bank** — ChromaDB + Jina embeddings back a retrieval layer for supplementary interview questions.
+- **Stress-test mode** — intentionally challenging follow-up questions to simulate high-pressure interviews.
+- **Bilingual** — full `vi` / `en` support throughout setup, interview room, and feedback.
+- **Operations portal** — Django Admin provides a read/write view over users, interviews, and activity logs.
 
-## 🏗️ Architecture
+## Tech Stack
 
-The system is built as a set of modular microservices:
+| Layer | Technologies |
+|---|---|
+| Frontend | React 19, Vite, TypeScript, Tailwind CSS v4 |
+| Backend | FastAPI, SQLAlchemy, LangGraph, LangChain |
+| AI / Audio | OpenAI (chat, Whisper STT, TTS), Jina Embeddings |
+| Vector DB | ChromaDB |
+| Auth | Firebase Authentication (Google sign-in) |
+| Persistence | Firebase Firestore (dashboard/summary), SQLite or Postgres (sessions, users) |
+| Admin | Django Admin (unmanaged models, same DB) |
+| Deployment | Vercel (two projects: frontend + backend) |
 
-1.  **Gateway Service** (Port 8000): The entry point for the frontend, orchestrating requests and handling audio processing.
-2.  **Profiler Service** (Port 8001): Extracts skills from CVs and retrieves relevant questions from the Vector DB.
-3.  **Interviewer Service** (Port 8002): Generates dynamic questions based on the current interview phase and context.
-4.  **Evaluator Service** (Port 8003): Provides real-time analysis of candidate answers against professional rubrics.
-5.  **Reporter Service** (Port 8004): Generates comprehensive end-of-interview feedback and summaries.
-
-## 🛠️ Tech Stack
-
-### Backend (Python)
-- **Framework**: FastAPI (Microservices)
-- **AI Core**: LangGraph, LangChain, Anthropic Claude API, OpenAI API
-- **Vector DB**: ChromaDB
-- **ORM/DB**: SQLAlchemy with SQLite
-- **Audio**: OpenAI Whisper (STT), OpenAI TTS-1
-
-### Frontend (React)
-- **Core**: React 19, Vite, TypeScript
-- **Styling**: Tailwind CSS
-- **Icons**: Lucide React
-- **Persistence**: Firebase (Auth & Firestore)
-
-## 🚦 Getting Started
+## Getting Started
 
 ### Prerequisites
-- Python 3.9+
-- Node.js 18+
-- API Keys for Anthropic and/or OpenAI
 
-### 1. Backend Setup
+- Python 3.11+
+- Node.js 18+
+- A Firebase project with Google sign-in and Firestore enabled
+- OpenAI API key
+- Jina API key (for embeddings)
+
+### 1. Clone and configure
+
 ```bash
-# Clone the repository
 git clone <repo-url>
 cd <repo-name>
+```
 
-# Create and activate virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+Copy `firebase-applet-config.json` into `frontend/` (download from Firebase Console → Project Settings → Your apps → Config).
 
-# Install dependencies
+Create `backend/.env`:
+
+```env
+# Required
+OPENAI_API_KEY=sk-...
+JINA_API_KEY=jina_...
+FIREBASE_PROJECT_ID=your-project-id
+
+# Optional — defaults shown
+DATABASE_URL=                        # omit for local SQLite
+CORS_ALLOW_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+INTERVIEW_TTS_PROVIDER=auto          # auto | openai | google
+OPENAI_TTS_MODEL=gpt-4o-mini-tts
+```
+
+Create `frontend/.env`:
+
+```env
+VITE_API_BASE_URL=http://127.0.0.1:8000
+```
+
+### 2. Backend
+
+```bash
+cd backend
+python -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-
-# Configure environment variables
-cp .env.example .env
-# Edit .env with your API keys
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-### 2. Frontend Setup
+The database tables are created automatically on first startup. Health check: `http://127.0.0.1:8000/`.
+
+### 3. Frontend
+
 ```bash
-# From the project root
+cd frontend
 npm install
+npm run dev        # http://localhost:3000
 ```
 
-### 3. Running the Application
-The easiest way to start all backend services is using the main entry script:
+### 4. Django Admin (optional)
+
 ```bash
-# In one terminal (Backend)
-python src/main.py
-
-# In another terminal (Frontend)
-npm run dev
+cd backend/django_admin
+pip install django psycopg2-binary
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver 127.0.0.1:8080
 ```
 
-The application will be available at `http://localhost:3000`.
+### 5. AI agent hooks (for contributors using AI coding tools)
 
-## 📄 Environment Variables
+```bash
+bash scripts/setup_hooks.sh
+```
 
-Required variables in `.env`:
-- `ANTHROPIC_API_KEY`: Your Anthropic API key.
-- `OPENAI_API_KEY`: Your OpenAI API key (required for Audio & Embeddings).
-- `DEFAULT_MODEL`: The LLM to use (e.g., `claude-3-5-sonnet-20240620`).
+## Environment Variables Reference
 
-## 🤝 Rules for Contributors
+### Backend (`backend/.env`)
 
-If you are using AI coding agents, please ensure `scripts/setup_hooks.sh` has been run to enable automatic activity logging.
+| Variable | Required | Description |
+|---|---|---|
+| `OPENAI_API_KEY` | Yes | Chat completions, Whisper STT, TTS |
+| `JINA_API_KEY` | Yes | Jina v4 embeddings for the RAG question bank |
+| `FIREBASE_PROJECT_ID` | Yes | Firebase project for token verification |
+| `DATABASE_URL` | No | Postgres URL; omit to use local SQLite |
+| `CORS_ALLOW_ORIGINS` | No | Comma-separated allowed origins |
+| `INTERVIEW_TTS_PROVIDER` | No | `auto`, `openai`, or `google` |
+| `GOOGLE_API_KEY` | No | Google TTS provider (if `INTERVIEW_TTS_PROVIDER=google`) |
+| `INTERVIEW_TRACE_LOG_PATH` | No | Path for session trace JSONL logs |
 
-## Vercel Deployment
+### Frontend (`frontend/.env`)
 
-For fork-based Vercel deployment (frontend + backend as two separate projects), see:
+| Variable | Required | Description |
+|---|---|---|
+| `VITE_API_BASE_URL` | Yes | Base URL of the FastAPI backend |
 
-- `docs/11_vercel_deployment.md`
+Firebase config is read from `frontend/firebase-applet-config.json` (not an env var).
+
+## Project Structure
+
+```
+├── frontend/              # React + Vite app
+│   └── src/
+│       ├── features/      # auth, dashboard, landing, onboarding, profile, session
+│       ├── components/    # shared UI primitives and layout
+│       └── lib/           # api.ts, firebase.ts, fileParser.ts
+├── backend/
+│   ├── app/
+│   │   ├── api/v1/        # FastAPI route handlers
+│   │   ├── services/      # LangGraph graph, state, interviewer, evaluator, reporter
+│   │   ├── models/        # SQLAlchemy models
+│   │   ├── schemas/       # Pydantic request/response shapes
+│   │   ├── core/          # auth, database, config, logger
+│   │   └── rag_service/   # ChromaDB ingestion and retrieval
+│   └── django_admin/      # Operations portal
+└── database/              # Local SQLite, LangGraph checkpoints, ChromaDB, logs
+```
+
+## Deployment (Vercel)
+
+Deploy as two separate Vercel projects from the same repository.
+
+**Backend project** — Root Directory: `backend`
+
+| Variable | Value |
+|---|---|
+| `OPENAI_API_KEY` | your key |
+| `JINA_API_KEY` | your key |
+| `FIREBASE_PROJECT_ID` | your project id |
+| `DATABASE_URL` | managed Postgres URL (Neon / Supabase / Vercel Postgres) |
+| `CORS_ALLOW_ORIGINS` | `https://<your-frontend-domain>` |
+
+> SQLite on Vercel is ephemeral (`/tmp`). Use a managed Postgres database for production.
+
+**Frontend project** — Root Directory: `frontend`
+
+| Variable | Value |
+|---|---|
+| `VITE_API_BASE_URL` | `https://<your-backend-domain>` |
+
+Also add your frontend domain to **Firebase Console → Authentication → Authorized Domains**.
+
+### Verify after deploy
+
+1. `GET https://<backend>/` → `{"status": "ok"}`
+2. Sign in with Google on the frontend.
+3. Network tab: `GET /api/v1/user/profile` should return `200`.
+4. If `401`: check `FIREBASE_PROJECT_ID`, Firebase Authorized Domains, and `VITE_API_BASE_URL`.
