@@ -178,14 +178,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }).catch(err => console.error("Firestore fetch error", err));
 
-        // Instant unlock: allow UI to render as soon as we have the firebase user
         setUser(currentUser);
-        setLoading(false);
-
-        // Fetch backend profile in the background
-        fetchProfile(currentUser).catch(err => {
-          console.error("Background profile fetch error:", err);
+        // Fetch backend profile before unlocking to prevent routing flicker
+        await fetchProfile(currentUser).catch(err => {
+          console.error("Profile fetch error:", err);
         });
+        setLoading(false);
       } else {
         setProfile(null);
         setUser(null);

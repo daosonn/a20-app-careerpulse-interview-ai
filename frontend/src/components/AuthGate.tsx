@@ -28,8 +28,10 @@ export function AuthGate() {
     return <Navigate to="/login" replace />;
   }
 
-  // Removed forced onboarding redirect to allow direct access to /setup
-
+  // Redirect to onboarding if profile is not setup
+  if (profile && !profile.isOnboarded) {
+    return <Navigate to="/onboarding" replace />;
+  }
 
   return <Outlet />;
 }
