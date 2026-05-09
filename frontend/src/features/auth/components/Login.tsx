@@ -3,10 +3,12 @@ import { Sparkles, ShieldCheck, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export function Login() {
-  const { user, profile, signInWithGoogle } = useAuth();
+  const { user, profile, loading, signInWithGoogle } = useAuth();
+
+  if (loading) return null;
 
   if (user) {
-    if (profile && !profile.isOnboarded) {
+    if (!profile?.isOnboarded) {
       return <Navigate to="/onboarding" replace />;
     }
     return <Navigate to="/setup" replace />;
