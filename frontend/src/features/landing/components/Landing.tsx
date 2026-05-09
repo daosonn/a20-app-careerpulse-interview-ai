@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
@@ -517,6 +517,41 @@ function ArenaFeature() {
 }
 
 function ArenaMock() {
+  const [messages, setMessages] = useState<{ role: 'ai' | 'user'; text: string }[]>([
+    { role: 'ai', text: 'Chào bạn, hãy giới thiệu ngắn gọn về bản thân và kinh nghiệm nổi bật nhất của bạn.' }
+  ]);
+  const [inputValue, setInputValue] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [stage, setStage] = useState(0);
+  const chatRef = useRef<HTMLDivElement>(null);
+
+  const script = [
+    'Tuyệt vời. Vậy đâu là thử thách lớn nhất bạn từng đối mặt trong công việc, và bạn đã vượt qua nó như thế nào?',
+    'Cảm ơn bạn. Câu trả lời của bạn cho thấy bạn có kỹ năng giải quyết vấn đề tốt. Để trải nghiệm phỏng vấn sâu hơn với phân tích STAR chi tiết, hãy tạo tài khoản và bắt đầu!'
+  ];
+
+  useEffect(() => {
+    if (chatRef.current) {
+      chatRef.current.scrollTop = chatRef.current.scrollHeight;
+    }
+  }, [messages, isTyping]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputValue.trim() || isTyping || stage >= script.length) return;
+
+    const userMsg = inputValue.trim();
+    setInputValue('');
+    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+    setIsTyping(true);
+
+    setTimeout(() => {
+      setMessages(prev => [...prev, { role: 'ai', text: script[stage] }]);
+      setStage(s => s + 1);
+      setIsTyping(false);
+    }, 1500 + Math.random() * 1000); // 1.5s - 2.5s delay
+  };
+
   return (
     <div className="relative">
       <div
@@ -531,57 +566,71 @@ function ArenaMock() {
               The Arena
             </p>
             <p className="text-sm font-serif text-text-primary mt-1 leading-tight">
-              Giai đoạn 2 · Kinh nghiệm CV
+              Pre-Interview · Khởi động
             </p>
           </div>
           <Badge variant="gold-outline">Đang diễn ra</Badge>
         </div>
 
         {/* Chat mock */}
-        <div className="p-5 space-y-4 bg-navy-950">
-          {/* AI bubble */}
-          <div className="flex gap-3">
-            <div className="w-9 h-9 rounded-full bg-gold-500/15 border border-gold-500/50 flex items-center justify-center shrink-0">
-              <Sparkles className="w-3.5 h-3.5 text-gold-400" aria-hidden />
-            </div>
-            <div className="bg-navy-800 border border-gold-500/20 rounded-2xl rounded-tl-none px-4 py-3 max-w-[85%]">
-              <p className="text-sm text-text-primary leading-relaxed">
-                Hãy kể về một dự án mà bạn đã dẫn dắt và đối mặt với thay đổi
-                lớn về yêu cầu giữa chừng. Bạn xử lý thế nào?
-              </p>
-            </div>
-          </div>
-          {/* User bubble */}
-          <div className="flex gap-3 flex-row-reverse">
-            <div className="w-9 h-9 rounded-full bg-navy-700 border border-navy-600 flex items-center justify-center shrink-0">
-              <Mic className="w-3.5 h-3.5 text-gold-400" aria-hidden />
-            </div>
-            <div className="bg-navy-700 border border-navy-600 rounded-2xl rounded-tr-none px-4 py-3 max-w-[85%]">
-              <div className="flex items-end gap-[3px] h-5 mb-2" aria-hidden>
-                {[0.4, 0.7, 0.5, 0.9, 0.6, 0.8, 0.5, 0.7].map((h, i) => (
-                  <span
-                    key={i}
-                    className="w-1 bg-gold-500/70 rounded-full"
-                    style={{ height: `${h * 100}%` }}
-                  />
-                ))}
+        <div ref={chatRef} className="p-5 space-y-4 bg-navy-950 h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-navy-700 scrollbar-track-transparent">
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+              <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
+                msg.role === 'ai' 
+                  ? 'bg-gold-500/15 border border-gold-500/50' 
+                  : 'bg-navy-700 border border-navy-600'
+              }`}>
+                {msg.role === 'ai' ? (
+                  <Sparkles className="w-3.5 h-3.5 text-gold-400" aria-hidden />
+                ) : (
+                  <Mic className="w-3.5 h-3.5 text-gold-400" aria-hidden />
+                )}
               </div>
-              <p className="text-sm text-text-primary/80 italic leading-relaxed">
-                Đang ghi âm câu trả lời...
-              </p>
+              <div className={`border rounded-2xl px-4 py-3 max-w-[85%] ${
+                msg.role === 'ai'
+                  ? 'bg-navy-800 border-gold-500/20 rounded-tl-none'
+                  : 'bg-navy-700 border-navy-600 rounded-tr-none'
+              }`}>
+                <p className="text-sm text-text-primary leading-relaxed">
+                  {msg.text}
+                </p>
+              </div>
             </div>
-          </div>
+          ))}
+
+          {isTyping && (
+            <div className="flex gap-3">
+              <div className="w-9 h-9 rounded-full bg-gold-500/15 border border-gold-500/50 flex items-center justify-center shrink-0">
+                <Sparkles className="w-3.5 h-3.5 text-gold-400" aria-hidden />
+              </div>
+              <div className="bg-navy-800 border border-gold-500/20 rounded-2xl rounded-tl-none px-4 py-3 max-w-[85%] flex items-center gap-1.5 h-[46px]">
+                <span className="w-1.5 h-1.5 bg-gold-400/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-1.5 h-1.5 bg-gold-400/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-1.5 h-1.5 bg-gold-400/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Mock footer — input bar */}
-        <div className="px-5 py-3 border-t border-gold-500/20 bg-navy-900 flex items-center gap-2">
-          <div className="flex-1 h-9 rounded-lg bg-navy-700 border border-navy-600 flex items-center px-3 text-xs text-text-muted">
-            Hoặc gõ câu trả lời...
-          </div>
-          <div className="w-9 h-9 rounded-lg bg-gold-500 flex items-center justify-center text-navy-950">
+        <form onSubmit={handleSubmit} className="px-5 py-3 border-t border-gold-500/20 bg-navy-900 flex items-center gap-2">
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            disabled={isTyping || stage >= script.length}
+            placeholder={stage >= script.length ? 'Đã hoàn thành khởi động...' : 'Gõ câu trả lời...'}
+            className="flex-1 h-9 rounded-lg bg-navy-700 border border-navy-600 px-3 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-gold-500/40 disabled:opacity-50"
+          />
+          <button 
+            type="submit"
+            disabled={!inputValue.trim() || isTyping || stage >= script.length}
+            className="w-9 h-9 rounded-lg bg-gold-500 flex items-center justify-center text-navy-950 disabled:opacity-50 transition-opacity"
+          >
             <ArrowRight className="w-4 h-4" aria-hidden />
-          </div>
-        </div>
+          </button>
+        </form>
       </div>
     </div>
   );
