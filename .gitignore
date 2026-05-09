@@ -6,15 +6,7 @@ coverage/
 *.log
 .env*
 !.env.example
-
-# data/
-# chroma/
-# chroma_db/
-# chroma_db_jina/
-# chroma_db_gemini/
-# vector/
-# logs/
-
+!frontend/.env.example
 
 venv/
 .env
@@ -23,3 +15,13 @@ venv/
 __pycache__/
 .ai-log/
 .vite/
+
+# Database — runtime and generated artifacts
+database/sql/
+database/vector/
+database/logs/
+database/raw/
+
+# LangGraph WAL/SHM sidecar files (if checkpoint path is overridden outside database/)
+*.sqlite-shm
+*.sqlite-wal
