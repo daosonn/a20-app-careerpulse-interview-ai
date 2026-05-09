@@ -23,8 +23,10 @@ export function Layout() {
     return <Navigate to="/login" replace />;
   }
 
-  // Removed forced onboarding redirect to allow direct access to /setup
-
+  // Redirect to onboarding if profile is not setup
+  if (profile && !profile.isOnboarded) {
+    return <Navigate to="/onboarding" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-navy-950 font-sans text-text-primary flex">
