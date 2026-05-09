@@ -28,8 +28,8 @@ export function AuthGate() {
     return <Navigate to="/login" replace />;
   }
 
-  // Redirect to onboarding if profile is not setup
-  if (profile && !profile.isOnboarded) {
+  // Redirect to onboarding if profile is absent or not yet completed
+  if (!profile?.isOnboarded) {
     return <Navigate to="/onboarding" replace />;
   }
 
