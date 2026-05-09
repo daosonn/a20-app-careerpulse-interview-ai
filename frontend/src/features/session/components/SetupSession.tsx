@@ -756,7 +756,7 @@ export function SetupSession() {
             <TileRadioGroup
               name="type"
               value={interviewType}
-              onChange={setInterviewType}
+              onChange={(val) => setInterviewType(val as 'Behavioral' | 'Technical' | 'HR')}
               columns={3}
               options={[
                 {

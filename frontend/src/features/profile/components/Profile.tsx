@@ -71,6 +71,7 @@ interface JobSuggestion {
   industry: string;
   fit: number;
   reason: string;
+  url?: string;
 }
 
 interface Preferences {
@@ -551,7 +552,7 @@ function PersonalInfoCard({
               <div className="mt-4 pt-3 border-t border-navy-700/60">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted mb-2.5">Công cụ</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {profile.tools.map((tool: string) => <Badge key={tool} variant="secondary" size="sm">{tool}</Badge>)}
+                  {profile.tools.map((tool: string) => <Badge key={tool} variant="navy" size="sm">{tool}</Badge>)}
                 </div>
               </div>
             )}
