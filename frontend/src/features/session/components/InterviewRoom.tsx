@@ -12,6 +12,7 @@ import { cn } from '../../../lib/utils';
 import { CurrentQuestionBar } from './CurrentQuestionBar';
 import { StressGauge } from './StressGauge';
 import { CandidatePreview } from './CandidatePreview';
+import { BackgroundSelector, BackgroundTheme, BACKGROUND_OPTIONS } from './BackgroundSelector';
 
 // ─── Interviewer personas (mapped to the 3 people in background.png) ─────────
 
@@ -30,29 +31,43 @@ const INTERVIEWERS: InterviewerMeta[] = [
   { id: 'tech', name: 'Ms. Nguyen', role: 'Technical Evaluator', accentColor: '#a78bfa', column: 'right'  },
 ];
 
-// Horizontal + vertical offsets per column to align badges with photo subjects
-const COLUMN_STYLE: Record<InterviewerMeta['column'], string> = {
-  left:   'left-[calc(14%+150px)]  -translate-x-1/2  bottom-[calc(41%-20px)]',
-  center: 'left-1/2                -translate-x-1/2  bottom-[41%]',
-  right:  'right-[calc(14%+150px)] translate-x-1/2   bottom-[calc(41%-20px)]',
+// Dynamic positioning per background theme
+const BG_POSITIONS: Record<BackgroundTheme, Record<InterviewerMeta['column'], string>> = {
+  classic: {
+    left:   'left-[calc(14%+150px)]  -translate-x-1/2  bottom-[calc(41%-20px)]',
+    center: 'left-1/2                -translate-x-1/2  bottom-[41%]',
+    right:  'right-[calc(14%+150px)] translate-x-1/2   bottom-[calc(41%-20px)]',
+  },
+  executive: {
+    left:   'left-[25%] -translate-x-1/2 bottom-[45%]',
+    center: 'left-1/2   -translate-x-1/2 bottom-[45%]',
+    right:  'right-[25%] translate-x-1/2 bottom-[45%]',
+  },
+  creative: {
+    left:   'left-[25%] -translate-x-1/2 bottom-[45%]',
+    center: 'left-1/2   -translate-x-1/2 bottom-[45%]',
+    right:  'right-[25%] translate-x-1/2 bottom-[45%]',
+  }
 };
 
 function InterviewerBadge({
   iv,
   isActive,
   isSpeaking,
+  bgTheme,
 }: {
   iv: InterviewerMeta;
   isActive: boolean;
   isSpeaking: boolean;
+  bgTheme: BackgroundTheme;
 }) {
   const speaking = isActive && isSpeaking;
 
   return (
     <div
       className={cn(
-        'absolute z-10 flex flex-col items-center gap-1',
-        COLUMN_STYLE[iv.column],
+        'absolute z-10 flex flex-col items-center gap-1 transition-all duration-500',
+        BG_POSITIONS[bgTheme] ? BG_POSITIONS[bgTheme][iv.column] : BG_POSITIONS.classic[iv.column],
       )}
     >
       {/* Soft face-glow for the active speaker */}
@@ -238,6 +253,15 @@ export function InterviewRoom() {
 
   const [isEnding, setIsEnding] = useState(false);
 
+  const [bgTheme, setBgTheme] = useState<BackgroundTheme>(() => {
+    return (localStorage.getItem('interview_bg') as BackgroundTheme) || 'classic';
+  });
+
+  const handleBgChange = (theme: BackgroundTheme) => {
+    setBgTheme(theme);
+    localStorage.setItem('interview_bg', theme);
+  };
+
   const handleEndSession = async () => {
     setIsEnding(true);
     try {
@@ -319,16 +343,19 @@ export function InterviewRoom() {
           </h1>
         </div>
 
-        <Button variant="secondary" size="sm" onClick={handleEndSession} disabled={isEnding}>
-          {isEnding ? (
-            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-          ) : (
-            <LogOut className="h-4 w-4" aria-hidden />
-          )}
-          {isEnding
-            ? (isVi ? 'Đang xử lý...' : 'Processing...')
-            : (isVi ? 'Kết thúc' : 'End')}
-        </Button>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <BackgroundSelector currentTheme={bgTheme} onChange={handleBgChange} isVi={isVi} />
+          <Button variant="secondary" size="sm" onClick={handleEndSession} disabled={isEnding}>
+            {isEnding ? (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+            ) : (
+              <LogOut className="h-4 w-4" aria-hidden />
+            )}
+            {isEnding
+              ? (isVi ? 'Đang xử lý...' : 'Processing...')
+              : (isVi ? 'Kết thúc' : 'End')}
+          </Button>
+        </div>
       </header>
 
       {/* ── Main layout ──────────────────────────────────────────────────────── */}
@@ -346,7 +373,11 @@ export function InterviewRoom() {
           >
             {/* ── Boardroom photo background ────────────────────────────── */}
             <img
-              src={isVi ? '/background_vi.png' : '/background.png'}
+              src={
+                bgTheme === 'classic'
+                  ? (isVi ? '/background_vi.png' : '/background.png')
+                  : BACKGROUND_OPTIONS.find((o) => o.id === bgTheme)?.url || '/background.png'
+              }
               alt=""
               aria-hidden
               className="absolute inset-0 h-full w-full object-cover object-center"
@@ -403,6 +434,7 @@ export function InterviewRoom() {
                   iv={iv}
                   isActive={iv.id === activeInterviewerId}
                   isSpeaking={isProcessing}
+                  bgTheme={bgTheme}
                 />
               </Fragment>
             ))}
