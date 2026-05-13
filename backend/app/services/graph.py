@@ -13,6 +13,7 @@ from .state import InterviewState
 from .profiler import extract_cv_info_logic, search_questions_logic
 from .interviewer import generate_ai_batch
 from .evaluator import evaluate_star_logic
+from .cv_grounding import ground_cv_dive_questions
 
 # Standard retry policy
 retry_policy = {"max_attempts": 3}
@@ -53,6 +54,11 @@ async def interviewer_node(state: InterviewState):
     # Check if we need a new batch
     if not pending and count < max_count:
         new_batch = await generate_ai_batch(state)
+        new_batch = await ground_cv_dive_questions(
+            new_batch,
+            state.get("cv_content", ""),
+            state.get("language", "vi"),
+        )
         pending.extend(new_batch)
     
     if not pending:

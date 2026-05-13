@@ -66,6 +66,11 @@ Interview style:
 - Do not repeat questions already covered in chat history.
 - Each model_answer should be a strong sample answer, not advice.
 
+CV Deep-dive grounding rule (MANDATORY):
+- Questions tagged phase="CV Deep-dive" MUST reference only projects, roles, companies, or technologies that are EXPLICITLY present in the candidate's CV provided below.
+- Never invent or assume experience the candidate did not claim.
+- If unsure whether something is in the CV, use a generic phrasing ("a project you mentioned") rather than naming a specific item.
+
 Return ONLY a JSON object with this exact shape:
 {{
   "questions": [
