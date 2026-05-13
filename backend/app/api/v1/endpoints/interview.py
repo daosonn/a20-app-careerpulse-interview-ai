@@ -12,7 +12,6 @@ from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi.responses import StreamingResponse
 
 from app.schemas.interview import SetupReq, ChatReq, RecommendationReq
-from app.services.graph import app_graph
 from app.services.reporter import generate_report_logic
 from app.rag_service.rag_service import rag_service
 from app.services.job_fetcher import fetch_jobs_from_platforms
@@ -34,6 +33,13 @@ from app.services.cv_guard import detect_injection, scrub_pii
 from app.core.logger import log_func
 
 router = APIRouter()
+
+
+def _get_app_graph():
+    log_func("_get_app_graph", level=2)
+    from app.services.graph import app_graph
+
+    return app_graph
 
 def _utcnow() -> datetime.datetime:
     log_func("_utcnow", level=2)
@@ -419,6 +425,7 @@ async def _stream_interview_logic(
         yield f"data: {json.dumps({'type': 'u', 'c': user_message})}\n\n"
     
     # We use astream_events to capture tokens from the LLM inside the graph nodes
+    app_graph = _get_app_graph()
     async for event in app_graph.astream_events(new_input, config=config, version="v2"):
         kind = event.get("event")
         

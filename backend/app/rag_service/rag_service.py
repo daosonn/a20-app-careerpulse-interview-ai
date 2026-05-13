@@ -20,11 +20,18 @@ class RAGService:
         # Lưu vào thư mục tương ứng trong database/vector/ (VD: database/vector/chroma_db_jina)
         self.persist_directory = str(VECTOR_DATA_DIR / f"chroma_db_{EMBEDDING_PROVIDER}")
         self.collection_name = "jobs_collection"
-        self.vector_db = Chroma(
-            collection_name=self.collection_name,
-            embedding_function=self.embeddings,
-            persist_directory=self.persist_directory
-        )
+        self._vector_db = None
+
+    @property
+    def vector_db(self):
+        log_func("RAGService.vector_db", level=2)
+        if self._vector_db is None:
+            self._vector_db = Chroma(
+                collection_name=self.collection_name,
+                embedding_function=self.embeddings,
+                persist_directory=self.persist_directory
+            )
+        return self._vector_db
 
     def add_jobs_to_vector_db(self, jobs_data: List[Dict[str, Any]]):
         log_func("RAGService.add_jobs_to_vector_db")
