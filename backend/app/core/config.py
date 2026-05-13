@@ -23,8 +23,12 @@ APP_DIR = CORE_DIR.parent
 BACKEND_DIR = APP_DIR.parent
 PROJECT_ROOT = BACKEND_DIR.parent
 
-# Unified Storage Directory at Root
-GLOBAL_DATA_DIR = PROJECT_ROOT / "database"
+# Unified Storage Directory at Root.
+# Vercel's deployed bundle is read-only; only /tmp is writable at runtime.
+if os.getenv("VERCEL"):
+    GLOBAL_DATA_DIR = Path(os.getenv("CAREERPULSE_DATA_DIR", "/tmp/database"))
+else:
+    GLOBAL_DATA_DIR = PROJECT_ROOT / "database"
 SQL_DATA_DIR = GLOBAL_DATA_DIR / "sql"
 VECTOR_DATA_DIR = GLOBAL_DATA_DIR / "vector"
 LOGS_DIR = GLOBAL_DATA_DIR / "logs"
