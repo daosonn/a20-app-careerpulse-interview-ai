@@ -11,6 +11,7 @@ from app.models.models import QuestionBank
 
 # Simple in-memory cache for the session (optional, but good for speed)
 _cv_cache = {}
+_CV_CACHE_VERSION = "v2"  # bump when prompt changes to invalidate stale cache entries
 
 async def extract_cv_info_logic(cv_text: str, use_cache: bool = True) -> Dict[str, Any]:
     log_func("extract_cv_info_logic")
@@ -19,7 +20,7 @@ async def extract_cv_info_logic(cv_text: str, use_cache: bool = True) -> Dict[st
         return {}
 
     # 1. Check Cache
-    cv_hash = hashlib.md5(cv_text.encode('utf-8')).hexdigest()
+    cv_hash = f"{_CV_CACHE_VERSION}:{hashlib.md5(cv_text.encode('utf-8')).hexdigest()}"
     if use_cache and cv_hash in _cv_cache:
         print(f"Cache hit for CV hash: {cv_hash}")
         return _cv_cache[cv_hash]
@@ -27,12 +28,14 @@ async def extract_cv_info_logic(cv_text: str, use_cache: bool = True) -> Dict[st
     # 2. Optimized Prompt (Shorter, clearer for faster response)
     prompt = f"""Extract JSON from CV:
 - full_name
+- dob (date of birth as string, e.g. "19/05/2000", or null)
 - skills (list)
 - tools (list)
 - projects (list of objects: {{name, tech}})
 - current_position
+- education (list of objects: {{school, degree, field, year}})
 
-CV: {cv_text[:4000]}  # Limit text to avoid token bloat
+CV: {cv_text[:4000]}
 """
     
     try:

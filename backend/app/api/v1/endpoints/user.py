@@ -24,7 +24,6 @@ from app.models.models import User, Education, ResumeUpload, SuggestedJob, UserA
 from app.services.profiler import extract_cv_info_logic, extract_cv_info_stream, map_cv_skills_to_canonical
 from app.services.cv_guard import detect_injection
 from app.rag_service.matcher import JobMatcherService
-from app.rag_service.rag_service import rag_service
 from app.core.config import EMBEDDING_PROVIDER
 from app.core.logger import log_func
 
@@ -161,6 +160,17 @@ async def onboard_user(req: OnboardReq, db: SessionDep, current_user: CurrentUse
         # Generate vectors for both providers
         cv_vectors = await rag_service.embed_text_multi(query_str) if query_str else {}
 
+        # Save extracted education entries
+        for edu_data in info.get("education", []):
+            if isinstance(edu_data, dict) and edu_data.get("school"):
+                db.add(Education(
+                    user_id=current_user.id,
+                    school=edu_data.get("school", ""),
+                    degree=edu_data.get("degree", ""),
+                    field=edu_data.get("field", ""),
+                    year=edu_data.get("year", ""),
+                ))
+
         db.add(
             ResumeUpload(
                 user_id=current_user.id,
@@ -262,21 +272,15 @@ async def list_resumes(db: SessionDep, current_user: CurrentUser):
         resumes = []
         for idx, r in enumerate(results):
             item = {
-                "id": r.id, 
-                "file_name": r.file_name, 
-                "created_at": r.created_at.isoformat() if r.created_at else None
+                "id": r.id,
+                "file_name": r.file_name,
+                "created_at": r.created_at.isoformat() if r.created_at else None,
             }
-            # Tối ưu: Gộp (Combine) nội dung chi tiết cho CV mới nhất để tiết kiệm 1 round-trip khi load trang /setup
+            # Include raw_text for the most recent resume to save a round-trip on /setup
             if idx == 0:
-                # Lấy thêm thông tin chi tiết cho bản ghi đầu tiên
                 first_resume = db.query(ResumeUpload).filter(ResumeUpload.id == r.id).first()
                 if first_resume:
                     item["raw_text"] = first_resume.raw_text
-                    suggested_jobs = []
-                    if isinstance(first_resume.cv_vector, dict) and first_resume.cv_vector.get("jina"):
-                        suggested_jobs = await rag_service.retrieve_by_vector(first_resume.cv_vector["jina"], limit=5)
-                    item["suggested_jobs"] = suggested_jobs
-            
             resumes.append(item)
         return resumes
     except Exception as e:
@@ -298,18 +302,11 @@ async def get_resume_detail(resume_id: int, db: SessionDep, current_user: Curren
     result = db.execute(stmt).first()
     if not result:
         raise HTTPException(status_code=404, detail="Resume not found")
-    
-    # Backend vẫn dùng cv_vector để tìm job nhưng không trả về cho Frontend
-    suggested_jobs = []
-    if isinstance(result.cv_vector, dict) and result.cv_vector.get("jina"):
-        suggested_jobs = await rag_service.retrieve_by_vector(result.cv_vector["jina"], limit=5)
-        
     return {
         "id": result.id,
         "raw_text": result.raw_text,
         "file_name": result.file_name,
         "created_at": result.created_at.isoformat() if result.created_at else None,
-        "suggested_jobs": suggested_jobs 
     }
 
 @router.get("/resumes/{resume_id}/jobs")
@@ -381,6 +378,18 @@ async def update_cv(req: CVUpdateReq, db: SessionDep, current_user: CurrentUser)
         # Generate vectors for both providers
         cv_vectors = await rag_service.embed_text_multi(query_str) if query_str else {}
 
+        # Replace education entries from updated CV
+        db.query(Education).filter(Education.user_id == current_user.id).delete()
+        for edu_data in info.get("education", []):
+            if isinstance(edu_data, dict) and edu_data.get("school"):
+                db.add(Education(
+                    user_id=current_user.id,
+                    school=edu_data.get("school", ""),
+                    degree=edu_data.get("degree", ""),
+                    field=edu_data.get("field", ""),
+                    year=edu_data.get("year", ""),
+                ))
+
         new_resume = ResumeUpload(
             user_id=current_user.id,
             file_name=req.file_name or "profile_cv_update.pdf",
@@ -407,12 +416,6 @@ async def update_cv(req: CVUpdateReq, db: SessionDep, current_user: CurrentUser)
         db.refresh(current_user)
         db.refresh(new_resume)
 
-        # Tự động tìm kiếm Job gợi ý bằng Vector Jina (mặc định)
-        suggested_jobs = []
-        if cv_vectors.get("jina"):
-            suggested_jobs = await rag_service.retrieve_by_vector(cv_vectors["jina"], limit=5)
-
-        # Trả về cả bản ghi vừa tạo để Frontend cập nhật state ngay lập tức mà không cần gọi lại danh sách
         return {
             "status": "success",
             "resume": {
@@ -420,7 +423,6 @@ async def update_cv(req: CVUpdateReq, db: SessionDep, current_user: CurrentUser)
                 "file_name": new_resume.file_name,
                 "raw_text": new_resume.raw_text,
                 "created_at": new_resume.created_at.isoformat() if new_resume.created_at else _utcnow().isoformat(),
-                "suggested_jobs": suggested_jobs
             },
             "skills": current_user.skills,
             "matched_skills": matched_skills,
@@ -628,18 +630,11 @@ async def get_user_bundle(db: SessionDep, current_user: CurrentUser):
         .order_by(Education.created_at.desc())
         .all()
     )
-    suggested_jobs = (
-        db.query(SuggestedJob)
-        .filter(SuggestedJob.user_id == current_user.id, SuggestedJob.is_active == True)
-        .order_by(SuggestedJob.fit_score.desc())
-        .all()
-    )
     return {
         "profile": _profile_payload(current_user),
         "education": _education_payload(education),
         "preferences": _preferences_payload(current_user),
         "settings": _settings_payload(current_user),
-        "suggested_jobs": _jobs_payload(suggested_jobs),
     }
 
 
@@ -656,26 +651,22 @@ async def get_suggested_jobs(db: SessionDep, current_user: CurrentUser, refresh:
         SuggestedJob.is_active == True
     ).all()
     
-    if refresh and current_user.skills:
+    if refresh and (current_user.skills or current_user.cv_text):
         matcher = JobMatcherService(db)
         # Lấy CV mới nhất để lấy Vector đã lưu
         latest_cv = db.query(ResumeUpload).filter(ResumeUpload.user_id == current_user.id).order_by(ResumeUpload.created_at.desc()).first()
-        
+
         cv_vector = None
         if latest_cv and isinstance(latest_cv.cv_vector, dict):
-            # Tự động chọn vector dựa trên EMBEDDING_PROVIDER hiện tại
             cv_vector = latest_cv.cv_vector.get(EMBEDDING_PROVIDER)
-            
-            # Fallback nếu provider hiện tại chưa có vector trong bản ghi này
             if not cv_vector:
-                print(f"Warning: No vector found for provider {EMBEDDING_PROVIDER} in latest CV. Attempting fallback.")
                 cv_vector = list(latest_cv.cv_vector.values())[0] if latest_cv.cv_vector else None
 
-        # Gọi matcher với vector đã chọn lọc
         await matcher.match_and_persist(
             user_id=current_user.id,
-            skills=current_user.skills,
-            current_position=current_user.current_position,
+            cv_text=current_user.cv_text or "",
+            skills=current_user.skills or [],
+            current_position=current_user.current_position or "",
             precomputed_vector=cv_vector
         )
         saved_suggestions = db.query(SuggestedJob).filter(
