@@ -4,8 +4,8 @@ import re
 import unicodedata
 from typing import Any
 
-from app.core.config import evaluator_llm
 from app.core.logger import log_func
+from app.core.llm_router import chat_with_fallback
 
 DEFAULT_SCORES = {
     "clarity": 3,
@@ -231,8 +231,15 @@ async def evaluate_star_logic(req_data: Any) -> dict[str, Any]:
     {lang_instruction}. Return ONLY pure JSON."""
     
     try:
-        eval_res = await evaluator_llm.ainvoke(prompt)
-        return _normalize_evaluation(eval_res.content)
+        raw = await chat_with_fallback(
+            messages=[
+                {"role": "system", "content": "You are an expert interview evaluator. Return ONLY valid JSON."},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.2,
+            require_json=True,
+        )
+        return _normalize_evaluation(raw)
     except Exception as e:
         return {
             "scores": DEFAULT_SCORES.copy(),

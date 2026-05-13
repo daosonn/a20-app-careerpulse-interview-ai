@@ -77,13 +77,9 @@ async_client = openai_async_client
 # 3. STT (Speech-to-Text) Centralized Helper
 async def transcribe_audio_async(file_path: str) -> str:
     log_func("transcribe_audio_async")
-    """Helper for Whisper transcription."""
-    with open(file_path, "rb") as audio_file:
-        transcript = await async_client.audio.transcriptions.create(
-            model="whisper-1",
-            file=audio_file
-        )
-    return transcript.text
+    """Whisper transcription with retry via llm_router."""
+    from app.core.llm_router import transcribe_with_retry
+    return await transcribe_with_retry(file_path)
 
 # 4. TTS (Text-to-Speech) Centralized Helper
 async def generate_speech_base64_async(
