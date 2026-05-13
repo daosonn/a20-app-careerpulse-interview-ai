@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   User as UserIcon,
   Mail,
@@ -31,6 +31,9 @@ import {
   X,
   Check,
   Trash2,
+  RefreshCw,
+  ExternalLink,
+  Search,
 } from 'lucide-react';
 import { useAuth } from '../../auth';
 import { Card, Badge, Button } from '../../../components/ui';
@@ -72,6 +75,8 @@ interface JobSuggestion {
   fit: number;
   reason: string;
   url?: string;
+  location?: string;
+  salary?: string;
 }
 
 interface Preferences {
@@ -252,7 +257,13 @@ export function Profile() {
             initialEducation={profile.education}
           />
         )}
-        {activeTab === 'jobs' && <JobsTabContent authenticatedFetch={authenticatedFetch} initialJobs={profile.suggestedJobs} />}
+        {activeTab === 'jobs' && (
+          <JobsTabContent
+            authenticatedFetch={authenticatedFetch}
+            skills={profile.skills}
+            currentPosition={profile.currentPosition}
+          />
+        )}
         {activeTab === 'preferences' && <PreferencesTabContent authenticatedFetch={authenticatedFetch} initialPrefs={profile.preferences} />}
         {activeTab === 'settings' && <SettingsTabContent user={user} authenticatedFetch={authenticatedFetch} initialSettings={profile.settings} />}
       </div>
@@ -274,13 +285,13 @@ function ProfileTabContent({
 }) {
   return (
     <div className="grid gap-5 lg:grid-cols-3">
-      <ResumeVaultCard
-        hasCv={!!profile.cvText} cvText={profile.cvText} joinDate={joinDate}
+      <PersonalInfoCard
+        user={user} profile={profile} joinDate={joinDate}
         authenticatedFetch={authenticatedFetch} refreshProfile={refreshProfile}
       />
       <EducationCard authenticatedFetch={authenticatedFetch} initialEntries={initialEducation} />
-      <PersonalInfoCard
-        user={user} profile={profile} joinDate={joinDate}
+      <ResumeVaultCard
+        hasCv={!!profile.cvText} cvText={profile.cvText} joinDate={joinDate}
         authenticatedFetch={authenticatedFetch} refreshProfile={refreshProfile}
       />
     </div>
@@ -841,75 +852,324 @@ function PersonalInfoCard({
 /*  TAB 2 — Công việc                                                  */
 /* ================================================================== */
 
-const DEFAULT_JOBS: JobSuggestion[] = [
-  { title: 'Senior Product Manager', company: 'Công ty công nghệ hàng đầu', industry: 'Technology', fit: 92, reason: 'Phù hợp cao với kinh nghiệm quản lý sản phẩm và kỹ năng lãnh đạo.' },
-  { title: 'Business Strategy Lead', company: 'Tập đoàn tư vấn quốc tế', industry: 'Consulting', fit: 87, reason: 'Tư duy chiến lược và khả năng phân tích phù hợp với vai trò cấp cao.' },
-  { title: 'Data-Driven Operations Manager', company: 'Startup FinTech', industry: 'FinTech', fit: 81, reason: 'Nền tảng kỹ thuật kết hợp kinh nghiệm vận hành.' },
+interface JobPlatform {
+  id: string;
+  name: string;
+  icon: string;
+  tagline: string;
+  buildUrl: (query: string) => string;
+  borderClass: string;
+  badgeClass: string;
+}
+
+const JOB_PLATFORMS: JobPlatform[] = [
+  {
+    id: 'itviec',
+    name: 'ITviec',
+    icon: '💻',
+    tagline: 'Tuyển dụng IT chuyên biệt tại Việt Nam',
+    buildUrl: (q) => `https://itviec.com/it-jobs?q=${encodeURIComponent(q)}`,
+    borderClass: 'border-blue-700/40 hover:border-blue-500/60',
+    badgeClass: 'bg-blue-900/30 text-blue-300',
+  },
+  {
+    id: 'topcv',
+    name: 'TopCV',
+    icon: '🇻🇳',
+    tagline: 'Nền tảng việc làm số 1 Việt Nam',
+    buildUrl: (q) => `https://topcv.vn/tim-kiem-viec-lam?q=${encodeURIComponent(q)}&page=1`,
+    borderClass: 'border-green-700/40 hover:border-green-500/60',
+    badgeClass: 'bg-green-900/30 text-green-300',
+  },
+  {
+    id: 'vietnamworks',
+    name: 'VietnamWorks',
+    icon: '🔍',
+    tagline: 'Cổng tuyển dụng lớn nhất Việt Nam',
+    buildUrl: (q) => `https://www.vietnamworks.com/viec-lam?q=${encodeURIComponent(q)}`,
+    borderClass: 'border-orange-700/40 hover:border-orange-500/60',
+    badgeClass: 'bg-orange-900/30 text-orange-300',
+  },
+  {
+    id: 'linkedin',
+    name: 'LinkedIn Jobs',
+    icon: '🔗',
+    tagline: 'Mạng nghề nghiệp toàn cầu',
+    buildUrl: (q) => `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(q)}&location=Vietnam`,
+    borderClass: 'border-sky-700/40 hover:border-sky-500/60',
+    badgeClass: 'bg-sky-900/30 text-sky-300',
+  },
 ];
 
 function JobsTabContent({
   authenticatedFetch,
-  initialJobs,
+  skills,
+  currentPosition,
 }: {
   authenticatedFetch: (url: string, opts?: RequestInit) => Promise<Response>;
-  initialJobs?: JobSuggestion[];
+  skills?: string[];
+  currentPosition?: string;
 }) {
-  const [jobs, setJobs] = useState<JobSuggestion[]>(
-    initialJobs && initialJobs.length > 0 ? initialJobs : DEFAULT_JOBS,
-  );
-  const [loading, setLoading] = useState(!initialJobs);
+  const navigate = useNavigate();
+  const [jobs, setJobs] = useState<JobSuggestion[]>([]);
+  const [loadingInit, setLoadingInit] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const autoFetchedRef = useRef(false);
 
+  const primaryQuery = currentPosition || (skills && skills.length > 0 ? skills[0] : '');
+  const topSkills = skills?.slice(0, 3) ?? [];
+  const hasProfile = !!(skills?.length || currentPosition);
+
+  // On mount: check SQL cache first; auto-refresh if empty and user has profile data
   useEffect(() => {
-    if (initialJobs) return;
+    if (autoFetchedRef.current) return;
+    autoFetchedRef.current = true;
+    if (!hasProfile) return;
+
     (async () => {
+      setLoadingInit(true);
       try {
-        const res = await authenticatedFetch(apiUrl('/api/v1/user/suggested-jobs'));
+        // Try cached results first (fast)
+        const cached = await authenticatedFetch(apiUrl('/api/v1/user/suggested-jobs'));
+        if (cached.ok) {
+          const data = await cached.json();
+          if (data.jobs?.length) {
+            setJobs(data.jobs);
+            return;
+          }
+        }
+        // No cache — trigger full platform fetch + AI evaluation
+        const res = await authenticatedFetch(apiUrl('/api/v1/user/suggested-jobs?refresh=true'));
         if (res.ok) {
           const data = await res.json();
-          if (data.jobs?.length) setJobs(data.jobs);
+          setJobs(data.jobs ?? []);
         }
-      } catch { /* use defaults */ } finally { setLoading(false); }
+      } catch { /* silent */ } finally { setLoadingInit(false); }
     })();
-  }, [authenticatedFetch, initialJobs]);
+  }, [authenticatedFetch, hasProfile]);
 
-  if (loading) return <div className="py-10 flex justify-center"><MiniSpinner /></div>;
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const res = await authenticatedFetch(apiUrl('/api/v1/user/suggested-jobs?refresh=true'));
+      if (res.ok) {
+        const data = await res.json();
+        setJobs(data.jobs ?? []);
+      }
+    } catch { /* silent */ } finally { setRefreshing(false); }
+  };
+
+  if (loadingInit) {
+    return (
+      <div className="py-16 flex flex-col items-center justify-center gap-4 text-center">
+        <div className="relative">
+          <Loader2 className="w-8 h-8 text-gold-400 animate-spin" aria-hidden />
+          <span className="absolute inset-0 rounded-full bg-gold-500/10 animate-ping" />
+        </div>
+        <div>
+          <p className="text-sm font-medium text-text-primary">AI đang phân tích hồ sơ của bạn...</p>
+          <p className="text-xs text-text-muted mt-1">Đánh giá mức độ phù hợp với từng vị trí công việc</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h3 className="font-serif text-xl text-text-primary">Vị trí gợi ý</h3>
-        <p className="text-sm text-text-muted mt-1">Dựa trên hồ sơ và kỹ năng của bạn.</p>
-      </div>
-      <div className="grid gap-4 md:grid-cols-3">
-        {jobs.map((job) => (
-          <Card key={job.title} variant="dark" padding="md" className="flex flex-col hover:border-gold-500/50 transition-colors group">
-            <div className="flex items-start justify-between gap-3 mb-4">
-              <span className="inline-flex w-10 h-10 rounded-full bg-gold-500/15 border border-gold-500/40 items-center justify-center shrink-0">
-                <Briefcase className="w-4 h-4 text-gold-400" aria-hidden />
-              </span>
-              <Badge variant="gold" size="sm">{job.fit}% Fit</Badge>
-            </div>
-            <h4 className="font-serif text-lg text-text-primary leading-tight mb-1">{job.title}</h4>
-            <div className="flex items-center gap-2 text-xs text-text-muted mb-3">
-              <Building2 className="w-3 h-3" aria-hidden />
-              {job.company} <span className="text-text-muted/40">·</span> {job.industry}
-            </div>
-            <p className="text-sm text-text-muted leading-relaxed flex-1">{job.reason}</p>
-            <div className="mt-4 pt-4 border-t border-navy-700/60 flex gap-2">
-              <Link to="/setup" className="flex-1">
-                <Button variant="secondary" size="sm" fullWidth>Luyện tập</Button>
-              </Link>
-              {job.url && (
-                <a href={job.url} target="_blank" rel="noopener noreferrer" className="shrink-0">
-                  <Button variant="ghost" size="sm">
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                </a>
+    <div className="space-y-8">
+
+      {/* ── Platform deep-links ── */}
+      <section>
+        <div className="flex items-center gap-3 mb-4">
+          <span className="inline-flex w-8 h-8 rounded-lg bg-gold-500/15 border border-gold-500/40 items-center justify-center shrink-0">
+            <Search className="w-3.5 h-3.5 text-gold-400" aria-hidden />
+          </span>
+          <div>
+            <h3 className="font-serif text-lg text-text-primary leading-tight">Tìm việc trực tiếp</h3>
+            <p className="text-xs text-text-muted mt-0.5">
+              {primaryQuery
+                ? <>Tìm kiếm "<span className="text-gold-400 font-medium">{primaryQuery}</span>" trên các nền tảng việc làm IT</>
+                : 'Tìm kiếm trên các nền tảng việc làm IT hàng đầu'}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {JOB_PLATFORMS.map((platform) => (
+            <a
+              key={platform.id}
+              href={primaryQuery ? platform.buildUrl(primaryQuery) : '#'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(
+                'flex flex-col gap-3 p-4 rounded-xl bg-navy-800/60 border transition-all group',
+                primaryQuery ? platform.borderClass + ' cursor-pointer' : 'border-navy-700/40 opacity-50 pointer-events-none',
               )}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-2xl" aria-hidden>{platform.icon}</span>
+                <ExternalLink className="w-3.5 h-3.5 text-text-muted group-hover:text-gold-400 transition-colors" aria-hidden />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-text-primary group-hover:text-gold-300 transition-colors">
+                  {platform.name}
+                </p>
+                <p className="text-[11px] text-text-muted leading-tight mt-0.5">{platform.tagline}</p>
+              </div>
+              {primaryQuery && (
+                <span className={cn('text-[10px] font-medium px-2 py-0.5 rounded-full self-start', platform.badgeClass)}>
+                  {primaryQuery}
+                </span>
+              )}
+            </a>
+          ))}
+        </div>
+
+        {/* Skill quick-links */}
+        {topSkills.length > 1 && primaryQuery && (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="text-[11px] text-text-muted">Kỹ năng khác:</span>
+            {topSkills.filter((s) => s !== primaryQuery).map((skill) => (
+              <div key={skill} className="flex items-center gap-1">
+                {JOB_PLATFORMS.slice(0, 2).map((platform) => (
+                  <a
+                    key={platform.id}
+                    href={platform.buildUrl(skill)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] px-2 py-0.5 rounded-full bg-navy-700 border border-navy-600 text-text-muted hover:text-gold-400 hover:border-gold-500/40 transition-colors"
+                  >
+                    {skill} · {platform.name}
+                  </a>
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* ── AI-matched positions ── */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex w-8 h-8 rounded-lg bg-gold-500/15 border border-gold-500/40 items-center justify-center shrink-0">
+              <Sparkles className="w-3.5 h-3.5 text-gold-400" aria-hidden />
+            </span>
+            <div>
+              <h3 className="font-serif text-lg text-text-primary leading-tight">AI Gợi ý phù hợp</h3>
+              <p className="text-xs text-text-muted mt-0.5">Phân tích dựa trên CV và kỹ năng của bạn</p>
             </div>
-          </Card>
-        ))}
-      </div>
+          </div>
+          <Button
+            variant="ghost" size="sm"
+            onClick={handleRefresh}
+            loading={refreshing}
+            disabled={refreshing}
+          >
+            <RefreshCw className={cn('w-3.5 h-3.5', refreshing && 'animate-spin')} aria-hidden />
+            Làm mới
+          </Button>
+        </div>
+
+        {jobs.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 rounded-xl border border-dashed border-navy-600/60 text-center gap-3">
+            <span className="inline-flex w-12 h-12 rounded-full bg-navy-800 border border-navy-700 items-center justify-center">
+              <Briefcase className="w-5 h-5 text-text-muted" aria-hidden />
+            </span>
+            <div>
+              <p className="text-sm font-medium text-text-primary">Chưa có gợi ý AI</p>
+              <p className="text-xs text-text-muted mt-1 max-w-xs">
+                {skills && skills.length > 0
+                  ? 'Nhấn "Làm mới" để AI phân tích hồ sơ và đề xuất vị trí phù hợp.'
+                  : 'Tải CV lên trước để AI có thể phân tích và gợi ý vị trí phù hợp.'}
+              </p>
+            </div>
+            {!(skills && skills.length > 0) && (
+              <Link to="/onboarding">
+                <Button variant="secondary" size="sm">Tải CV ngay</Button>
+              </Link>
+            )}
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {jobs.map((job, idx) => {
+              const fitColor =
+                job.fit >= 80 ? 'text-green-400 border-green-500/40 bg-green-500/10' :
+                job.fit >= 60 ? 'text-gold-400 border-gold-500/40 bg-gold-500/10' :
+                'text-text-muted border-navy-600 bg-navy-700/50';
+              return (
+                <Card key={idx} variant="dark" padding="md" className="flex flex-col hover:border-gold-500/50 transition-colors group">
+                  {/* Header */}
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <span className="inline-flex w-10 h-10 rounded-full bg-gold-500/15 border border-gold-500/40 items-center justify-center shrink-0">
+                      <Briefcase className="w-4 h-4 text-gold-400" aria-hidden />
+                    </span>
+                    <div className={cn('flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-semibold', fitColor)}>
+                      <Sparkles className="w-3 h-3" aria-hidden />
+                      {job.fit}% phù hợp
+                    </div>
+                  </div>
+
+                  {/* Job info */}
+                  <h4 className="font-serif text-base text-text-primary leading-tight mb-1">{job.title}</h4>
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-text-muted mb-2">
+                    <span className="flex items-center gap-1">
+                      <Building2 className="w-3 h-3 shrink-0" aria-hidden />
+                      <span className="truncate max-w-[120px]">{job.company}</span>
+                    </span>
+                    {job.location && (
+                      <>
+                        <span className="text-text-muted/40">·</span>
+                        <span>{job.location}</span>
+                      </>
+                    )}
+                    {job.salary && (
+                      <>
+                        <span className="text-text-muted/40">·</span>
+                        <span className="text-gold-400/80 font-medium">{job.salary}</span>
+                      </>
+                    )}
+                  </div>
+
+                  {/* AI reason */}
+                  <p className="text-xs text-text-muted leading-relaxed flex-1 italic border-l-2 border-gold-500/30 pl-2">
+                    {job.reason}
+                  </p>
+
+                  {/* Actions */}
+                  <div className="mt-4 pt-3 border-t border-navy-700/60 flex gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => navigate('/setup', { state: { prefillJob: { title: job.title, company: job.company, location: job.location, salary: job.salary, reason: job.reason, url: job.url } } })}
+                    >
+                      Luyện tập
+                    </Button>
+                    {job.url ? (
+                      <a href={job.url} target="_blank" rel="noopener noreferrer" className="shrink-0">
+                        <Button variant="ghost" size="sm" title="Xem tin tuyển dụng">
+                          <ExternalLink className="w-4 h-4" aria-hidden />
+                        </Button>
+                      </a>
+                    ) : (
+                      <a
+                        href={JOB_PLATFORMS[0].buildUrl(job.title)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="shrink-0"
+                      >
+                        <Button variant="ghost" size="sm" title="Tìm trên ITviec">
+                          <Search className="w-4 h-4" aria-hidden />
+                        </Button>
+                      </a>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth';
 import { extractTextFromFile } from '../../../lib/fileParser';
 import {
@@ -140,16 +140,37 @@ function TileRadioGroup<V extends string>({
 /*  Main component                                                     */
 /* ------------------------------------------------------------------ */
 
+interface PrefillJob {
+  title: string;
+  company: string;
+  location?: string;
+  salary?: string;
+  reason?: string;
+  url?: string;
+}
+
+function buildPrefillJd(job: PrefillJob): string {
+  const parts = [`Vị trí: ${job.title}`, `Công ty: ${job.company}`];
+  if (job.location) parts.push(`Địa điểm: ${job.location}`);
+  if (job.salary) parts.push(`Mức lương: ${job.salary}`);
+  if (job.reason) parts.push(`\nMô tả phù hợp: ${job.reason}`);
+  return parts.join('\n');
+}
+
 export function SetupSession() {
   const { user, profile, authenticatedFetch } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const prefillJob = (location.state as any)?.prefillJob as PrefillJob | undefined;
 
   const [cvText, setCvText] = useState('');
   const [fileName, setFileName] = useState('');
   const [isParsingFile, setIsParsingFile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [jobDescription, setJobDescription] = useState('');
+  const [jobDescription, setJobDescription] = useState(() =>
+    prefillJob ? buildPrefillJd(prefillJob) : ''
+  );
   const [interviewType, setInterviewType] = useState<'Behavioral' | 'Technical' | 'HR'>('Behavioral');
   const [language, setLanguage] = useState<'vi' | 'en'>('vi');
   const [isStressTest, setIsStressTest] = useState(false);
@@ -157,14 +178,21 @@ export function SetupSession() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
 
-  const [recommendedJobs, setRecommendedJobs] = useState<any[]>([]);
+  const [recommendedJobs, setRecommendedJobs] = useState<any[]>(() =>
+    prefillJob
+      ? [{ title: prefillJob.title, company: prefillJob.company, location: prefillJob.location, url: prefillJob.url, description: buildPrefillJd(prefillJob) }]
+      : []
+  );
   const [isFetchingRecommendations, setIsFetchingRecommendations] = useState(false);
-  const [selectedJobIndex, setSelectedJobIndex] = useState<number | null>(null);
+  const [selectedJobIndex, setSelectedJobIndex] = useState<number | null>(() =>
+    prefillJob ? 0 : null
+  );
   const [savedResumes, setSavedResumes] = useState<any[]>([]);
   const [selectedCvId, setSelectedCvId] = useState<number | null>(null);
   const [isUploadingCv, setIsUploadingCv] = useState(false);
   const [isLoadingResumes, setIsLoadingResumes] = useState(false);
   const defaultsLoadedRef = useRef(false);
+  const hasPrefillRef = useRef(!!prefillJob);
 
   const clearJobRecommendations = () => {
     setRecommendedJobs([]);
@@ -190,10 +218,12 @@ export function SetupSession() {
             setSelectedCvId(firstResume.id);
 
             const jobsData = firstResume.suggested_jobs || [];
-            setRecommendedJobs(jobsData);
-            if (jobsData.length > 0) {
-              setSelectedJobIndex(0);
-              setJobDescription(jobsData[0].description);
+            if (!hasPrefillRef.current) {
+              setRecommendedJobs(jobsData);
+              if (jobsData.length > 0) {
+                setSelectedJobIndex(0);
+                setJobDescription(jobsData[0].description);
+              }
             }
             setIsFetchingRecommendations(false);
           } else {
@@ -206,10 +236,12 @@ export function SetupSession() {
               setSelectedCvId(detailData.id);
 
               const jobsData = detailData.suggested_jobs || [];
-              setRecommendedJobs(jobsData);
-              if (jobsData.length > 0) {
-                setSelectedJobIndex(0);
-                setJobDescription(jobsData[0].description);
+              if (!hasPrefillRef.current) {
+                setRecommendedJobs(jobsData);
+                if (jobsData.length > 0) {
+                  setSelectedJobIndex(0);
+                  setJobDescription(jobsData[0].description);
+                }
               }
             } catch (e) {
               console.error("Failed to fetch resume detail", e);

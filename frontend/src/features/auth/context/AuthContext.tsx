@@ -39,15 +39,6 @@ export interface UserProfile {
     public_profile: boolean;
     anonymous_practice: boolean;
   };
-  suggestedJobs?: Array<{
-    title: string;
-    company: string;
-    industry: string;
-    fit: number;
-    reason: string;
-    url?: string;
-    source?: string;
-  }>;
 }
 
 const normalizeUserProfile = (data: any): UserProfile => {
@@ -64,7 +55,6 @@ const normalizeUserProfile = (data: any): UserProfile => {
     education: Array.isArray(data?.education) ? data.education : [],
     preferences: data?.preferences,
     settings: data?.settings,
-    suggestedJobs: Array.isArray(data?.suggested_jobs) ? data.suggested_jobs : [],
   };
 };
 
