@@ -18,6 +18,7 @@ import {
   MapPin,
   CheckCircle2,
   ExternalLink,
+  Eye,
 } from 'lucide-react';
 import { apiUrl } from '../../../lib/api';
 import {
@@ -140,6 +141,73 @@ function TileRadioGroup<V extends string>({
 /*  Main component                                                     */
 /* ------------------------------------------------------------------ */
 
+/* ------------------------------------------------------------------ */
+/*  JD Preview Modal                                                   */
+/* ------------------------------------------------------------------ */
+
+function JdPreviewModal({ job, onClose }: { job: any; onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center p-4 sm:p-6 bg-black/75 backdrop-blur-sm overflow-y-auto"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-2xl my-6 rounded-2xl bg-navy-900 border border-navy-600/60 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-6 py-4 border-b border-navy-700/60">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="inline-flex w-8 h-8 rounded-lg bg-gold-500/15 border border-gold-500/35 items-center justify-center shrink-0">
+              <Briefcase className="w-4 h-4 text-gold-400" aria-hidden />
+            </span>
+            <div className="min-w-0">
+              <p className="font-serif text-base text-text-primary leading-tight truncate">{job.title}</p>
+              <p className="text-[11px] text-text-muted">
+                {job.company}{job.location ? ` · ${job.location}` : ''}
+              </p>
+            </div>
+          </div>
+          <button
+            className="p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-navy-700 transition-colors shrink-0 ml-3"
+            onClick={onClose}
+            aria-label="Đóng"
+          >
+            <X className="w-4 h-4" aria-hidden />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto max-h-[65vh] px-6 py-5">
+          {job.description ? (
+            <p className="text-sm text-text-secondary leading-relaxed whitespace-pre-wrap">{job.description}</p>
+          ) : (
+            <p className="text-sm text-text-muted italic">Không có mô tả công việc.</p>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between px-6 py-4 border-t border-navy-700/60">
+          {job.url ? (
+            <a
+              href={job.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-xs text-gold-400 hover:text-gold-300 transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" aria-hidden />
+              Xem tin tuyển dụng gốc
+            </a>
+          ) : <span />}
+          <button
+            onClick={onClose}
+            className="text-xs text-text-muted hover:text-text-primary transition-colors"
+          >
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface PrefillJob {
   title: string;
   company: string;
@@ -191,6 +259,7 @@ export function SetupSession() {
   const [selectedCvId, setSelectedCvId] = useState<number | null>(null);
   const [isUploadingCv, setIsUploadingCv] = useState(false);
   const [isLoadingResumes, setIsLoadingResumes] = useState(false);
+  const [previewJob, setPreviewJob] = useState<any | null>(null);
   const defaultsLoadedRef = useRef(false);
   const hasPrefillRef = useRef(!!prefillJob);
 
@@ -693,9 +762,20 @@ export function SetupSession() {
                               )}
                             </div>
                           </div>
-                          {selectedJobIndex === idx && (
-                            <CheckCircle2 className="w-5 h-5 text-gold-400 shrink-0" />
-                          )}
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); setPreviewJob(job); }}
+                              className="p-1 rounded-md text-text-muted hover:text-gold-400 hover:bg-navy-700 transition-colors"
+                              aria-label="Xem mô tả công việc"
+                              title="Xem JD"
+                            >
+                              <Eye className="w-3.5 h-3.5" aria-hidden />
+                            </button>
+                            {selectedJobIndex === idx && (
+                              <CheckCircle2 className="w-5 h-5 text-gold-400" />
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -899,6 +979,10 @@ export function SetupSession() {
           </div>
         </div>
       </form>
+
+      {previewJob && (
+        <JdPreviewModal job={previewJob} onClose={() => setPreviewJob(null)} />
+      )}
     </div>
   );
 }

@@ -15,6 +15,8 @@ from app.schemas.interview import SetupReq, ChatReq, RecommendationReq
 from app.services.graph import app_graph
 from app.services.reporter import generate_report_logic
 from app.rag_service.rag_service import rag_service
+from app.services.job_fetcher import fetch_jobs_from_platforms
+from app.services.job_evaluator import ai_evaluate_job_fit, generate_llm_jobs
 from app.core.database import SessionDep
 from app.core.auth import CurrentUser
 from app.models.models import Interview, InterviewTurn, UserActivity, User, ResumeUpload
@@ -259,11 +261,52 @@ async def _transcribe_logic(file: UploadFile) -> str:
 @router.post("/recommend-jobs")
 async def recommend_jobs(req: RecommendationReq, db: SessionDep, current_user: CurrentUser):
     log_func("recommend_jobs")
-    try:
-        recommendations = await rag_service.retrieve_by_text(req.cv_text, limit=req.limit or 5)
-        return recommendations
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    limit = req.limit or 5
+    _MIN_REAL = 3
+
+    # Build search query from user profile; cv_text is used only for AI scoring
+    query = current_user.current_position or ""
+    if not query and current_user.skills:
+        query = " ".join((current_user.skills or [])[:2])
+
+    candidates: list = []
+    if query:
+        try:
+            candidates = await fetch_jobs_from_platforms(query, per_platform=max(limit, 5))
+        except Exception as e:
+            print(f"[recommend_jobs] platform fetch error: {e}")
+
+    # LLM fallback when real platforms return too few results
+    if len(candidates) < _MIN_REAL:
+        needed = _MIN_REAL - len(candidates)
+        try:
+            generated = await generate_llm_jobs(
+                cv_text=req.cv_text,
+                skills=current_user.skills or [],
+                current_position=current_user.current_position or "",
+                count=needed,
+            )
+            candidates.extend(generated)
+        except Exception as e:
+            print(f"[recommend_jobs] llm fallback error: {e}")
+
+    if not candidates:
+        return []
+
+    # AI evaluate fit score and reason for each candidate
+    if req.cv_text or current_user.skills:
+        try:
+            candidates = await ai_evaluate_job_fit(
+                cv_text=req.cv_text,
+                skills=current_user.skills or [],
+                current_position=current_user.current_position or "",
+                jobs=candidates,
+            )
+        except Exception as e:
+            print(f"[recommend_jobs] ai evaluation error: {e}")
+
+    candidates.sort(key=lambda j: j.get("fit_score", 0), reverse=True)
+    return candidates[:limit]
 
 @router.post("/setup")
 async def setup_interview(req: SetupReq, db: SessionDep, current_user: CurrentUser):
