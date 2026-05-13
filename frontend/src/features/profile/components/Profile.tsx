@@ -289,19 +289,101 @@ function ProfileTabContent({
 
 /* ----- CV Modal ----- */
 
-const SECTION_HEADING_RE =
-  /^(experience|education|skills?|projects?|summary|objective|certifications?|awards?|publications?|references?|languages?|interests?|hobbies|contact|profile|work history|employment|accomplishments?|achievements?|activities|volunteer|kinh nghi[eệ]m|h[oọ]c v[aấ]n|k[yỹ] n[aă]ng|d[uự] [aá]n|t[oó]m t[aắ]t|m[uụ]c ti[eê]u|ch[uứ]ng ch[iỉ]|gi[aả]i th[uư][oở]ng|ng[oô]n ng[uữ]|s[oở] th[iíï]ch|li[eê]n h[eệ])[:\s]*$/i;
+// Known section headings in descending length order (longer first to avoid
+// "Summary" swallowing "Professional Summary").
+const CV_SECTION_KEYWORDS: string[] = [
+  'Professional Summary', 'Professional Profile', 'Executive Summary',
+  'Technical Skills', 'Core Skills', 'Key Skills', 'Core Competencies',
+  'Work Experience', 'Work History', 'Employment History',
+  'Experiences', 'Experience', 'Employment',
+  'Education', 'Academic Background',
+  'Certifications', 'Certification', 'Licenses',
+  'Projects', 'Personal Projects', 'Notable Projects',
+  'Awards', 'Achievements', 'Accomplishments', 'Honors',
+  'Languages', 'Language Skills',
+  'Interests', 'Hobbies',
+  'References', 'Contact', 'Contact Information',
+  'Volunteer', 'Publications', 'Research', 'Summary', 'Objective', 'Profile',
+  // Vietnamese
+  'Kinh nghiệm làm việc', 'Kinh nghiệm',
+  'Học vấn', 'Kỹ năng', 'Dự án',
+  'Tóm tắt', 'Mục tiêu', 'Chứng chỉ',
+  'Ngôn ngữ', 'Sở thích', 'Liên hệ',
+].sort((a, b) => b.length - a.length);
+
+const CV_SECTION_KEYWORDS_LOWER = new Set(CV_SECTION_KEYWORDS.map((k) => k.toLowerCase()));
+
+function cvEscapeRe(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Pre-normalize PDF-extracted CV text.
+ *
+ * PDF extractors often strip real newlines and replace them with spaces,
+ * producing long single-line blobs like:
+ *   "...email  Professional Summary  text...  Technical Skills  - bullet..."
+ *
+ * Steps:
+ *   1. Insert \n around known section headings (surrounded by 2+ spaces).
+ *   2. Split concatenated bullet points onto their own lines.
+ *   3. Collapse 3+ consecutive spaces to one space.
+ *   4. Split remaining body lines on 2+ space sequences — each gap was a
+ *      real line break in the original PDF ("Degree  University  2020").
+ */
+function normalizeCvText(raw: string): string {
+  let text = raw;
+
+  // Step 1: section headings
+  for (const kw of CV_SECTION_KEYWORDS) {
+    const esc = cvEscapeRe(kw);
+    text = text.replace(
+      new RegExp(`[ \\t]{2,}(${esc})(?=[ \\t]{2,}|[ \\t]*[\\n]|[ \\t]*$|[ \\t]*-)`, 'gi'),
+      '\n$1\n',
+    );
+    text = text.replace(
+      new RegExp(`^(${esc})[ \\t]{2,}(?=[^\\n])`, 'gim'),
+      '$1\n',
+    );
+  }
+
+  // Step 2: bullets
+  text = text.replace(/[ \t]{2,}(-[ \t]+|•[ \t]+)/g, '\n$1');
+
+  // Step 3: collapse 3+ spaces
+  text = text.replace(/[ \t]{3,}/g, ' ');
+
+  // Step 4: split every line on remaining 2+ space gaps between non-space chars.
+  // Bullet lines are handled separately: split only at sentence-end boundaries
+  // so the bullet marker stays intact, then body-split any trailing fragments.
+  const out: string[] = [];
+  for (const rawLine of text.split('\n')) {
+    const trimmed = rawLine.trim();
+    if (!trimmed) { out.push(''); continue; }
+
+    if (/^[-•*▪→◆✓]/.test(trimmed)) {
+      // Bullet: split where a sentence ends and new content (next entry) begins
+      const [bulletContent, ...trailing] = trimmed.split(/(?<=[.!?])[ \t]{2,}(?=\S)/);
+      out.push(bulletContent);
+      for (const fragment of trailing) {
+        out.push(...fragment.split(/(?<=\S)[ \t]{2,}(?=\S)/).map(s => s.trim()).filter(Boolean));
+      }
+    } else {
+      // Body: split on every 2+ space gap between non-space chars
+      out.push(...trimmed.split(/(?<=\S)[ \t]{2,}(?=\S)/).map(s => s.trim()).filter(Boolean));
+    }
+  }
+
+  return out.join('\n');
+}
 
 function cvIsSection(line: string): boolean {
-  const t = line.trim().replace(/:$/, '');
-  if (SECTION_HEADING_RE.test(t)) return true;
-  // Short all-caps line that has at least a few letters
-  return (
-    t.length >= 3 &&
-    t.length <= 50 &&
-    t === t.toUpperCase() &&
-    /[A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝĂĐƠƯ]{3}/.test(t)
-  );
+  const t = line.trim().replace(/:$/, '').trim();
+  if (!t || t.length < 3 || t.length > 60) return false;
+  // Exact match against known keyword list (case-insensitive)
+  if (CV_SECTION_KEYWORDS_LOWER.has(t.toLowerCase())) return true;
+  // All-caps short line (catches custom headings like "CERTIFICATIONS" or "KỸ NĂNG")
+  return t === t.toUpperCase() && /[A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝĂĐƠƯ]{3}/.test(t);
 }
 
 function cvIsBullet(line: string): boolean {
@@ -309,10 +391,7 @@ function cvIsBullet(line: string): boolean {
 }
 
 function cvIsDateLine(line: string): boolean {
-  return (
-    /\b(19|20)\d{2}\b/.test(line) &&
-    line.trim().length <= 80
-  );
+  return /\b(19|20)\d{2}\b/.test(line) && line.trim().length <= 80;
 }
 
 interface CvBlock {
@@ -321,12 +400,11 @@ interface CvBlock {
 }
 
 function parseCvBlocks(text: string): CvBlock[] {
-  const allLines = text.split('\n');
+  const allLines = normalizeCvText(text).split('\n');
   const blocks: CvBlock[] = [];
   let current: CvBlock = { heading: null, lines: [] };
 
   const commit = () => {
-    // Drop trailing blank markers before saving
     while (current.lines.length && current.lines[current.lines.length - 1] === '') {
       current.lines.pop();
     }
@@ -337,12 +415,10 @@ function parseCvBlocks(text: string): CvBlock[] {
 
   for (const rawLine of allLines) {
     const line = rawLine.trim();
-
     if (cvIsSection(line)) {
       commit();
       current = { heading: line, lines: [] };
     } else if (line === '') {
-      // Add a single blank spacer (deduplicated) to preserve visual gaps within sections
       if (current.lines.length > 0 && current.lines[current.lines.length - 1] !== '') {
         current.lines.push('');
       }
@@ -376,8 +452,8 @@ function CvLine({ line }: { line: string }) {
     );
   }
 
-  // Short line without sentence-ending punctuation → entry title (company, role, school)
-  const isEntryTitle = line.length <= 55 && !/[.!?,;]$/.test(line) && !line.includes('  ');
+  // Short line without sentence-ending punctuation → job title, company, school
+  const isEntryTitle = line.length <= 70 && !/[.!?,;]$/.test(line);
   if (isEntryTitle) {
     return (
       <p className="text-[15px] font-semibold text-text-primary leading-snug mt-3 first:mt-0">
@@ -386,9 +462,7 @@ function CvLine({ line }: { line: string }) {
     );
   }
 
-  return (
-    <p className="text-[14px] text-text-secondary leading-[1.7] mt-1">{line}</p>
-  );
+  return <p className="text-[14px] text-text-secondary leading-[1.7] mt-1">{line}</p>;
 }
 
 function CvModal({ cvText, onClose }: { cvText?: string; onClose: () => void }) {
