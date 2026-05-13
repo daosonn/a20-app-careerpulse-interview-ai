@@ -28,6 +28,7 @@ from app.services.interview_flow import (
     wait_for_pending_evaluations,
 )
 from app.services.trace_logger import trace_event
+from app.services.cv_guard import detect_injection, scrub_pii
 from app.core.logger import log_func
 
 router = APIRouter()
@@ -62,7 +63,7 @@ async def _generate_predicted_questions(req: SetupReq) -> list[str]:
     system_msg = f"You are a professional recruiter. You must respond ONLY in {target_lang}."
     prompt = (
         f"Analyze this CV and JD for a {req.interview_type} interview. "
-        f"CV: {req.cv_text[:500]} JD: {req.jd_text[:500]}. "
+        f"CV: {scrub_pii(req.cv_text)[:500]} JD: {scrub_pii(req.jd_text)[:500]}. "
         f"Return exactly 5 concise predicted interview questions in {target_lang}. "
         "Return as a JSON object with a 'questions' key containing a list of strings."
     )
@@ -267,6 +268,19 @@ async def recommend_jobs(req: RecommendationReq, db: SessionDep, current_user: C
 @router.post("/setup")
 async def setup_interview(req: SetupReq, db: SessionDep, current_user: CurrentUser):
     log_func("setup_interview")
+    # Block injection attempts in CV or JD before touching any state
+    for field, text in (("CV", req.cv_text), ("JD", req.jd_text)):
+        guard = detect_injection(text)
+        if guard.is_malicious:
+            raise HTTPException(
+                status_code=422,
+                detail=f"{field} bị từ chối: nội dung chứa mã độc ({guard.reason}).",
+            )
+    # Scrub PII from the text stored in the Interview record so the LLM never
+    # sees raw personal identifiers during the session. The original CV lives in
+    # ResumeUpload.raw_text and is unaffected.
+    safe_cv = scrub_pii(req.cv_text)
+    safe_jd = scrub_pii(req.jd_text)
     try:
         initial_state = create_initial_flow_state(req.language, req.question_count)
         trace_event(None, "interview.setup_request", {
@@ -275,8 +289,6 @@ async def setup_interview(req: SetupReq, db: SessionDep, current_user: CurrentUs
             "language": req.language,
             "is_stress_test": req.is_stress_test,
             "question_count": req.question_count,
-            "cv_text": req.cv_text,
-            "jd_text": req.jd_text,
         })
         matched_skills = []
         if req.cv_id:
@@ -286,8 +298,8 @@ async def setup_interview(req: SetupReq, db: SessionDep, current_user: CurrentUs
 
         new_interview = Interview(
             user_id=current_user.id,
-            cv_text=req.cv_text,
-            jd_text=req.jd_text,
+            cv_text=safe_cv,
+            jd_text=safe_jd,
             interview_type=req.interview_type,
             language=req.language,
             predicted_questions=[],
