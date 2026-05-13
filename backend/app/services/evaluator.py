@@ -160,7 +160,19 @@ def _evaluation_mode(question: str) -> str:
     text = _strip_accents(question)
     if _is_candidate_question(question):
         return "candidate_question"
-    if any(marker in text for marker in ("hom nay", "san sang", "tam trang", "ready")):
+    if any(marker in text for marker in (
+        "hom nay",
+        "san sang",
+        "tam trang",
+        "ready",
+        "cam thay the nao",
+        "duong den cong ty",
+        "di lai",
+        "office easy to find",
+        "commute",
+        "gioi thieu ngan gon ve ban than",
+        "briefly introduce yourself",
+    )):
         return "warmup"
     if any(marker in text for marker in ("dong luc", "theo duoi", "vi sao", "why ai", "motivation")):
         return "motivation"

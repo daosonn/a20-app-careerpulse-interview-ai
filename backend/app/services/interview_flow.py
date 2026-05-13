@@ -2,7 +2,6 @@ from __future__ import annotations
 import asyncio
 import datetime
 import json
-import random
 import re
 import unicodedata
 from typing import Any, AsyncGenerator
@@ -27,15 +26,28 @@ WARMUP_QUESTIONS = {
     "vi": [
         {
             "id": "warmup-1",
-            "question": "Chào bạn, mình là Ms Linh. Bạn đã sẵn sàng bắt đầu buổi phỏng vấn chưa?",
-            "tip": "Bạn chỉ cần trả lời ngắn để làm quen với phòng phỏng vấn.",
+            "question": "Xin chào em, hôm nay em cảm thấy thế nào?",
+            "tip": "Trả lời tự nhiên, ngắn gọn về tâm trạng hiện tại của em.",
             "phase": "Warm-up",
             "persona": "Ms. Linh",
         },
         {
             "id": "warmup-2",
-            "question": "Hôm nay tâm trạng của bạn thế nào? Nếu muốn, bạn có thể nói mình cần hỏi chậm hơn hoặc nhắc lại câu hỏi.",
-            "tip": "Chia sẻ ngắn về trạng thái của bạn để trải nghiệm phỏng vấn tự nhiên hơn.",
+            "question": "Đường đến công ty có dễ tìm không em? Việc đi lại hôm nay của em có thuận tiện không?",
+            "tip": "Chia sẻ ngắn gọn về quá trình di chuyển để làm quen với hội đồng phỏng vấn.",
+            "phase": "Warm-up",
+            "persona": "Mr. Hung",
+        },
+        {
+            "id": "warmup-3",
+            "question": (
+                "Trước khi bắt đầu phần chuyên môn, hội đồng phỏng vấn xin giới thiệu: "
+                "chị Linh là HR Interviewer, phụ trách trao đổi về thông tin ứng viên và quy trình tuyển dụng; "
+                "anh Hùng là Hiring Manager, phụ trách đánh giá mức độ phù hợp với vị trí và định hướng của đội nhóm; "
+                "và chị Nguyên là Technical Evaluator, phụ trách đánh giá năng lực chuyên môn. "
+                "Bây giờ, mời em giới thiệu ngắn gọn về bản thân mình."
+            ),
+            "tip": "Giới thiệu tên, nền tảng học tập hoặc công việc, kinh nghiệm nổi bật và định hướng ứng tuyển.",
             "phase": "Warm-up",
             "persona": "Ms. Linh",
         },
@@ -43,15 +55,28 @@ WARMUP_QUESTIONS = {
     "en": [
         {
             "id": "warmup-1",
-            "question": "Hi, I am Ms. Linh. Are you ready to begin the interview?",
-            "tip": "Answer briefly so you can get familiar with the room.",
+            "question": "Hello, how are you feeling today?",
+            "tip": "Answer naturally and briefly about how you are feeling.",
             "phase": "Warm-up",
             "persona": "Ms. Linh",
         },
         {
             "id": "warmup-2",
-            "question": "How are you feeling today?",
-            "tip": "Share how you want the interview experience to be adjusted.",
+            "question": "Was the office easy to find? Was your commute convenient today?",
+            "tip": "Share briefly about your commute so you can settle into the interview.",
+            "phase": "Warm-up",
+            "persona": "Mr. Hung",
+        },
+        {
+            "id": "warmup-3",
+            "question": (
+                "Before we start the technical part, the panel would like to introduce ourselves: "
+                "Ms. Linh is the HR Interviewer, covering candidate information and the hiring process; "
+                "Mr. Hung is the Hiring Manager, evaluating role fit and team alignment; "
+                "and Ms. Nguyen is the Technical Evaluator, assessing technical capability. "
+                "Now, please briefly introduce yourself."
+            ),
+            "tip": "Mention your name, background, key experience, and why you are interested in this role.",
             "phase": "Warm-up",
             "persona": "Ms. Linh",
         },
@@ -85,6 +110,8 @@ def _fetch_bank_questions(db, skills: list[str], language: str) -> list[dict[str
         all_qs = db.query(QuestionBank).filter(QuestionBank.language == language).all()
         matched = []
         for q in all_qs:
+            if not _is_curated_bank_question(q):
+                continue
             q_skills = q.skills if isinstance(q.skills, list) else []
             if any(s in skills for s in q_skills):
                 matched.append({
@@ -97,12 +124,25 @@ def _fetch_bank_questions(db, skills: list[str], language: str) -> list[dict[str
                     "evaluation_type": q.evaluation_type or "technical",
                     "model_answer": "", # Placeholder
                 })
-        
-        random.shuffle(matched)
+
+        matched.sort(key=lambda item: item["id"])
         return matched[:3]
     except Exception as e:
         print(f"Error fetching bank questions: {e}")
         return []
+
+def _is_curated_bank_question(question: QuestionBank) -> bool:
+    log_func("_is_curated_bank_question", level=2)
+    text = (question.question or "").strip()
+    tip = (question.tip or "").strip()
+    if not question.intent:
+        return False
+    if not text or len(text) > 240:
+        return False
+    if len(tip) > 500:
+        return False
+    noisy_markers = ("mAIn", "wAIt", "RESTart", "contAIn", "explAIn", "ShanghAI")
+    return not any(marker in text or marker in tip for marker in noisy_markers)
 
 def create_initial_flow_state(language: str, max_questions: int) -> dict[str, Any]:
     log_func("create_initial_flow_state")
@@ -263,15 +303,23 @@ async def handle_answer_flow(
         }
         db.flush()
         if gate_result.get("should_score_star", True):
-            _schedule_star_evaluation(interview.id, turn.id, active, message)
+            await _evaluate_turn_now(
+                interview,
+                turn,
+                active,
+                message,
+                question_type="main",
+                weight="normal",
+            )
         else:
-            turn.evaluation = _light_interaction_evaluation(gate_result, message, interview.language or "vi")
-            turn.audio_meta = {
-                **(turn.audio_meta or {}),
-                "evaluation_status": "ready",
-            }
-            evaluations = interview.evaluations if isinstance(interview.evaluations, list) else []
-            interview.evaluations = [*evaluations, turn.evaluation]
+            await _evaluate_turn_now(
+                interview,
+                turn,
+                active,
+                message,
+                question_type="coaching",
+                weight="light",
+            )
 
         if not gate_result.get("pass"):
             retry_count = int(state.get("active_question_attempt", 0)) + 1
@@ -300,15 +348,15 @@ async def handle_answer_flow(
             }
     elif question_type == "candidate_qa":
         qa_result = await handle_candidate_qa(interview, message, state)
-        turn.evaluation = qa_result["evaluation"]
-        turn.audio_meta = {
-            **(turn.audio_meta or {}),
-            "evaluation_status": "ready",
-            "question_type": "candidate_qa",
-            "candidate_qa_intent": qa_result["intent"],
-        }
-        evaluations = interview.evaluations if isinstance(interview.evaluations, list) else []
-        interview.evaluations = [*evaluations, qa_result["evaluation"]]
+        await _evaluate_turn_now(
+            interview,
+            turn,
+            active,
+            message,
+            question_type="candidate_qa",
+            weight="light",
+            extra_audio_meta={"candidate_qa_intent": qa_result["intent"]},
+        )
         next_item = qa_result["next_item"]
         _persist_ai_question(interview, next_item, state)
         current_user.last_activity_at = _utcnow()
@@ -330,19 +378,14 @@ async def handle_answer_flow(
             yield event
         return
     else:
-        warmup_eval = _warmup_evaluation(message, interview.language or "vi")
-        trace_event(interview.id, "warmup.light_evaluation", {
-            "active_question": active,
-            "answer": message,
-            "evaluation": warmup_eval,
-        })
-        turn.evaluation = warmup_eval
-        turn.audio_meta = {
-            **(turn.audio_meta or {}),
-            "evaluation_status": "ready",
-        }
-        evaluations = interview.evaluations if isinstance(interview.evaluations, list) else []
-        interview.evaluations = [*evaluations, warmup_eval]
+        await _evaluate_turn_now(
+            interview,
+            turn,
+            active,
+            message,
+            question_type="warmup",
+            weight="light",
+        )
 
     next_item, state = _select_next_question(interview, state)
     _persist_ai_question(interview, next_item, state)
@@ -546,7 +589,9 @@ Planning policy:
 - Anchor questions to the candidate's specific projects, skills, and the job requirements.
 - Use the provided 'CV Profile' which summarizes the candidate's portrait for faster planning.
 - Propose deep-dive questions for projects mentioned in the 'CV Profile'.
-- Ensure questions are directly relevant to the selected Job Description (JD)."""
+- Ensure questions are directly relevant to the selected Job Description (JD).
+- Do NOT generate greeting, commute, panel introduction, readiness, or self-introduction questions.
+- The live interview already asks fixed opening questions before this plan runs; start directly with CV/JD-specific follow-up questions."""
 
     user_prompt = {
         "interview_type": interview_type,
@@ -556,7 +601,13 @@ Planning policy:
         "question_quality_requirements": [
             "Probe candidate's role, technical choices, tradeoffs, metrics, and impact in the projects listed in CV Profile.",
             "If CV mentions specific tech stacks like Python, FastAPI, Django, Docker, AI, deep-dive into those.",
-            "Connect candidate's past experience directly with the JD requirements."
+            "Connect candidate's past experience directly with the JD requirements.",
+            "Skip greetings, commute questions, interviewer introductions, and generic self-introduction prompts because they are already handled by the fixed opening flow."
+        ],
+        "fixed_opening_questions_already_asked": [
+            "Greeting and how the candidate feels today.",
+            "Whether the office was easy to find and whether the commute was convenient.",
+            "Panel introduction followed by a request for the candidate to introduce themselves.",
         ],
         "phases": [
             "CV Deep-dive",
@@ -819,31 +870,24 @@ def _select_next_question(interview: Interview, state: dict[str, Any]) -> tuple[
     plan_ready = bool(plan) and state.get("question_plan_status") == "ready"
     max_count = int(state.get("max_question_count", 5) or 5)
 
-    if warmup_index < len(warmups) and not (plan_ready and warmup_index >= 1):
+    if warmup_index < len(warmups):
         item = dict(warmups[warmup_index])
         state["warmup_index"] = warmup_index + 1
         return _activate_question(state, item, "warmup")
 
     total_asked = main_index + bank_index
     if total_asked < max_count:
-        take_from_bank = False
-        if bank_index < len(bank):
-            if not plan_ready:
-                take_from_bank = True
-            elif bank_index <= main_index:
-                take_from_bank = True
-        
-        if take_from_bank:
-            item = dict(bank[bank_index])
-            state["bank_index"] = bank_index + 1
-            return _activate_question(state, item, "main")
-        
         if plan_ready and main_index < len(plan):
             item = dict(plan[main_index])
             state["main_index"] = main_index + 1
             if _is_candidate_question(item):
                 state["candidate_qa_status"] = "asking"
                 return _activate_question(state, item, "candidate_qa")
+            return _activate_question(state, item, "main")
+
+        if not plan_ready and bank_index < len(bank):
+            item = dict(bank[bank_index])
+            state["bank_index"] = bank_index + 1
             return _activate_question(state, item, "main")
 
     if state.get("question_plan_status") == "pending" and not state.get("bridge_used"):
@@ -1278,6 +1322,57 @@ def _light_interaction_evaluation(gate_result: dict[str, Any], answer: str, lang
         "evaluationMode": "light_interaction",
         "weight": "light",
     }
+
+async def _evaluate_turn_now(
+    interview: Interview,
+    turn: InterviewTurn,
+    question: dict[str, Any],
+    answer: str,
+    *,
+    question_type: str,
+    weight: str = "normal",
+    extra_audio_meta: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    log_func("_evaluate_turn_now", level=2)
+
+    class Req:
+        last_ai_msg = question.get("question", "")
+        last_user_msg = answer
+        language = interview.language or "vi"
+        model_answer = question.get("model_answer", "")
+
+    trace_event(interview.id, "turn.evaluation.prompt", {
+        "turn_id": turn.id,
+        "question_type": question_type,
+        "question": question,
+        "answer": answer,
+        "language": Req.language,
+        "model_answer": Req.model_answer,
+    })
+    evaluation = await evaluate_star_logic(Req)
+    evaluation["questionType"] = question_type
+    evaluation["weight"] = weight
+
+    trace_event(interview.id, "turn.evaluation.result", {
+        "turn_id": turn.id,
+        "question_type": question_type,
+        "evaluation": evaluation,
+    })
+
+    turn.evaluation = evaluation
+    turn.audio_meta = {
+        **(turn.audio_meta or {}),
+        **(extra_audio_meta or {}),
+        "question_type": question_type,
+        "evaluation_status": "ready",
+    }
+    evaluations = interview.evaluations if isinstance(interview.evaluations, list) else []
+    interview.evaluations = [*evaluations, evaluation]
+    scored = [_score(item) for item in interview.evaluations if isinstance(item, dict)]
+    scored = [score for score in scored if score is not None]
+    if scored:
+        interview.score = round(sum(scored) / len(scored))
+    return evaluation
 
 def _schedule_star_evaluation(interview_id: int, turn_id: int, question: dict[str, Any], answer: str) -> None:
     log_func("_schedule_star_evaluation", level=2)

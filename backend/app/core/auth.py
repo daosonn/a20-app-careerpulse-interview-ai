@@ -51,17 +51,20 @@ def _load_firebase_project_id() -> Optional[str]:
         return None
 
 FIREBASE_PROJECT_ID = _load_firebase_project_id()
+_HAS_FIREBASE_ADMIN_CREDENTIALS = False
 
 if not firebase_admin._apps:
     if os.path.exists(SERVICE_ACCOUNT_PATH):
         cred = credentials.Certificate(SERVICE_ACCOUNT_PATH)
         firebase_admin.initialize_app(cred)
+        _HAS_FIREBASE_ADMIN_CREDENTIALS = True
     else:
         # Fallback for environments where service account is provided via env vars 
         # or where default credentials are available
         try:
             options = {"projectId": FIREBASE_PROJECT_ID} if FIREBASE_PROJECT_ID else None
             firebase_admin.initialize_app(options=options)
+            _HAS_FIREBASE_ADMIN_CREDENTIALS = bool(os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
         except Exception as e:
             print(f"Warning: Firebase Admin SDK not initialized: {e}")
 
@@ -72,7 +75,7 @@ def _verify_firebase_token(token: str) -> Dict[str, Any]:
     errors: list[str] = []
 
     # Primary path: Firebase Admin SDK (works with service account / ADC).
-    if firebase_admin._apps:
+    if firebase_admin._apps and _HAS_FIREBASE_ADMIN_CREDENTIALS:
         try:
             return auth.verify_id_token(token)
         except Exception as e:

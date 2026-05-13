@@ -357,7 +357,7 @@ export function useInterviewSession(
         questionType: currentQuestionType,
         isWarmup: currentQuestionType === 'warmup',
         attempt: activeAttempt,
-        evaluationStatus: currentQuestionType === 'main' ? 'pending' : undefined,
+        evaluationStatus: 'pending',
       }]);
     }
 

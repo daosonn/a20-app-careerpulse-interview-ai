@@ -24,6 +24,7 @@ from app.models.models import User, Education, ResumeUpload, SuggestedJob, UserA
 from app.services.profiler import extract_cv_info_logic, extract_cv_info_stream, map_cv_skills_to_canonical
 from app.services.cv_guard import detect_injection
 from app.rag_service.matcher import JobMatcherService
+from app.rag_service.rag_service import rag_service
 from app.core.config import EMBEDDING_PROVIDER
 from app.core.logger import log_func
 
