@@ -22,6 +22,7 @@ from app.core.database import SessionDep
 from app.core.auth import CurrentUser
 from app.models.models import User, Education, ResumeUpload, SuggestedJob, UserActivity, QuestionBank
 from app.services.profiler import extract_cv_info_logic, extract_cv_info_stream, map_cv_skills_to_canonical
+from app.services.cv_guard import detect_injection
 from app.rag_service.matcher import JobMatcherService
 from app.rag_service.rag_service import rag_service
 from app.core.config import EMBEDDING_PROVIDER
@@ -115,6 +116,12 @@ def _jobs_payload(jobs: list[SuggestedJob]) -> list[dict]:
 @router.post("/onboard")
 async def onboard_user(req: OnboardReq, db: SessionDep, current_user: CurrentUser):
     log_func("onboard_user")
+    guard = detect_injection(req.cv_text)
+    if guard.is_malicious:
+        raise HTTPException(
+            status_code=422,
+            detail=f"CV bị từ chối: nội dung chứa mã độc ({guard.reason}).",
+        )
     try:
         info = await extract_cv_info_logic(req.cv_text)
         skills = info.get("skills", ["Kỹ năng chung"])
@@ -329,6 +336,12 @@ async def update_cv(req: CVUpdateReq, db: SessionDep, current_user: CurrentUser)
     log_func("update_cv")
     if not req.cv_text.strip():
         raise HTTPException(status_code=400, detail="CV text cannot be empty.")
+    guard = detect_injection(req.cv_text)
+    if guard.is_malicious:
+        raise HTTPException(
+            status_code=422,
+            detail=f"CV bị từ chối: nội dung chứa mã độc ({guard.reason}).",
+        )
     try:
         info = await extract_cv_info_logic(req.cv_text)
         skills = info.get("skills", current_user.skills or [])
