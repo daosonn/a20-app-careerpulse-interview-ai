@@ -12,8 +12,8 @@ returned unchanged so the interview is never blocked.
 import json
 from typing import Any, Dict, List
 
-from app.core.config import CHAT_MODEL, async_client
 from app.core.logger import log_func
+from app.core.llm_router import chat_with_fallback
 
 _CV_DIVE_PHASE = "CV Deep-dive"
 
@@ -62,8 +62,7 @@ Return ONLY valid JSON — no prose, no markdown:
 {{"verified": [{{"id": <int>, "question": "<question text>", "changed": <bool>}}]}}"""
 
     try:
-        resp = await async_client.chat.completions.create(
-            model=CHAT_MODEL,
+        raw = await chat_with_fallback(
             messages=[
                 {
                     "role": "system",
@@ -71,10 +70,10 @@ Return ONLY valid JSON — no prose, no markdown:
                 },
                 {"role": "user", "content": prompt},
             ],
-            response_format={"type": "json_object"},
             temperature=0.1,
+            require_json=True,
         )
-        data = json.loads(resp.choices[0].message.content)
+        data = json.loads(raw or "{}")
 
         corrections: Dict[int, str] = {
             item["id"]: item["question"].strip()

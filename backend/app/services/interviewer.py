@@ -1,8 +1,8 @@
 import json
 from typing import Any, List, Tuple
 
-from app.core.config import async_client
 from app.core.logger import log_func
+from app.core.llm_router import chat_with_fallback
 
 async def astream_ai_batch(req_data: Any):
     log_func("astream_ai_batch", level=2)
@@ -93,17 +93,15 @@ Return ONLY a JSON object with this exact shape:
     }
 
     try:
-        response = await async_client.chat.completions.create(
-            model="gpt-4o-mini",
-            temperature=0.7,
-            response_format={"type": "json_object"},
+        content = await chat_with_fallback(
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": json.dumps(user_prompt, ensure_ascii=False)},
             ],
+            temperature=0.7,
+            require_json=True,
         )
-        content = response.choices[0].message.content or "{}"
-        payload = json.loads(content)
+        payload = json.loads(content or "{}")
         questions = payload.get("questions", [])
         if not isinstance(questions, list):
             raise ValueError("questions must be a list")
