@@ -25,3 +25,6 @@ google-auth>=2.35.0
 requests>=2.32.0
 google-genai
 eval_type_backport
+# Evaluation pipeline (optional — only needed when running eval/)
+ragas>=0.2.0
+datasets>=2.20.0
