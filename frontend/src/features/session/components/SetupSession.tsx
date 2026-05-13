@@ -55,7 +55,7 @@ function extractSessionId(payload: any): string {
 function StepHeading({ index, label }: { index: number; label: string }) {
   return (
     <h2 className="flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.25em] text-gold-400 mb-4">
-      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full border border-gold-500/60 text-gold-300 font-serif text-sm">
+      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full border border-gold-500/60 text-gold-300 font-serif text-sm leading-none shrink-0">
         {index}
       </span>
       {label}
@@ -188,7 +188,7 @@ export function SetupSession() {
             setCvText(firstResume.raw_text);
             setFileName(firstResume.file_name || 'CV đã lưu');
             setSelectedCvId(firstResume.id);
-            
+
             const jobsData = firstResume.suggested_jobs || [];
             setRecommendedJobs(jobsData);
             if (jobsData.length > 0) {
@@ -204,7 +204,7 @@ export function SetupSession() {
               setCvText(detailData.raw_text);
               setFileName(detailData.file_name || 'CV đã lưu');
               setSelectedCvId(detailData.id);
-              
+
               const jobsData = detailData.suggested_jobs || [];
               setRecommendedJobs(jobsData);
               if (jobsData.length > 0) {
@@ -255,27 +255,27 @@ export function SetupSession() {
       setIsUploadingCv(true);
       const uploadRes = await authenticatedFetch(apiUrl('/api/v1/user/cv'), {
         method: 'PUT',
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           cv_text: text,
           file_name: file.name
         }),
       });
       const uploadData = await uploadRes.json();
-      
+
       // Tối ưu: Cập nhật state cục bộ từ dữ liệu trả về của Backend mà không cần gọi lại danh sách
       if (uploadData.resume) {
         const newResume = uploadData.resume;
         setCvText(newResume.raw_text);
         setFileName(newResume.file_name);
         setSelectedCvId(newResume.id);
-        
+
         const jobsData = newResume.suggested_jobs || [];
         setRecommendedJobs(jobsData);
         if (jobsData.length > 0) {
           setSelectedJobIndex(0);
           setJobDescription(jobsData[0].description);
         }
-        
+
         // Cập nhật mảng local
         setSavedResumes(prev => {
           const exists = prev.some(r => r.id === newResume.id);
@@ -383,7 +383,7 @@ export function SetupSession() {
       console.error(err);
       setError(
         (err as Error)?.message ||
-          'Đã có lỗi xảy ra khi phân tích dữ liệu. Vui lòng thử lại.',
+        'Đã có lỗi xảy ra khi phân tích dữ liệu. Vui lòng thử lại.',
       );
     } finally {
       setIsGenerating(false);
@@ -503,7 +503,6 @@ export function SetupSession() {
                       </span>
                     )}
                   </div>
-                  
                   {savedResumes.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
                       {savedResumes.map(r => (
@@ -516,11 +515,11 @@ export function SetupSession() {
                             try {
                               const detailRes = await authenticatedFetch(apiUrl(`/api/v1/user/resumes/${r.id}`));
                               const detailData = await detailRes.json();
-                              
+
                               setCvText(detailData.raw_text);
                               setFileName(detailData.file_name || `CV lưu ngày ${new Date(r.created_at).toLocaleDateString()}`);
                               setSelectedCvId(r.id);
-                              
+
                               // Use pre-fetched jobs from detail response
                               const jobsData = detailData.suggested_jobs || [];
                               setRecommendedJobs(jobsData);
@@ -583,18 +582,6 @@ export function SetupSession() {
                   </div>
                 )}
 
-                <div className="mt-3">
-                  <Textarea
-                    value={cvText}
-                    onChange={(e) => {
-                      setCvText(e.target.value);
-                      if (!e.target.value) setFileName('');
-                      clearJobRecommendations();
-                    }}
-                    rows={4}
-                    placeholder="Nội dung CV sẽ hiển thị ở đây. Bạn cũng có thể dán trực tiếp text vào..."
-                  />
-                </div>
               </div>
 
               {/* JD matching */}
@@ -604,8 +591,8 @@ export function SetupSession() {
                     Vị trí ứng tuyển
                   </label>
                   {cvText && (
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={() => fetchRecommendations(cvText)}
                       disabled={isFetchingRecommendations}
                       className="text-xs text-gold-400 hover:text-gold-300 transition-colors flex items-center gap-1"
@@ -615,9 +602,9 @@ export function SetupSession() {
                     </button>
                   )}
                 </div>
-                
+
                 <p className="text-sm text-text-muted mb-3 leading-relaxed">
-                  {recommendedJobs.length > 0 
+                  {recommendedJobs.length > 0
                     ? "Chúng tôi đã tìm thấy các vị trí phù hợp với CV của bạn. Hãy chọn một vị trí để bắt đầu."
                     : "Mặc định hệ thống sẽ dùng JD bạn nhập. Nếu chưa có JD, bấm Tìm job phù hợp để AI gợi ý vị trí từ CV."}
                 </p>
@@ -680,8 +667,8 @@ export function SetupSession() {
                         </div>
                       </div>
                     ))}
-                    
-                    <button 
+
+                    <button
                       type="button"
                       onClick={() => {
                         setRecommendedJobs([]);

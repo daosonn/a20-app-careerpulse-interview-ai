@@ -275,7 +275,7 @@ function ProfileTabContent({
   return (
     <div className="grid gap-5 lg:grid-cols-3">
       <ResumeVaultCard
-        hasCv={!!profile.cvText} joinDate={joinDate}
+        hasCv={!!profile.cvText} cvText={profile.cvText} joinDate={joinDate}
         authenticatedFetch={authenticatedFetch} refreshProfile={refreshProfile}
       />
       <EducationCard authenticatedFetch={authenticatedFetch} initialEntries={initialEducation} />
@@ -287,17 +287,196 @@ function ProfileTabContent({
   );
 }
 
+/* ----- CV Modal ----- */
+
+const SECTION_HEADING_RE =
+  /^(experience|education|skills?|projects?|summary|objective|certifications?|awards?|publications?|references?|languages?|interests?|hobbies|contact|profile|work history|employment|accomplishments?|achievements?|activities|volunteer|kinh nghi[eệ]m|h[oọ]c v[aấ]n|k[yỹ] n[aă]ng|d[uự] [aá]n|t[oó]m t[aắ]t|m[uụ]c ti[eê]u|ch[uứ]ng ch[iỉ]|gi[aả]i th[uư][oở]ng|ng[oô]n ng[uữ]|s[oở] th[iíï]ch|li[eê]n h[eệ])[:\s]*$/i;
+
+function cvIsSection(line: string): boolean {
+  const t = line.trim().replace(/:$/, '');
+  if (SECTION_HEADING_RE.test(t)) return true;
+  // Short all-caps line that has at least a few letters
+  return (
+    t.length >= 3 &&
+    t.length <= 50 &&
+    t === t.toUpperCase() &&
+    /[A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝĂĐƠƯ]{3}/.test(t)
+  );
+}
+
+function cvIsBullet(line: string): boolean {
+  return /^[-•*▪→◆✓]\s/.test(line.trim()) || /^\d+[.)]\s/.test(line.trim());
+}
+
+function cvIsDateLine(line: string): boolean {
+  return (
+    /\b(19|20)\d{2}\b/.test(line) &&
+    line.trim().length <= 80
+  );
+}
+
+interface CvBlock {
+  heading: string | null;
+  lines: string[];
+}
+
+function parseCvBlocks(text: string): CvBlock[] {
+  const allLines = text.split('\n');
+  const blocks: CvBlock[] = [];
+  let current: CvBlock = { heading: null, lines: [] };
+
+  const commit = () => {
+    // Drop trailing blank markers before saving
+    while (current.lines.length && current.lines[current.lines.length - 1] === '') {
+      current.lines.pop();
+    }
+    if (current.heading !== null || current.lines.some((l) => l !== '')) {
+      blocks.push(current);
+    }
+  };
+
+  for (const rawLine of allLines) {
+    const line = rawLine.trim();
+
+    if (cvIsSection(line)) {
+      commit();
+      current = { heading: line, lines: [] };
+    } else if (line === '') {
+      // Add a single blank spacer (deduplicated) to preserve visual gaps within sections
+      if (current.lines.length > 0 && current.lines[current.lines.length - 1] !== '') {
+        current.lines.push('');
+      }
+    } else {
+      current.lines.push(line);
+    }
+  }
+  commit();
+
+  return blocks;
+}
+
+function CvLine({ line }: { line: string }) {
+  if (line === '') return <div className="h-3" aria-hidden />;
+
+  if (cvIsBullet(line)) {
+    const content = line.trim().replace(/^[-•*▪→◆✓]\s+/, '').replace(/^\d+[.)]\s+/, '');
+    return (
+      <div className="flex gap-2.5 mt-1">
+        <span className="mt-[9px] w-1.5 h-1.5 rounded-full bg-gold-400/55 shrink-0" />
+        <span className="text-[14px] text-text-primary leading-7">{content}</span>
+      </div>
+    );
+  }
+
+  if (cvIsDateLine(line)) {
+    return (
+      <p className="text-[12px] text-text-muted font-medium tracking-wide mt-0.5">
+        {line}
+      </p>
+    );
+  }
+
+  // Short line without sentence-ending punctuation → entry title (company, role, school)
+  const isEntryTitle = line.length <= 55 && !/[.!?,;]$/.test(line) && !line.includes('  ');
+  if (isEntryTitle) {
+    return (
+      <p className="text-[15px] font-semibold text-text-primary leading-snug mt-3 first:mt-0">
+        {line}
+      </p>
+    );
+  }
+
+  return (
+    <p className="text-[14px] text-text-secondary leading-[1.7] mt-1">{line}</p>
+  );
+}
+
+function CvModal({ cvText, onClose }: { cvText?: string; onClose: () => void }) {
+  const text = cvText?.trim() || '';
+  const wordCount = text ? text.split(/\s+/).filter(Boolean).length : 0;
+  const blocks = React.useMemo(() => parseCvBlocks(text), [text]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center p-4 sm:p-6 bg-black/75 backdrop-blur-sm overflow-y-auto"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-3xl my-6 flex flex-col rounded-2xl bg-navy-900 border border-navy-600/60 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Modal header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-navy-700/60 shrink-0">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex w-8 h-8 rounded-lg bg-gold-500/15 border border-gold-500/35 items-center justify-center">
+              <FileText className="w-4 h-4 text-gold-400" aria-hidden />
+            </span>
+            <div>
+              <span className="font-serif text-base text-text-primary block leading-tight">
+                CV đã phân tích
+              </span>
+              {wordCount > 0 && (
+                <span className="text-[11px] text-text-muted">
+                  {wordCount.toLocaleString()} từ
+                </span>
+              )}
+            </div>
+          </div>
+          <button
+            className="p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-navy-700 transition-colors"
+            onClick={onClose}
+            aria-label="Đóng"
+          >
+            <X className="w-4 h-4" aria-hidden />
+          </button>
+        </div>
+
+        {/* CV body */}
+        <div className="overflow-y-auto max-h-[80vh] px-6 sm:px-8 py-6">
+          {!text ? (
+            <p className="text-sm text-text-muted italic">Không có nội dung CV.</p>
+          ) : (
+            <div className="space-y-6">
+              {blocks.map((block, i) => (
+                <div key={i}>
+                  {block.heading && (
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-[3px] h-5 bg-gold-500 rounded-full shrink-0" />
+                      <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-gold-400">
+                        {block.heading.replace(/:$/, '')}
+                      </span>
+                      <div className="flex-1 h-px bg-gold-500/20" />
+                    </div>
+                  )}
+                  {block.lines.length > 0 && (
+                    <div className={block.heading ? 'pl-4' : ''}>
+                      {block.lines.map((line, j) => (
+                        <CvLine key={j} line={line} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ----- Resume Vault ----- */
 
 function ResumeVaultCard({
-  hasCv, joinDate, authenticatedFetch, refreshProfile,
+  hasCv, cvText, joinDate, authenticatedFetch, refreshProfile,
 }: {
-  hasCv: boolean; joinDate: string;
+  hasCv: boolean; cvText?: string; joinDate: string;
   authenticatedFetch: (url: string, opts?: RequestInit) => Promise<Response>;
   refreshProfile: () => Promise<void>;
 }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
+  const [showModal, setShowModal] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -335,7 +514,11 @@ function ResumeVaultCard({
               <p className="text-[11px] text-text-muted">Cập nhật: {joinDate}</p>
             </div>
             <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
-              <button className="p-1.5 rounded-md hover:bg-navy-600 text-text-muted hover:text-gold-400 transition-colors" title="Xem">
+              <button
+                className="p-1.5 rounded-md hover:bg-navy-600 text-text-muted hover:text-gold-400 transition-colors"
+                title="Xem CV"
+                onClick={() => setShowModal(true)}
+              >
                 <Eye className="w-3.5 h-3.5" aria-hidden />
               </button>
             </div>
@@ -354,6 +537,10 @@ function ResumeVaultCard({
           {uploading ? 'Đang xử lý...' : 'Tải lên CV mới'}
         </Button>
       </div>
+
+      {showModal && (
+        <CvModal cvText={cvText} onClose={() => setShowModal(false)} />
+      )}
     </Card>
   );
 }
