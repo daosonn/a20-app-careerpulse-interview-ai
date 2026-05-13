@@ -25,3 +25,4 @@ database/raw/
 # LangGraph WAL/SHM sidecar files (if checkpoint path is overridden outside database/)
 *.sqlite-shm
 *.sqlite-wal
+.vercel
